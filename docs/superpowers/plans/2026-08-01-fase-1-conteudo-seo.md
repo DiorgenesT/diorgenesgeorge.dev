@@ -34,7 +34,7 @@ Aplicam-se a todas as tarefas. Não repetidas em cada uma.
 
 O conteúdo descreve sistemas internos de uma prefeitura. Estas regras valem para toda tarefa de redação:
 
-1. **Nunca escrever no site:** token, chave, e-mail de service account, ID de planilha, `database_id`, nome de banco D1, URL `*.workers.dev` interna, domínio de homologação, host de GeoServer, e as senhas `[REDIGIDO]` e `[REDIGIDO]` — mesmo aposentadas, mesmo como exemplo.
+1. **Nunca escrever no site:** token, chave, e-mail de service account, ID de planilha, `database_id`, nome de banco D1, URL `*.workers.dev` interna, domínio de homologação, host de GeoServer, e as senhas dos painéis internos — mesmo aposentadas, mesmo como exemplo. Os valores literais vivem em `insumos/termos-proibidos.txt`, fora do git.
 2. **Nunca escrever:** nome, matrícula, foto ou contato de servidor identificável; indicador de desempenho atribuído a secretaria nomeada; conteúdo de DFD/ETP/TR não licitado; número de processo administrativo; dado de fila de UPA ao vivo.
 3. **Não nomear o sistema de origem de saúde** (fornecedor da API hospitalar e o banco por trás dela). Escrever "a API do sistema de regulação assistencial do município".
 4. **Todo case nasce com `status: "rascunho"`.** Só vira `"publicado"` depois que o Diorgenes ler o texto final e confirmar o alinhamento institucional com a Fundação. Documento em rascunho não é pré-renderizado, não entra no sitemap, não entra no `llms.txt` e não é linkado.

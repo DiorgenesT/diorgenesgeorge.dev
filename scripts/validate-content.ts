@@ -19,25 +19,39 @@ const SCHEMAS = {
 export type ValidationError = { file: string; message: string };
 
 /**
- * O conteúdo descreve sistemas internos de uma prefeitura. Estes termos nunca podem
- * chegar ao HTML publicado — o build falha antes, em vez de depender de revisão humana.
+ * Padrões estruturais: descrevem a forma de um segredo, não o segredo. Podem viver
+ * no código porque não revelam nada.
  */
-const FORBIDDEN = [
-  /[REDIGIDO]/i,
-  /[REDIGIDO]/i,
-  /[REDIGIDO]/i,
-  /\bOracle\b/i,
+const STRUCTURAL = [
   /workers\.dev/i,
   /database_id/i,
   /GOOGLE_SA_/i,
   /SYNC_SECRET/i,
   /spreadsheetId/i,
   /GeoServer/i,
-  /@betim\.mg\.gov\.br/i,
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----/,
 ];
 
-export function forbiddenTerms(body: string): string[] {
-  return FORBIDDEN.flatMap((pattern) => {
+const TERMS_FILE = "insumos/termos-proibidos.txt";
+
+/**
+ * Termos literais — senha aposentada, nome de fornecedor, host interno — vivem fora do
+ * git, em `insumos/termos-proibidos.txt`, um por linha. Escrevê-los aqui seria repetir
+ * no repositório público exatamente o vazamento que este portão existe para impedir.
+ * Sem o arquivo, sobra a checagem estrutural: o build avisa e segue.
+ */
+function literalPatterns(): RegExp[] {
+  if (!existsSync(TERMS_FILE)) return [];
+
+  return readFileSync(TERMS_FILE, "utf8")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line !== "" && !line.startsWith("#"))
+    .map((term) => new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"));
+}
+
+export function forbiddenTerms(body: string, extra: RegExp[] = []): string[] {
+  return [...STRUCTURAL, ...extra].flatMap((pattern) => {
     const found = pattern.exec(body);
     return found ? [found[0]] : [];
   });
@@ -49,6 +63,13 @@ export function forbiddenTerms(body: string): string[] {
  */
 export function validateContent(): ValidationError[] {
   const errors: ValidationError[] = [];
+  const literals = literalPatterns();
+
+  if (literals.length === 0) {
+    console.warn(
+      `aviso: ${TERMS_FILE} ausente — só a checagem estrutural de segredos rodou`,
+    );
+  }
 
   for (const [dir, schema] of Object.entries(SCHEMAS)) {
     const full = join(CONTENT_DIR, dir);
@@ -67,7 +88,7 @@ export function validateContent(): ValidationError[] {
 
       const source = readFileSync(file, "utf8");
 
-      for (const term of forbiddenTerms(source)) {
+      for (const term of forbiddenTerms(source, literals)) {
         errors.push({
           file,
           message: `termo que nunca pode ser publicado: "${term}"`,

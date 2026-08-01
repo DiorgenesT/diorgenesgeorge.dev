@@ -119,20 +119,27 @@ describe("parseFileName", () => {
 });
 
 describe("forbiddenTerms", () => {
-  it("should catch a retired password quoted as an example", () => {
-    expect(forbiddenTerms("a senha era [REDIGIDO] e foi trocada")).toEqual([
-      "[REDIGIDO]",
-    ]);
-  });
-
   it("should catch an internal hostname", () => {
     expect(forbiddenTerms("rodava em painel.workers.dev")).toEqual([
       "workers.dev",
     ]);
   });
 
-  it("should catch the name of the source health system vendor", () => {
-    expect(forbiddenTerms("a API [REDIGIDO] devolve a fila")).toEqual(["[REDIGIDO]"]);
+  it("should catch a database identifier", () => {
+    expect(forbiddenTerms("o database_id do painel")).toEqual(["database_id"]);
+  });
+
+  it("should catch a private key header", () => {
+    const body = "-----BEGIN RSA PRIVATE KEY-----";
+
+    expect(forbiddenTerms(body)).toHaveLength(1);
+  });
+
+  // Os termos literais vivem fora do git: o teste usa um substituto, nunca o valor real.
+  it("should catch a literal term supplied from outside the repository", () => {
+    expect(forbiddenTerms("a senha era TERMO-DE-TESTE", [/TERMO-DE-TESTE/i])).toEqual(
+      ["TERMO-DE-TESTE"],
+    );
   });
 
   it("should pass text that names no internal system", () => {
