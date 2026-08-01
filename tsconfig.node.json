@@ -8,8 +8,9 @@
     "scripts/**/*",
     "e2e/**/*",
     "app/i18n/**/*",
-    // O build lê o conteúdo para derivar a lista de pré-renderização.
+    // O build lê o conteúdo para derivar a lista de pré-renderização e o markdown público.
     "app/content/**/*",
+    "app/config/**/*",
     // O pós-build precisa do script de tema para saber qual inline pode sobreviver à CSP.
     "app/design/theme.ts"
   ],
