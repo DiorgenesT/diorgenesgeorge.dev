@@ -1,0 +1,47 @@
+---
+title: Indicadores dos ODS de um município, comparáveis
+answer: O desempenho do município nos Objectivos de Desenvolvimento Sustentável existia em relatórios anuais e em bases estatísticas que exigem saber navegar tabelas para extrair. Passou a um painel público com série histórica, onde cada indicador aparece ao lado do estado e do país.
+translationKey: ods
+status: rascunho
+updated: "2026-08-01"
+org: Fundação Beta
+role: Programador full stack
+period: "2026"
+stack:
+  - TypeScript
+  - Cloudflare Workers
+  - D1
+  - Python
+outcome: Indicador disperso em base estatística e relatório anual passou a poder ser consultado por qualquer pessoa.
+order: 5
+---
+
+## O problema
+
+O desempenho do município nos Objectivos de Desenvolvimento Sustentável já era público — apenas não era acessível. Vivia em relatórios anuais em PDF e em bases estatísticas oficiais que exigem saber exactamente que tabela abrir, que nível territorial escolher e que variável pedir.
+
+Cidadão, imprensa e conselho tinham direito ao dado e não tinham caminho até ele.
+
+## A decisão que faz o painel significar alguma coisa
+
+Cada indicador é importado em três níveis: município, estado e país.
+
+Parece um detalhe de âmbito, e é o que decide se o painel comunica. "Mortalidade infantil de X" não diz nada a quem lê — X é alto? é baixo? melhorou? Ao lado do estado e do país, o mesmo número passa a leitura imediata, e a pergunta seguinte deixa de ser "isto é bom?" e passa a ser "porquê?".
+
+Sem comparação, um indicador isolado é um número no ecrã. Com ela, é informação.
+
+## A parte que ninguém vê
+
+O índice que consolida o desempenho dos municípios muda de estrutura de ano para ano. A edição mais recente traz série temporal ampla, mas alguns códigos foram descontinuados e só existem na edição mais antiga; uma edição intermédia não tem série nenhuma e entra como medição pontual desse ano.
+
+Montei um catálogo unificado com regra de precedência explícita, da edição mais recente para a mais antiga, e mantive os indicadores desse índice sob uma meta sintética separada, para não se misturarem com os indicadores oficiais da ONU.
+
+É a parte invisível do trabalho, e é ela que decide se a série temporal mente ou não. Um gráfico que junta três metodologias sem o dizer produz uma linha bonita e falsa.
+
+## Uma decisão de arquitectura sobre acesso
+
+Este painel ficou deliberadamente fora da consolidação dos painéis internos. A aplicação consolidada está inteiramente atrás de autenticação institucional, e este é público por definição: migrá-lo teria retirado o acesso ao cidadão, que é a razão de ele existir.
+
+## O resultado
+
+Indicador que estava disperso em base estatística e em relatório anual passou a poder ser consultado por qualquer pessoa, com série histórica e comparação com o estado e o país. Todas as fontes são públicas, e cada uma tem a tabela de origem identificada no processo de carregamento.

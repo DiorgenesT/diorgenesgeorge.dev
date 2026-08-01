@@ -1,0 +1,51 @@
+---
+title: 468 agreements across nine incompatible spreadsheets
+answer: Around 468 municipal agreements signed between 2020 and 2026 lived in nine spreadsheets with incompatible formats, and nobody could answer how many were overdue without opening all nine files. They became a normalized, auditable data model with the origin of every record preserved.
+translationKey: instrumentos
+status: rascunho
+updated: "2026-08-01"
+org: Fundação Beta
+role: Full stack developer
+period: "2026"
+stack:
+  - TypeScript
+  - Cloudflare Workers
+  - D1
+  - SQL
+outcome: A question that required consolidating nine files by hand became a filter on screen.
+order: 3
+proof:
+  value: "468"
+  label: agreements migrated from nine spreadsheets
+---
+
+## The problem
+
+These agreements record what a development committed to deliver to the city in return for approval — a road, a public facility, an infrastructure improvement. Whoever tracks them needs to know what was agreed and whether it was delivered.
+
+There were around 468 agreements signed between 2020 and 2026, spread across nine spreadsheet files, one per department. And incompatible with each other in every way available:
+
+- inconsistent column names between files;
+- financial values stored as text;
+- headers occupying four rows before the data started;
+- one sheet with several rows per agreement, requiring a forward fill of what appeared only on the first;
+- one entire duplicate of another file;
+- three templates that were practically empty.
+
+The question "how many agreements are overdue?" had no answer without opening all nine files and checking by hand.
+
+## The decision
+
+What separates this project from an ordinary importer is status normalization.
+
+The files carried status as free text, each department with its own vocabulary. I modeled a closed set of six states and a four-table schema separating the agreement from its obligations and from the targets per department. Without that, "overdue" would be a word rather than a filter.
+
+The decision that matters most, though, is a different one: **every record stores the file it came from.**
+
+Legacy data migrations always get challenged. Someone opens the dashboard, sees a number that does not match their memory, and the conversation turns into a dispute about whether the system can be trusted. With the origin field preserved, the answer stops being a defense of the ETL and becomes a path: this record came from that file, that tab, that row. Go check.
+
+And there is what I deliberately did not normalize. Fields that did not fit a strong type stayed free text on purpose — a deadline written as "ten months from signature" does not become a date without inventing one. Forcing a type onto dirty data loses information; normalizing only what needs aggregation is the right call in a legacy migration.
+
+## The result
+
+Nine incompatible spreadsheets became a single dashboard with global filtering and per-agreement detail. The question that required consolidating files by hand became a filter on screen — and every number still has an address it came from.

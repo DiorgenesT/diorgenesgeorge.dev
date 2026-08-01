@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { articleSchema, caseSchema } from "../app/content/schema";
 import { parseFileName } from "../app/content/file-name";
-import { validateContent } from "./validate-content";
+import { forbiddenTerms, validateContent } from "./validate-content";
 
 const validCase = {
   title: "Consolidar 44 painéis sem migrar um banco",
@@ -115,5 +115,29 @@ describe("parseFileName", () => {
 
   it("should return undefined when the locale suffix is missing", () => {
     expect(parseFileName("./cases/central.mdx")).toBeUndefined();
+  });
+});
+
+describe("forbiddenTerms", () => {
+  it("should catch a retired password quoted as an example", () => {
+    expect(forbiddenTerms("a senha era [REDIGIDO] e foi trocada")).toEqual([
+      "[REDIGIDO]",
+    ]);
+  });
+
+  it("should catch an internal hostname", () => {
+    expect(forbiddenTerms("rodava em painel.workers.dev")).toEqual([
+      "workers.dev",
+    ]);
+  });
+
+  it("should catch the name of the source health system vendor", () => {
+    expect(forbiddenTerms("a API [REDIGIDO] devolve a fila")).toEqual(["[REDIGIDO]"]);
+  });
+
+  it("should pass text that names no internal system", () => {
+    expect(forbiddenTerms("a API do sistema de regulação do município")).toEqual(
+      [],
+    );
   });
 });

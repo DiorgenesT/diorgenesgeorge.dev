@@ -1,0 +1,51 @@
+---
+title: 468 acordos em nove folhas de cálculo incompatíveis
+answer: Cerca de 468 termos de ajuste assinados entre 2020 e 2026 viviam em nove folhas de cálculo com formatos incompatíveis, e ninguém conseguia responder quantos estavam atrasados sem abrir os nove ficheiros. Passaram a um modelo de dados normalizado e auditável, com a origem de cada registo preservada.
+translationKey: instrumentos
+status: rascunho
+updated: "2026-08-01"
+org: Fundação Beta
+role: Programador full stack
+period: "2026"
+stack:
+  - TypeScript
+  - Cloudflare Workers
+  - D1
+  - SQL
+outcome: Pergunta que exigia consolidar nove ficheiros à mão passou a ser um filtro no ecrã.
+order: 3
+proof:
+  value: "468"
+  label: acordos migrados de nove folhas de cálculo
+---
+
+## O problema
+
+Um termo de ajuste regista o que um empreendimento se comprometeu a entregar ao município como contrapartida — uma obra rodoviária, um equipamento público, uma melhoria de infraestrutura. Quem acompanha precisa de saber o que foi acordado e se foi cumprido.
+
+Eram cerca de 468 termos assinados entre 2020 e 2026, espalhados por nove ficheiros de folha de cálculo, cada área com o seu. E incompatíveis entre si de todas as formas possíveis:
+
+- nomes de coluna inconsistentes entre ficheiros;
+- valor financeiro gravado como texto;
+- cabeçalho a ocupar quatro linhas antes de os dados começarem;
+- uma folha com várias linhas por termo, a exigir preencher para baixo o que só aparecia na primeira;
+- uma duplicação inteira de outro ficheiro;
+- três modelos praticamente vazios.
+
+A pergunta "quantos termos estão atrasados?" não tinha resposta sem abrir os nove ficheiros e conferir à mão.
+
+## A decisão
+
+A parte que separa este projecto de um importador comum é a normalização de estado.
+
+Os ficheiros traziam a situação em texto livre, cada área com o seu vocabulário. Modelei um conjunto fechado de seis situações e um esquema em quatro tabelas, a separar o termo das suas contrapartidas e das metas por área. Sem isso, "atrasado" seria uma palavra e não um filtro.
+
+A decisão que mais importa, porém, é outra: **cada registo guarda o ficheiro de onde veio.**
+
+Migração de dados legados é sempre contestada. Alguém abre o painel, vê um número que não bate certo com a memória que tinha, e a conversa passa a ser uma disputa sobre a fiabilidade do sistema. Com o campo de origem preservado, a resposta deixa de ser uma defesa do ETL e passa a ser um caminho: este registo veio daquele ficheiro, daquele separador, daquela linha. Confirme lá.
+
+E houve o que deliberadamente não normalizei. Campos que não cabiam em tipo forte ficaram texto livre de propósito — um prazo escrito como "dez meses a partir da assinatura" não passa a data sem inventar uma. Forçar tipo sobre dados sujos perde informação; normalizar apenas o que precisa de agregação é a escolha certa numa migração legada.
+
+## O resultado
+
+Nove folhas de cálculo incompatíveis passaram a um painel único, com filtro global e detalhe por termo. A pergunta que exigia consolidar ficheiros à mão passou a ser um filtro no ecrã — e cada número continua a ter morada de origem.

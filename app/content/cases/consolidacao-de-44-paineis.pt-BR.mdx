@@ -1,0 +1,55 @@
+---
+title: Consolidar 44 painéis sem migrar um único banco
+answer: Quarenta e quatro painéis independentes, cada um com endereço e senha próprios, viraram um hub único com login institucional — sem mover nenhum banco de dados. A migração foi scriptada e permaneceu reversível, porque os dados vivem na plataforma por identificador e mover o código não os toca.
+translationKey: central
+status: rascunho
+updated: "2026-08-01"
+org: Fundação Beta
+role: Desenvolvedor full stack
+period: "2026"
+stack:
+  - Next.js
+  - TypeScript
+  - Cloudflare Workers
+  - D1
+  - Supabase
+outcome: Um login institucional em vez de senha compartilhada por painel, e um deploy em vez de dezenas.
+order: 1
+proof:
+  value: "44"
+  label: painéis consolidados em um hub
+---
+
+## O problema
+
+Cada painel de gestão da prefeitura tinha nascido como uma aplicação independente. Endereço próprio, deploy próprio, e o próprio portão de senha compartilhada na entrada.
+
+Para o gestor, isso era um punhado de links soltos e senhas diferentes — e senha compartilhada por painel significa que ninguém sabe quem viu o quê. Para quem mantinha, era uma configuração de autenticação e um deploy por aplicação, multiplicados por dezenas.
+
+O catálogo tinha 146 entradas, e 44 painéis precisavam virar um lugar só.
+
+## A decisão
+
+A leitura óbvia de "consolidar 44 aplicações" é migrar 44 bancos de dados para um só. É a leitura que cria janela de indisponibilidade, exige plano de rollback e coloca dado de produção em risco.
+
+Não migrei nenhum.
+
+Na plataforma onde esses painéis rodam, o banco é endereçado por identificador, não por localização. A aplicação consolidada recebeu um vínculo por painel, apontando para o mesmo banco de origem, e o código passou a acessar o vínculo específico em vez do genérico. Consolidação virou uma operação puramente de código — reversível, sem tocar em nenhum dado.
+
+A segunda metade da decisão foi não fazer as migrações à mão. Escrevi um script que move rotas, API e código de cada painel, reescreve os imports e o acesso ao banco, e gera o layout aninhado. Os casos fora do padrão — aplicações com estrutura diferente ou com CRUD complexo — foram tratados individualmente.
+
+Quarenta e quatro migrações manuais produzem quarenta e quatro divergências sutis. Scriptar produz um resultado uniforme e, de quebra, um registro do que foi feito.
+
+## O que isso evitou
+
+Uma janela de manutenção com 44 bancos em movimento, e o risco que vem junto: migração parcial, rollback pela metade, dado perdido em silêncio. Nada disso chegou a existir como possibilidade, porque a operação nunca tocou nos dados.
+
+## A decisão de não consolidar tudo
+
+Um painel ficou deliberadamente de fora: o de indicadores públicos, aberto ao cidadão. A aplicação consolidada inteira está atrás de login institucional, e migrá-lo teria tirado o acesso de quem mais importa ali.
+
+Painel público e painel de gestão têm requisitos de acesso opostos. Forçar os dois na mesma moldura quebra um dos dois — normalmente o público, que não tem quem reclame internamente.
+
+## O resultado
+
+Um login institucional em vez de uma senha compartilhada por painel. Um deploy em vez de dezenas. E um catálogo navegável por categoria e por secretaria, no lugar de uma lista de endereços que circulava por mensagem.

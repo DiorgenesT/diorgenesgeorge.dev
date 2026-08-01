@@ -1,0 +1,43 @@
+---
+title: When exporting Word instead of PDF is the right call
+answer: The three documents Brazilian procurement law requires before any public purchase were written in isolated text files by each department, with no traceability and no standard. They now start inside a system, with an audit trail and automatic generation of the final document.
+translationKey: contrataplan
+status: rascunho
+updated: "2026-08-01"
+org: Fundação Beta
+role: Full stack developer
+period: "2026"
+stack:
+  - Next.js
+  - TypeScript
+  - Cloudflare Workers
+  - D1
+outcome: A document required by law moved out of loose files on department machines and gained an audit trail.
+order: 2
+---
+
+## The problem
+
+Brazilian procurement law requires three documents before any public purchase: the formal statement of demand, the preliminary technical study, and the terms of reference. Together they define what the administration is going to buy, and why.
+
+Each department produced all three in a word processor, on the machine of whoever was writing. No traceability, no standard, and no visibility for leadership. Two departments buying the same thing had no way of knowing. And when someone left the role, the history left with them.
+
+## The decision
+
+The decision that carries this project is counterintuitive: **the system exports an editable document, not a PDF.**
+
+PDF is the technical standard. It is immutable, it is universal, it is what any developer would pick without a second thought — and that is exactly why the right answer here is the other one.
+
+Inside a city government, a document does not end when it is generated. It physically travels between departments, and along the way a public employee needs to adjust wording, add a justification, sign the printout. An immutable format would not stall one step: it would stall the entire approval circuit, and the organization's predictable response would be to abandon the system and go back to the word processor.
+
+Choosing the technically worse format because it is what the human process supports is the kind of decision that only shows up for people who have shipped software inside an organization. People who have only published an app never had to ask what happens to the file after the download.
+
+The second decision was isolation: one database per application rather than one shared across systems. The reason is blast radius — a bad migration on another dashboard must not be able to reach procurement documents.
+
+## What that avoided
+
+The most common ending for public software that fits the process badly: adoption in month one, abandonment by month three, and the department back to loose files — now with the added damage that nobody trusts the next tool either.
+
+## The result
+
+The three documents start inside the system, with a central record of the procurement and structured content behind it. Leadership can see purchase planning in progress, not just the published outcome. And the document still travels between departments the way the organization knows how to work.

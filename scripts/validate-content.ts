@@ -19,6 +19,31 @@ const SCHEMAS = {
 export type ValidationError = { file: string; message: string };
 
 /**
+ * O conteúdo descreve sistemas internos de uma prefeitura. Estes termos nunca podem
+ * chegar ao HTML publicado — o build falha antes, em vez de depender de revisão humana.
+ */
+const FORBIDDEN = [
+  /[REDIGIDO]/i,
+  /[REDIGIDO]/i,
+  /[REDIGIDO]/i,
+  /\bOracle\b/i,
+  /workers\.dev/i,
+  /database_id/i,
+  /GOOGLE_SA_/i,
+  /SYNC_SECRET/i,
+  /spreadsheetId/i,
+  /GeoServer/i,
+  /@betim\.mg\.gov\.br/i,
+];
+
+export function forbiddenTerms(body: string): string[] {
+  return FORBIDDEN.flatMap((pattern) => {
+    const found = pattern.exec(body);
+    return found ? [found[0]] : [];
+  });
+}
+
+/**
  * A borda deste sistema é o build: o frontmatter é validado aqui, uma vez, e o
  * registro do browser confia no que passou. É o que mantém o Zod fora do bundle.
  */
@@ -40,7 +65,16 @@ export function validateContent(): ValidationError[] {
         continue;
       }
 
-      const { data } = matter(readFileSync(file, "utf8"));
+      const source = readFileSync(file, "utf8");
+
+      for (const term of forbiddenTerms(source)) {
+        errors.push({
+          file,
+          message: `termo que nunca pode ser publicado: "${term}"`,
+        });
+      }
+
+      const { data } = matter(source);
       const result = schema.safeParse(data);
       if (!result.success) {
         for (const issue of result.error.issues) {

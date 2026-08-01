@@ -1,0 +1,55 @@
+---
+title: Consolidating 44 dashboards without migrating a database
+answer: Forty-four independent dashboards, each with its own address and password, became a single hub behind institutional login — without moving a single database. The migration was scripted and stayed reversible, because the data lives on the platform by identifier and moving the code never touches it.
+translationKey: central
+status: rascunho
+updated: "2026-08-01"
+org: Fundação Beta
+role: Full stack developer
+period: "2026"
+stack:
+  - Next.js
+  - TypeScript
+  - Cloudflare Workers
+  - D1
+  - Supabase
+outcome: One institutional login instead of a shared password per dashboard, and one deploy instead of dozens.
+order: 1
+proof:
+  value: "44"
+  label: dashboards consolidated into one hub
+---
+
+## The problem
+
+Every management dashboard in the city government had been born as an independent application. Its own address, its own deploy, and its own shared-password gate at the door.
+
+For the manager, that meant a handful of loose links and different passwords — and a shared password per dashboard means nobody knows who saw what. For whoever maintained them, it meant one auth configuration and one deploy per application, multiplied by dozens.
+
+The catalog held 146 entries, and 44 dashboards had to become a single place.
+
+## The decision
+
+The obvious reading of "consolidate 44 applications" is to migrate 44 databases into one. That reading is what creates a maintenance window, demands a rollback plan, and puts production data at risk.
+
+I migrated none of them.
+
+On the platform these dashboards run on, a database is addressed by identifier, not by location. The consolidated application got one binding per dashboard, pointing at the very same database, and the code switched from the generic accessor to the specific one. Consolidation became a purely code-level operation — reversible, without touching any data.
+
+The other half of the decision was not doing those migrations by hand. I wrote a script that moves each dashboard's routes, API and code, rewrites its imports and its database access, and generates the nested layout. The cases outside the pattern — applications with a different structure, or with complex CRUD — were handled individually.
+
+Forty-four manual migrations produce forty-four subtle divergences. Scripting produces a uniform result and, as a bonus, a record of what was done.
+
+## What that avoided
+
+A maintenance window with 44 databases in motion, and the risk that comes with it: a partial migration, a half-finished rollback, data lost quietly. None of it ever became possible, because the operation never touched the data.
+
+## The decision not to consolidate everything
+
+One dashboard was deliberately left out: the public indicators one, open to citizens. The consolidated application sits entirely behind institutional login, and migrating it would have taken access away from the people who matter most there.
+
+A public dashboard and a management dashboard have opposite access requirements. Forcing both into the same frame breaks one of them — usually the public one, which has nobody complaining internally.
+
+## The result
+
+One institutional login instead of a shared password per dashboard. One deploy instead of dozens. And a catalog you can browse by category and by department, in place of a list of addresses passed around in messages.

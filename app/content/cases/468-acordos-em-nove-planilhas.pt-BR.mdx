@@ -1,0 +1,51 @@
+---
+title: 468 acordos em nove planilhas incompatíveis
+answer: Cerca de 468 termos de ajuste assinados entre 2020 e 2026 viviam em nove planilhas com formatos incompatíveis, e ninguém conseguia responder quantos estavam atrasados sem abrir os nove arquivos. Viraram um modelo de dados normalizado e auditável, com a origem de cada registro preservada.
+translationKey: instrumentos
+status: rascunho
+updated: "2026-08-01"
+org: Fundação Beta
+role: Desenvolvedor full stack
+period: "2026"
+stack:
+  - TypeScript
+  - Cloudflare Workers
+  - D1
+  - SQL
+outcome: Pergunta que exigia consolidar nove arquivos à mão passou a ser um filtro na tela.
+order: 3
+proof:
+  value: "468"
+  label: acordos migrados de nove planilhas
+---
+
+## O problema
+
+Um termo de ajuste registra o que um empreendimento se comprometeu a entregar ao município como contrapartida — uma obra viária, um equipamento público, uma melhoria de infraestrutura. Quem acompanha precisa saber o que foi acordado e se foi cumprido.
+
+Eram cerca de 468 termos assinados entre 2020 e 2026, espalhados em nove arquivos de planilha, cada secretaria com o seu. E incompatíveis entre si de todas as formas possíveis:
+
+- nomes de coluna inconsistentes entre arquivos;
+- valor financeiro gravado como texto;
+- cabeçalho ocupando quatro linhas antes dos dados começarem;
+- uma planilha com várias linhas por termo, exigindo preencher para baixo o que só aparecia na primeira;
+- uma duplicata inteira de outro arquivo;
+- três modelos praticamente vazios.
+
+A pergunta "quantos termos estão atrasados?" não tinha resposta sem abrir os nove arquivos e conferir à mão.
+
+## A decisão
+
+A parte que separa este projeto de um importador comum é a normalização de status.
+
+Os arquivos traziam situação em texto livre, cada secretaria com o seu vocabulário. Modelei um conjunto fechado de seis situações e um esquema em quatro tabelas, separando o termo das suas contrapartidas e das metas por secretaria. Sem isso, "atrasado" seria uma palavra e não um filtro.
+
+A decisão que mais importa, porém, é outra: **cada registro guarda o arquivo de onde veio.**
+
+Migração de dado legado sempre é contestada. Alguém abre o painel, vê um número que não bate com a lembrança que tinha, e a conversa vira uma disputa sobre a confiabilidade do sistema. Com o campo de origem preservado, a resposta deixa de ser uma defesa do ETL e passa a ser um caminho: este registro veio daquele arquivo, daquela aba, daquela linha. Confere lá.
+
+E teve o que eu deliberadamente não normalizei. Campos que não cabiam em tipo forte ficaram texto livre de propósito — um prazo escrito como "dez meses a partir da assinatura" não vira data sem inventar uma. Forçar tipo em cima de dado sujo perde informação; normalizar só o que precisa de agregação é a escolha certa em migração legada.
+
+## O resultado
+
+Nove planilhas incompatíveis viraram um painel único, com filtro global e detalhamento por termo. A pergunta que exigia consolidar arquivos à mão passou a ser um filtro na tela — e cada número continua tendo endereço de origem.
