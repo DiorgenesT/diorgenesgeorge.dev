@@ -30,5 +30,15 @@ export function prerenderPaths(): string[] {
     .filter((entry) => entry.kind === "article")
     .flatMap((entry) => entry.tags.map((tag) => tagHref(entry.locale, tag)));
 
-  return [...new Set([...staticPaths, ...documents, ...tags])];
+  // Recursos não terminam em barra: são arquivos, não diretórios de página.
+  const resources = [
+    "/sitemap.xml",
+    "/robots.txt",
+    ...LOCALES.flatMap((locale) => [
+      `${localizedHref("writing", locale)}feed.xml`,
+      `${localizedHref("writing", locale)}feed.json`,
+    ]),
+  ];
+
+  return [...new Set([...staticPaths, ...documents, ...tags, ...resources])];
 }

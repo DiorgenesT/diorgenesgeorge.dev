@@ -12,11 +12,23 @@ import {
   TAG_SEGMENT,
 } from "./i18n/config";
 
-export default LOCALES.flatMap((locale) => {
+const resources: RouteConfig = [
+  route("sitemap.xml", "routes/resources/sitemap.ts", { id: "sitemap" }),
+  route("robots.txt", "routes/resources/robots.ts", { id: "robots" }),
+];
+
+const localized = LOCALES.flatMap((locale) => {
   const segment = LOCALE_SEGMENTS[locale];
   const writing = ROUTE_PATHS.writing[locale];
 
   return prefix(segment, [
+    // Fora do layout: feed não tem interface.
+    route(`${writing}/feed.xml`, "routes/resources/feed-rss.ts", {
+      id: `feed-rss-${segment}`,
+    }),
+    route(`${writing}/feed.json`, "routes/resources/feed-json.ts", {
+      id: `feed-json-${segment}`,
+    }),
     layout("layouts/site.tsx", { id: `site-${segment}` }, [
       index("routes/home.tsx", { id: `home-${segment}` }),
       route(ROUTE_PATHS.about[locale], "routes/about.tsx", {
@@ -50,4 +62,6 @@ export default LOCALES.flatMap((locale) => {
       route("*", "routes/not-found.tsx", { id: `splat-${segment}` }),
     ]),
   ]);
-}) satisfies RouteConfig;
+});
+
+export default [...resources, ...localized] satisfies RouteConfig;

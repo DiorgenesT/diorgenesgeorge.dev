@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsx scripts/validate-content.ts && react-router build && tsx scripts/build-404.ts && tsx scripts/build-headers.ts",
+    "build": "tsx scripts/validate-content.ts && react-router build && tsx scripts/build-404.ts && tsx scripts/build-markdown.ts && tsx scripts/build-headers.ts",
     "dev": "react-router dev",
     "typecheck": "wrangler types && react-router typegen && tsc -b",
     "lint": "eslint .",

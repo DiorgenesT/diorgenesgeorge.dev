@@ -37,7 +37,8 @@ describe("prerenderPaths", () => {
 
   it("should cover every static route in every locale", () => {
     const staticPaths = prerenderPaths().filter(
-      (path) => path.split("/").filter(Boolean).length <= 2,
+      (path) =>
+        !path.includes(".") && path.split("/").filter(Boolean).length <= 2,
     );
 
     expect(staticPaths).toHaveLength(
@@ -57,8 +58,23 @@ describe("prerenderPaths", () => {
     expect(prerenderPaths()).not.toContain("/");
   });
 
-  it("should end every path with a trailing slash", () => {
-    expect(prerenderPaths().every((path) => path.endsWith("/"))).toBe(true);
+  it("should end every page path with a trailing slash", () => {
+    const pages = prerenderPaths().filter((path) => !path.includes("."));
+
+    expect(pages.every((path) => path.endsWith("/"))).toBe(true);
+  });
+
+  it("should include the sitemap and the robots file", () => {
+    const paths = prerenderPaths();
+
+    expect(paths).toContain("/sitemap.xml");
+    expect(paths).toContain("/robots.txt");
+  });
+
+  it("should include one feed pair per locale", () => {
+    const feeds = prerenderPaths().filter((path) => path.includes("feed."));
+
+    expect(feeds).toHaveLength(LOCALES.length * 2);
   });
 
   it("should not contain duplicates", () => {
