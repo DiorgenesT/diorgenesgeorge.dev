@@ -1,0 +1,27 @@
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+
+# React Router
+.react-router/
+
+# Cloudflare
+.wrangler/
+.mf
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+worker-configuration.d.ts
+
+# Ambiente
+.env
+.env.*
+!.env.example
+
+# Ferramentas locais
+CLAUDE.md
+.superpowers/
+playwright-report/
+test-results/
+.DS_Store
