@@ -1,13 +1,28 @@
 import { Link, Outlet } from "react-router";
 import { LocaleSwitcher } from "../components/locale-switcher";
 import { ThemeToggle } from "../components/theme-toggle";
-import { localizedHref } from "../i18n/config";
+import { listArticles, listCases } from "../content/registry";
+import { localizedHref, type RouteKey } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
 import { useLocale } from "../i18n/use-locale";
 
 export default function SiteLayout() {
   const locale = useLocale();
   const t = getDictionary(locale);
+
+  // Um índice vazio não entra no menu: link que leva a lugar nenhum é pior que menu curto.
+  const links: { key: RouteKey; label: string }[] = [
+    { key: "about", label: t["nav.about"] },
+    ...(listCases(locale).length > 0
+      ? [{ key: "work" as const, label: t["nav.work"] }]
+      : []),
+    ...(listArticles(locale).length > 0
+      ? [{ key: "writing" as const, label: t["nav.writing"] }]
+      : []),
+    { key: "services", label: t["nav.services"] },
+    { key: "cv", label: t["nav.cv"] },
+    { key: "contact", label: t["nav.contact"] },
+  ];
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-fg">
@@ -21,7 +36,7 @@ export default function SiteLayout() {
       <header className="border-b border-hairline">
         <nav
           aria-label={t["nav.home"]}
-          className="mx-auto flex max-w-5xl items-center gap-6 px-6 py-4"
+          className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-3 px-6 py-4"
         >
           <Link
             to={localizedHref("home", locale)}
@@ -29,13 +44,18 @@ export default function SiteLayout() {
           >
             DG
           </Link>
-          <Link
-            to={localizedHref("colophon", locale)}
-            className="text-sm text-fg-muted hover:text-fg"
-          >
-            {t["nav.colophon"]}
-          </Link>
-          <div className="ml-auto flex items-center gap-3">
+
+          {links.map(({ key, label }) => (
+            <Link
+              key={key}
+              to={localizedHref(key, locale)}
+              className="text-sm text-fg-muted hover:text-fg"
+            >
+              {label}
+            </Link>
+          ))}
+
+          <div className="ms-auto flex items-center gap-3">
             <LocaleSwitcher />
             <ThemeToggle />
           </div>
@@ -47,8 +67,14 @@ export default function SiteLayout() {
       </div>
 
       <footer className="border-t border-hairline">
-        <div className="mx-auto max-w-5xl px-6 py-8 font-mono text-xs uppercase tracking-widest text-fg-subtle">
-          {t["footer.builtWith"]}
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-8 font-mono text-xs uppercase tracking-widest text-fg-subtle">
+          <span>{t["footer.builtWith"]}</span>
+          <Link
+            to={localizedHref("colophon", locale)}
+            className="ms-auto hover:text-fg"
+          >
+            {t["nav.colophon"]}
+          </Link>
         </div>
       </footer>
     </div>
