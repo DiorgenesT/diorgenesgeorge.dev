@@ -30,3 +30,25 @@ describe("switchLocalePath", () => {
     expect(switchLocalePath("/pt-br/colofao", "pt-BR")).toBe("/pt-br/colofao/");
   });
 });
+
+describe("switchLocalePath com documentos", () => {
+  it("should translate a fixed route to the european portuguese spelling", () => {
+    expect(switchLocalePath("/en/contact/", "pt-PT")).toBe("/pt-pt/contacto/");
+  });
+
+  it("should fall back to the locale home when a case has no translation", () => {
+    expect(switchLocalePath("/pt-br/trabalho/inexistente/", "en-US")).toBe(
+      "/en/",
+    );
+  });
+
+  it("should fall back to the locale home when an article has no translation", () => {
+    expect(switchLocalePath("/pt-br/escritos/inexistente/", "en-US")).toBe(
+      "/en/",
+    );
+  });
+
+  it("should not confuse a tag archive with an article", () => {
+    expect(switchLocalePath("/pt-br/escritos/tag/dados/", "en-US")).toBe("/en/");
+  });
+});

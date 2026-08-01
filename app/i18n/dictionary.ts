@@ -5,7 +5,19 @@ import { ptPT } from "./messages/pt-PT";
 
 export type Dictionary = {
   "nav.home": string;
+  "nav.about": string;
+  "nav.work": string;
+  "nav.writing": string;
+  "nav.services": string;
+  "nav.cv": string;
+  "nav.contact": string;
   "nav.colophon": string;
+  "meta.about.title": string;
+  "meta.cv.title": string;
+  "meta.services.title": string;
+  "meta.contact.title": string;
+  "meta.work.title": string;
+  "meta.writing.title": string;
   "a11y.skipToContent": string;
   "theme.toggle": string;
   "theme.dark": string;

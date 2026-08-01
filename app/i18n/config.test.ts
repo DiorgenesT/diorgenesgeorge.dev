@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   LOCALES,
   LOCALE_SEGMENTS,
+  ROUTE_PATHS,
   SEGMENT_TO_LOCALE,
+  documentHref,
   localizedHref,
+  tagHref,
 } from "./config";
 
 describe("configuração de locales", () => {
@@ -43,5 +46,47 @@ describe("localizedHref", () => {
 
   it("should use the portuguese slug for the colophon in pt-PT", () => {
     expect(localizedHref("colophon", "pt-PT")).toBe("/pt-pt/colofao/");
+  });
+});
+
+describe("documentHref", () => {
+  it("should build a case url under the localized work segment", () => {
+    expect(documentHref("work", "pt-BR", "central")).toBe(
+      "/pt-br/trabalho/central/",
+    );
+  });
+
+  it("should build an article url in english", () => {
+    expect(documentHref("writing", "en-US", "word-not-pdf")).toBe(
+      "/en/writing/word-not-pdf/",
+    );
+  });
+});
+
+describe("tagHref", () => {
+  it("should use the portuguese segment in pt-PT", () => {
+    expect(tagHref("pt-PT", "cloudflare")).toBe(
+      "/pt-pt/escritos/etiqueta/cloudflare/",
+    );
+  });
+
+  it("should use tag in pt-BR, which is the word people search", () => {
+    expect(tagHref("pt-BR", "dados")).toBe("/pt-br/escritos/tag/dados/");
+  });
+});
+
+describe("ROUTE_PATHS", () => {
+  it("should give every route a slug in every locale", () => {
+    const missing = Object.entries(ROUTE_PATHS).flatMap(([key, byLocale]) =>
+      LOCALES.filter((locale) => byLocale[locale] === undefined).map(
+        (locale) => `${key}:${locale}`,
+      ),
+    );
+
+    expect(missing).toEqual([]);
+  });
+
+  it("should use the european portuguese spelling for contact", () => {
+    expect(ROUTE_PATHS.contact["pt-PT"]).toBe("contacto");
   });
 });

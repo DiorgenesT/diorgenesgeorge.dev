@@ -21,13 +21,35 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   "en-US": "English",
 };
 
-export type RouteKey = "home" | "colophon" | "notFound";
+export type RouteKey =
+  | "home"
+  | "about"
+  | "cv"
+  | "services"
+  | "work"
+  | "writing"
+  | "contact"
+  | "colophon"
+  | "notFound";
 
 /** Slug por rota e por idioma. String vazia significa a raiz do idioma. */
 export const ROUTE_PATHS: Record<RouteKey, Record<Locale, string>> = {
   home: { "pt-BR": "", "pt-PT": "", "en-US": "" },
+  about: { "pt-BR": "sobre", "pt-PT": "sobre", "en-US": "about" },
+  cv: { "pt-BR": "cv", "pt-PT": "cv", "en-US": "cv" },
+  services: { "pt-BR": "servicos", "pt-PT": "servicos", "en-US": "services" },
+  work: { "pt-BR": "trabalho", "pt-PT": "trabalho", "en-US": "work" },
+  writing: { "pt-BR": "escritos", "pt-PT": "escritos", "en-US": "writing" },
+  contact: { "pt-BR": "contato", "pt-PT": "contacto", "en-US": "contact" },
   colophon: { "pt-BR": "colofao", "pt-PT": "colofao", "en-US": "colophon" },
   notFound: { "pt-BR": "404", "pt-PT": "404", "en-US": "404" },
+};
+
+/** Segmento de arquivo por tag, dentro da rota de escritos. */
+export const TAG_SEGMENT: Record<Locale, string> = {
+  "pt-BR": "tag",
+  "pt-PT": "etiqueta",
+  "en-US": "tag",
 };
 
 /**
@@ -38,4 +60,17 @@ export function localizedHref(routeKey: RouteKey, locale: Locale): string {
   const segment = LOCALE_SEGMENTS[locale];
   const slug = ROUTE_PATHS[routeKey][locale];
   return slug === "" ? `/${segment}/` : `/${segment}/${slug}/`;
+}
+
+/** URL de um documento sob o índice que o contém. O slug já vem localizado do arquivo. */
+export function documentHref(
+  parent: "work" | "writing",
+  locale: Locale,
+  slug: string,
+): string {
+  return `${localizedHref(parent, locale)}${slug}/`;
+}
+
+export function tagHref(locale: Locale, tag: string): string {
+  return `${localizedHref("writing", locale)}${TAG_SEGMENT[locale]}/${tag}/`;
 }

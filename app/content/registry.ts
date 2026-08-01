@@ -102,6 +102,18 @@ export function listArticlesByTag(
   return listArticles(locale).filter((doc) => doc.frontmatter.tags.includes(tag));
 }
 
+/** Traduções de um documento a partir do par idioma e slug, que é o que uma URL entrega. */
+export function documentTranslations(
+  kind: "case" | "article",
+  locale: Locale,
+  slug: string,
+): Partial<Record<Locale, string>> {
+  const source = kind === "case" ? cases : articles;
+  const doc = source.find((d) => d.locale === locale && d.slug === slug);
+
+  return doc ? translationsOf(kind, doc.frontmatter.translationKey) : {};
+}
+
 /** Locale → slug das traduções publicadas do mesmo documento. É a origem do hreflang. */
 export function translationsOf(
   kind: "case" | "article" | "page",
