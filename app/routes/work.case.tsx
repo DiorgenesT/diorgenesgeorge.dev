@@ -1,4 +1,6 @@
 import { useParams } from "react-router";
+import { DocumentHeader } from "../components/document-header";
+import { Prose } from "../components/prose";
 import { getCase } from "../content/registry";
 import { useLocale } from "../i18n/use-locale";
 
@@ -13,10 +15,18 @@ export default function WorkCase() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-24">
-      <h1 className="font-sans text-4xl font-bold tracking-tight">
-        {frontmatter.title}
-      </h1>
-      <Content />
+      <DocumentHeader
+        title={frontmatter.title}
+        answer={frontmatter.answer}
+        meta={[frontmatter.org, frontmatter.role, frontmatter.period]}
+      />
+      <Prose>
+        <Content />
+      </Prose>
+
+      <p className="mt-14 font-mono text-xs uppercase tracking-widest text-fg-subtle">
+        {frontmatter.stack.join(" · ")}
+      </p>
     </main>
   );
 }

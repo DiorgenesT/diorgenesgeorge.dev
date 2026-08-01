@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import matter from "gray-matter";
 import type { Locale } from "../app/i18n/config";
-import { parseFileName } from "../app/content/schema";
+import { parseFileName } from "../app/content/file-name";
 
 export type ManifestEntry = {
   kind: "case" | "article";

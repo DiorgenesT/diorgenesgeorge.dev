@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { articleSchema, caseSchema, parseFileName } from "./schema";
+import { articleSchema, caseSchema } from "../app/content/schema";
+import { parseFileName } from "../app/content/file-name";
+import { validateContent } from "./validate-content";
 
 const validCase = {
   title: "Consolidar 44 painéis sem migrar um banco",
@@ -16,6 +18,12 @@ const validCase = {
     "Um login em vez de uma senha compartilhada por painel, e um deploy em vez de dezenas.",
   order: 1,
 };
+
+describe("validateContent", () => {
+  it("should report no error for the content in the repository", () => {
+    expect(validateContent()).toEqual([]);
+  });
+});
 
 describe("caseSchema", () => {
   it("should accept a complete case frontmatter", () => {

@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { LOCALES, type Locale } from "../i18n/config";
+
+/**
+ * Este módulo só é carregado em tempo de build: o Zod compila validadores com
+ * `new Function`, que a CSP estrita do site bloqueia no browser. O frontmatter é
+ * estático, então validá-lo no build basta — e o bundle do cliente fica sem o Zod.
+ */
 
 /** Documento em rascunho não é pré-renderizado, não entra no sitemap e não é linkado. */
 export const STATUSES = ["rascunho", "publicado"] as const;
@@ -38,17 +43,3 @@ export const articleSchema = baseSchema.extend({
 export type PageFrontmatter = z.infer<typeof pageSchema>;
 export type CaseFrontmatter = z.infer<typeof caseSchema>;
 export type ArticleFrontmatter = z.infer<typeof articleSchema>;
-
-const FILE_NAME = /\/([a-z0-9-]+)\.([A-Za-z-]+)\.mdx$/;
-
-export function parseFileName(
-  path: string,
-): { slug: string; locale: Locale } | undefined {
-  const match = FILE_NAME.exec(path);
-  if (!match) return undefined;
-
-  const [, slug, locale] = match;
-  if (!LOCALES.includes(locale as Locale)) return undefined;
-
-  return { slug: slug as string, locale: locale as Locale };
-}

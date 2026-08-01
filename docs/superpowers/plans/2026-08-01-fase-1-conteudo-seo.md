@@ -87,6 +87,16 @@ Isso foi confirmado por experimento controlado: build sem externalização hidra
 1. `routeDiscovery` estava em modo `lazy`, buscando `/__manifest` em runtime — que num site inteiramente estático responde 404 em toda página. Fixado em `initial`.
 2. A 404 pré-renderizada como rota nomeada (`not-found-<seg>`) era servida em URLs que casam com o splat (`splat-<seg>`). IDs de rota diferentes entre servidor e cliente quebravam a hidratação da 404. A rota nomeada foi removida: o caminho `/<seg>/404/` é pré-renderizado pelo próprio splat, então servidor e cliente casam a mesma rota.
 
+### Variações de nome — decidido em 2026-08-01, durante a execução
+
+O nome legal é **Diorgenes George Tavares Silva**, e as buscas prováveis incluem "Diorgenes", "Diorgenes Tavares" e "DG".
+
+- **Entra em `alternateName` do JSON-LD `Person`**, junto de `givenName`, `familyName` e `legalName`. É o mecanismo próprio para dizer "estas buscas são a mesma pessoa".
+- **Uma menção natural do nome completo** em `/sobre` e no `/cv`, onde um leitor esperaria encontrá-lo. Nada além disso.
+- **Proibido** repetir variação em título, rodapé ou texto corrido para ganhar busca: é keyword stuffing e hoje derruba qualidade.
+- **"DG" não é alvo de busca.** Duas letras não se disputa. Vale só como monograma, que já está no cabeçalho.
+- Para **recomendação de serviço por IA**, o que decide não é o nome e sim o corpus: "painéis de dados para gestão pública em Minas Gerais" é casável com um pedido; "desenvolvedor full stack" não. Os cases são esse corpus.
+
 ## Estrutura de arquivos
 
 | Arquivo | Responsabilidade |

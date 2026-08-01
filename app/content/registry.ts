@@ -1,13 +1,10 @@
 import type { ComponentType } from "react";
 import type { Locale } from "../i18n/config";
-import {
-  articleSchema,
-  caseSchema,
-  pageSchema,
-  parseFileName,
-  type ArticleFrontmatter,
-  type CaseFrontmatter,
-  type PageFrontmatter,
+import { parseFileName } from "./file-name";
+import type {
+  ArticleFrontmatter,
+  CaseFrontmatter,
+  PageFrontmatter,
 } from "./schema";
 
 type MdxModule = { default: ComponentType; frontmatter?: unknown };
@@ -19,37 +16,32 @@ export type Doc<T> = {
   Content: ComponentType;
 };
 
-function collect<T>(
-  modules: Record<string, MdxModule>,
-  schema: { parse: (input: unknown) => T },
-): Doc<T>[] {
+/**
+ * O frontmatter chega validado: `scripts/validate-content.ts` roda antes do build e
+ * falha se algo estiver fora do schema. Aqui não há Zod de propósito — ele compila
+ * validadores com `new Function`, que a CSP do site bloqueia, e pesa no bundle.
+ */
+function collect<T>(modules: Record<string, MdxModule>): Doc<T>[] {
   return Object.entries(modules).map(([path, module]) => {
     const parsed = parseFileName(path);
     if (!parsed) throw new Error(`nome de arquivo de conteúdo inválido: ${path}`);
 
-    try {
-      return {
-        ...parsed,
-        frontmatter: schema.parse(module.frontmatter),
-        Content: module.default,
-      };
-    } catch (cause) {
-      throw new Error(`frontmatter inválido em ${path}`, { cause });
-    }
+    return {
+      ...parsed,
+      frontmatter: module.frontmatter as T,
+      Content: module.default,
+    };
   });
 }
 
-const pages = collect(
+const pages = collect<PageFrontmatter>(
   import.meta.glob<MdxModule>("./pages/*.mdx", { eager: true }),
-  pageSchema,
 );
-const cases = collect(
+const cases = collect<CaseFrontmatter>(
   import.meta.glob<MdxModule>("./cases/*.mdx", { eager: true }),
-  caseSchema,
 );
-const articles = collect(
+const articles = collect<ArticleFrontmatter>(
   import.meta.glob<MdxModule>("./articles/*.mdx", { eager: true }),
-  articleSchema,
 );
 
 const isPublished = (doc: Doc<{ status: string }>) =>

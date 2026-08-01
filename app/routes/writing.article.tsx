@@ -1,5 +1,9 @@
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
+import { DocumentHeader } from "../components/document-header";
+import { Prose } from "../components/prose";
 import { getArticle } from "../content/registry";
+import { tagHref } from "../i18n/config";
+import { formatDate } from "../i18n/format";
 import { useLocale } from "../i18n/use-locale";
 
 export default function Article() {
@@ -13,10 +17,27 @@ export default function Article() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-24">
-      <h1 className="font-sans text-4xl font-bold tracking-tight">
-        {frontmatter.title}
-      </h1>
-      <Content />
+      <DocumentHeader
+        title={frontmatter.title}
+        answer={frontmatter.answer}
+        meta={[formatDate(locale, frontmatter.published)]}
+      />
+      <Prose>
+        <Content />
+      </Prose>
+
+      <ul className="mt-14 flex flex-wrap gap-3">
+        {frontmatter.tags.map((tag) => (
+          <li key={tag}>
+            <Link
+              to={tagHref(locale, tag)}
+              className="font-mono text-xs uppercase tracking-widest text-accent"
+            >
+              {tag}
+            </Link>
+          </li>
+        ))}
+      </ul>
     </main>
   );
 }
