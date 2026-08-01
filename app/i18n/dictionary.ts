@@ -12,6 +12,8 @@ export type Dictionary = {
   "theme.light": string;
   "locale.label": string;
   "footer.builtWith": string;
+  "meta.home.title": string;
+  "meta.colophon.title": string;
 };
 
 const DICTIONARIES: Record<Locale, Dictionary> = {

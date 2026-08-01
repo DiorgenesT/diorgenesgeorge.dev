@@ -1,0 +1,112 @@
+import { expect, test } from "@playwright/test";
+
+test("should redirect the bare root to the negotiated locale", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/en\/$/);
+});
+
+test("should serve each locale root with the correct lang attribute", async ({
+  page,
+}) => {
+  for (const [path, lang] of [
+    ["/pt-br/", "pt-BR"],
+    ["/pt-pt/", "pt-PT"],
+    ["/en/", "en-US"],
+  ] as const) {
+    await page.goto(path);
+    await expect(page.locator("html")).toHaveAttribute("lang", lang);
+  }
+});
+
+test("should keep the user on the colophon when switching language", async ({
+  page,
+}) => {
+  await page.goto("/pt-br/colofao/");
+  await page.getByRole("combobox").selectOption("en-US");
+  await expect(page).toHaveURL(/\/en\/colophon\/$/);
+});
+
+test.describe("tema", () => {
+  test.use({ colorScheme: "dark" });
+
+  test("should follow a dark system preference on first visit", async ({
+    page,
+  }) => {
+    await page.goto("/en/");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  });
+
+  test("should persist the chosen theme across a reload", async ({ page }) => {
+    await page.goto("/en/");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await page.getByRole("button", { name: "Toggle theme" }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  });
+});
+
+test.describe("tema claro do sistema", () => {
+  test.use({ colorScheme: "light" });
+
+  test("should follow a light system preference on first visit", async ({
+    page,
+  }) => {
+    await page.goto("/en/");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  });
+});
+
+test("should reach the skip link as the first keyboard stop", async ({
+  page,
+}) => {
+  await page.goto("/en/");
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("link", { name: "Skip to content" }),
+  ).toBeFocused();
+});
+
+test("should serve every canonical url without an intermediate redirect", async ({
+  page,
+}) => {
+  for (const path of [
+    "/pt-br/",
+    "/pt-pt/",
+    "/en/",
+    "/pt-br/colofao/",
+    "/pt-pt/colofao/",
+    "/en/colophon/",
+  ]) {
+    const response = await page.goto(path);
+    expect(response?.status(), `status de ${path}`).toBe(200);
+    expect(response?.request().redirectedFrom(), `redirect em ${path}`).toBe(
+      null,
+    );
+  }
+});
+
+test("should not report any content security policy violation", async ({
+  page,
+}) => {
+  const violations: string[] = [];
+  page.on("console", (message) => {
+    if (message.text().includes("Content Security Policy")) {
+      violations.push(message.text());
+    }
+  });
+
+  await page.goto("/en/");
+  const before = await page
+    .locator("html")
+    .getAttribute("data-theme");
+  await page.getByRole("button", { name: "Toggle theme" }).click();
+  await expect(page.locator("html")).not.toHaveAttribute(
+    "data-theme",
+    before ?? "dark",
+  );
+
+  expect(violations).toEqual([]);
+});

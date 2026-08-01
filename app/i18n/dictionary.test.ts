@@ -11,6 +11,8 @@ const REQUIRED_KEYS = [
   "theme.light",
   "locale.label",
   "footer.builtWith",
+  "meta.home.title",
+  "meta.colophon.title",
 ] as const;
 
 describe("getDictionary", () => {

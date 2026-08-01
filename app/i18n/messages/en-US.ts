@@ -9,4 +9,6 @@ export const enUS: Dictionary = {
   "theme.light": "Light",
   "locale.label": "Language",
   "footer.builtWith": "Built on Cloudflare's edge",
+  "meta.home.title": "Diorgenes George — Full Stack Developer",
+  "meta.colophon.title": "Colophon — Diorgenes George",
 };

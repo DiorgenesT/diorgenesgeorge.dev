@@ -9,4 +9,6 @@ export const ptPT: Dictionary = {
   "theme.light": "Claro",
   "locale.label": "Idioma",
   "footer.builtWith": "Construído na periferia da Cloudflare",
+  "meta.home.title": "Diorgenes George — Programador Full Stack",
+  "meta.colophon.title": "Colofão — Diorgenes George",
 };
