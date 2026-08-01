@@ -5,11 +5,17 @@ import type { Locale } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
 import { formatMonth } from "../i18n/format";
 import { localeFromPathname, useLocale } from "../i18n/use-locale";
+import { staticPageMeta } from "../seo/route-meta";
 import type { Route } from "./+types/cv";
 
 export function meta({ location }: Route.MetaArgs) {
   const t = getDictionary(localeFromPathname(location.pathname));
-  return [{ title: t["meta.cv.title"] }];
+  return staticPageMeta(
+    location.pathname,
+    "cv",
+    t["meta.cv.title"],
+    CV[localeFromPathname(location.pathname)].summary,
+  );
 }
 
 /** A duração nunca é armazenada: sai das datas na renderização e nunca envelhece. */

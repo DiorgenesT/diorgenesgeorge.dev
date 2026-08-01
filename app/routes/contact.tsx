@@ -1,11 +1,17 @@
 import { AUTHOR, whatsappHref } from "../config/site";
 import { getDictionary } from "../i18n/dictionary";
 import { localeFromPathname, useLocale } from "../i18n/use-locale";
+import { staticPageMeta } from "../seo/route-meta";
 import type { Route } from "./+types/contact";
 
 export function meta({ location }: Route.MetaArgs) {
   const t = getDictionary(localeFromPathname(location.pathname));
-  return [{ title: t["meta.contact.title"] }];
+  return staticPageMeta(
+    location.pathname,
+    "contact",
+    t["meta.contact.title"],
+    t["meta.contact.description"],
+  );
 }
 
 export default function Contact() {

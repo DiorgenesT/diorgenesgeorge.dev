@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { AnswerBlock } from "../components/answer-block";
+import { JsonLd } from "../components/json-ld";
 import { ProofStrip } from "../components/proof-strip";
 import { AUTHOR } from "../config/site";
 import { listArticles } from "../content/registry";
@@ -7,11 +8,18 @@ import { documentHref, localizedHref, type RouteKey } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
 import { formatDate } from "../i18n/format";
 import { localeFromPathname, useLocale } from "../i18n/use-locale";
+import { personJsonLd, webSiteJsonLd } from "../seo/jsonld";
+import { staticPageMeta } from "../seo/route-meta";
 import type { Route } from "./+types/home";
 
 export function meta({ location }: Route.MetaArgs) {
   const t = getDictionary(localeFromPathname(location.pathname));
-  return [{ title: t["meta.home.title"] }];
+  return staticPageMeta(
+    location.pathname,
+    "home",
+    t["meta.home.title"],
+    t["home.answer"],
+  );
 }
 
 export default function Home() {
@@ -27,6 +35,9 @@ export default function Home() {
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-24">
+      <JsonLd data={personJsonLd(locale)} />
+      <JsonLd data={webSiteJsonLd(locale, localizedHref("home", locale))} />
+
       <h1 className="font-sans text-5xl font-bold tracking-tight text-balance sm:text-6xl">
         {AUTHOR.name}
       </h1>

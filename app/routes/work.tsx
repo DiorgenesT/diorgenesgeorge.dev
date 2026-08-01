@@ -4,11 +4,17 @@ import { listCases } from "../content/registry";
 import { documentHref } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
 import { localeFromPathname, useLocale } from "../i18n/use-locale";
+import { staticPageMeta } from "../seo/route-meta";
 import type { Route } from "./+types/work";
 
 export function meta({ location }: Route.MetaArgs) {
   const t = getDictionary(localeFromPathname(location.pathname));
-  return [{ title: t["meta.work.title"] }];
+  return staticPageMeta(
+    location.pathname,
+    "work",
+    t["meta.work.title"],
+    t["meta.work.description"],
+  );
 }
 
 export default function Work() {

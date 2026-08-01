@@ -1,10 +1,19 @@
 import { Link, useParams } from "react-router";
 import { DocumentHeader } from "../components/document-header";
+import { JsonLd } from "../components/json-ld";
 import { Prose } from "../components/prose";
 import { getArticle } from "../content/registry";
-import { tagHref } from "../i18n/config";
+import { documentHref, localizedHref, tagHref } from "../i18n/config";
+import { getDictionary } from "../i18n/dictionary";
 import { formatDate } from "../i18n/format";
 import { useLocale } from "../i18n/use-locale";
+import { breadcrumbJsonLd, techArticleJsonLd } from "../seo/jsonld";
+import { articleMeta } from "../seo/route-meta";
+import type { Route } from "./+types/writing.article";
+
+export function meta({ location, params }: Route.MetaArgs) {
+  return articleMeta(location.pathname, params.slug);
+}
 
 export default function Article() {
   const locale = useLocale();
@@ -14,9 +23,27 @@ export default function Article() {
   if (!doc) throw new Response("Not Found", { status: 404 });
 
   const { Content, frontmatter } = doc;
+  const t = getDictionary(locale);
+  const path = documentHref("writing", locale, doc.slug);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-24">
+      <JsonLd
+        data={techArticleJsonLd({
+          locale,
+          path,
+          title: frontmatter.title,
+          description: frontmatter.answer,
+          published: frontmatter.published,
+          updated: frontmatter.updated,
+        })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: t["nav.writing"], path: localizedHref("writing", locale) },
+          { name: frontmatter.title, path },
+        ])}
+      />
       <DocumentHeader
         title={frontmatter.title}
         answer={frontmatter.answer}

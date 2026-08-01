@@ -1,13 +1,12 @@
 import { DocumentHeader } from "../components/document-header";
 import { Prose } from "../components/prose";
 import { getPage } from "../content/registry";
-import { getDictionary } from "../i18n/dictionary";
-import { localeFromPathname, useLocale } from "../i18n/use-locale";
+import { useLocale } from "../i18n/use-locale";
+import { prosePageMeta } from "../seo/route-meta";
 import type { Route } from "./+types/colophon";
 
 export function meta({ location }: Route.MetaArgs) {
-  const t = getDictionary(localeFromPathname(location.pathname));
-  return [{ title: t["meta.colophon.title"] }];
+  return prosePageMeta(location.pathname, "colophon", "colophon");
 }
 
 export default function Colophon() {

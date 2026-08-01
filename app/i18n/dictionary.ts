@@ -18,6 +18,9 @@ export type Dictionary = {
   "meta.contact.title": string;
   "meta.work.title": string;
   "meta.writing.title": string;
+  "meta.work.description": string;
+  "meta.writing.description": string;
+  "meta.contact.description": string;
   "home.taglineLead": string;
   "home.taglineAccent": string;
   "home.answer": string;

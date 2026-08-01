@@ -4,11 +4,17 @@ import { documentHref, tagHref } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
 import { formatDate } from "../i18n/format";
 import { localeFromPathname, useLocale } from "../i18n/use-locale";
+import { staticPageMeta } from "../seo/route-meta";
 import type { Route } from "./+types/writing";
 
 export function meta({ location }: Route.MetaArgs) {
   const t = getDictionary(localeFromPathname(location.pathname));
-  return [{ title: t["meta.writing.title"] }];
+  return staticPageMeta(
+    location.pathname,
+    "writing",
+    t["meta.writing.title"],
+    t["meta.writing.description"],
+  );
 }
 
 export default function Writing() {

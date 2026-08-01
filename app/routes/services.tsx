@@ -1,13 +1,15 @@
 import { DocumentHeader } from "../components/document-header";
+import { JsonLd } from "../components/json-ld";
 import { Prose } from "../components/prose";
 import { getPage } from "../content/registry";
-import { getDictionary } from "../i18n/dictionary";
-import { localeFromPathname, useLocale } from "../i18n/use-locale";
+import { useLocale } from "../i18n/use-locale";
+import { localizedHref } from "../i18n/config";
+import { serviceJsonLd } from "../seo/jsonld";
+import { prosePageMeta } from "../seo/route-meta";
 import type { Route } from "./+types/services";
 
 export function meta({ location }: Route.MetaArgs) {
-  const t = getDictionary(localeFromPathname(location.pathname));
-  return [{ title: t["meta.services.title"] }];
+  return prosePageMeta(location.pathname, "services", "services");
 }
 
 export default function Services() {
@@ -19,6 +21,13 @@ export default function Services() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-24">
+      <JsonLd
+        data={serviceJsonLd(
+          locale,
+          localizedHref("services", locale),
+          frontmatter.answer,
+        )}
+      />
       <DocumentHeader title={frontmatter.title} answer={frontmatter.answer} />
       <Prose>
         <Content />
