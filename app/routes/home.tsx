@@ -1,8 +1,7 @@
 import { Link } from "react-router";
-import { AnswerBlock } from "../components/answer-block";
 import { JsonLd } from "../components/json-ld";
+import { Hero } from "../hero/hero";
 import { ProofStrip } from "../components/proof-strip";
-import { AUTHOR } from "../config/site";
 import { listArticleIndex } from "../content/index";
 import { documentHref, localizedHref, type RouteKey } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
@@ -38,16 +37,7 @@ export default function Home() {
       <JsonLd data={personJsonLd(locale)} />
       <JsonLd data={webSiteJsonLd(locale, localizedHref("home", locale))} />
 
-      <h1 className="font-sans text-5xl font-bold tracking-tight text-balance sm:text-6xl">
-        {AUTHOR.name}
-      </h1>
-
-      <p className="mt-6 max-w-2xl text-2xl leading-snug text-fg-muted text-balance">
-        {t["home.taglineLead"]}{" "}
-        <em className="font-serif italic text-fg">{t["home.taglineAccent"]}</em>
-      </p>
-
-      <AnswerBlock>{t["home.answer"]}</AnswerBlock>
+      <Hero />
 
       <ProofStrip locale={locale} />
 
