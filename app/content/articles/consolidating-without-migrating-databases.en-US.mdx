@@ -1,0 +1,68 @@
+---
+title: "I consolidated 44 applications without migrating a database"
+answer: "When the platform addresses a database by identifier rather than by location, consolidating applications is a code problem, not a data problem. Treating it as a data problem is what creates the maintenance window, the rollback plan and the risk of loss — three things that never had to exist."
+translationKey: consolidar-sem-migrar
+status: rascunho
+updated: "2026-08-01"
+published: "2026-08-01"
+tags:
+  - arquitetura
+  - cloudflare
+  - migracao
+---
+
+## The setup
+
+You inherit dozens of applications that were born separately. Each with its own address, its own deploy, and its own password gate at the door. Each with its own database.
+
+Individually, none of them is a problem. Together they are: users get a list of links and different passwords; maintainers get one auth configuration and one pipeline per application. And nobody can answer who accessed what, because a shared password does not identify a person.
+
+The task is obvious: put everything in one place, behind a real login.
+
+## The trap
+
+"Consolidate 44 applications" is almost always read as "consolidate 44 databases".
+
+And with that, the project changes nature. You now need a schema map, a strategy for table name collisions, an idempotent migration script, a maintenance window, a rollback plan, and the nerve to press the button. Every one of those is a chance to lose production data.
+
+The detail worth noticing is that **nobody asked for it.** The request was one login and one address. Merging databases came in through the back door, as an assumed consequence of a single word — "consolidate".
+
+## What the platform already solved
+
+On modern edge platforms, a database is not a file on a server: it is a resource with a stable identifier. The application declares a binding to it, and the binding points at the identifier — not at a machine, not at a path.
+
+That changes the whole problem. If data is addressed by identifier, moving the code somewhere else does not move the data. And if it does not move, there is nothing to migrate.
+
+The consolidated application got one binding per dashboard, each pointing at the database that already existed. As each dashboard's code moved, it swapped the generic database accessor for its specific binding. That was it.
+
+The result is that consolidation became a purely code-level operation: reviewable in a diff, testable beforehand, and **reversible** — if something went wrong, you simply did not deploy. Not a byte of production data was ever in motion.
+
+## Why script it instead of doing it by hand
+
+Forty-four manual migrations produce forty-four slightly different results. Not because anyone is careless, but because human attention degrades by the tenth repetition, and nobody remembers on the thirtieth which convention they used on the third.
+
+I wrote a script that performs the standard move: it relocates routes, API and code, rewrites imports and database access, and generates the nested layout. Running the same script forty-four times produces forty-four structurally identical results.
+
+What the script **did not** do mattered just as much: applications outside the pattern — different directory structure, complex CRUD, their own dependencies — were handled by hand, on purpose. Generalizing the script to cover rare cases would have produced a fragile script nobody understands, in exchange for a few hours.
+
+And there is a side effect I did not anticipate and now value: the script is the documentation of the migration. Six months later, "what exactly changed in each dashboard?" has a readable answer, and the answer is the script itself.
+
+## What was deliberately left out
+
+One dashboard did not move: the public one, open to citizens.
+
+The consolidated application sits entirely behind institutional login. Migrating the public dashboard into it would technically have worked — and would have removed access from precisely the people it exists to serve.
+
+The principle is worth naming, because it comes back in every consolidation project: **architectural uniformity is not a value in itself.** A public dashboard and an internal one have opposite access requirements. Forcing both into the same frame breaks one of them, and it usually breaks the public one — which has nobody complaining in the status meeting.
+
+## What I would do differently
+
+One thing: I would have written the script before migrating the first dashboard by hand, not after the third. I moved a few manually to "understand the pattern", which is reasonable — but I already knew a script was coming, and those first three ended up subtly different from the other forty-one. I had to go back.
+
+You understand the pattern by reading two. The third is already repetition.
+
+## The takeaway
+
+If your platform addresses data by identifier, ask yourself why consolidation would involve moving data at all. Most of the time it does because someone read "consolidate" and thought "merge" — not because the problem required it.
+
+The question that separates the two cases is simple: **after this change, does any byte need to live somewhere different from where it lives today?** If the answer is no, you have a code problem, and code problems do not need a maintenance window.

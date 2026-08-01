@@ -74,7 +74,20 @@ export function validateContent(): ValidationError[] {
         });
       }
 
-      const { data } = matter(source);
+      // YAML quebra em valor não citado que contenha ": ", e o erro cru não diz o arquivo.
+      let data: unknown;
+      try {
+        data = matter(source).data;
+      } catch (cause) {
+        errors.push({
+          file,
+          message: `frontmatter não é YAML válido — valores com dois-pontos precisam de aspas (${
+            cause instanceof Error ? cause.message.split("\n")[0] : cause
+          })`,
+        });
+        continue;
+      }
+
       const result = schema.safeParse(data);
       if (!result.success) {
         for (const issue of result.error.issues) {

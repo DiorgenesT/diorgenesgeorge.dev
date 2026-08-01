@@ -1,0 +1,68 @@
+---
+title: "Consolidei 44 aplicações sem migrar um banco"
+answer: "Quando a plataforma endereça o banco por identificador e não por localização, consolidar aplicações é um problema de código, não de dados. Tratar como problema de dados é o que cria janela de indisponibilidade, plano de rollback e risco de perda — três coisas que não precisavam existir."
+translationKey: consolidar-sem-migrar
+status: rascunho
+updated: "2026-08-01"
+published: "2026-08-01"
+tags:
+  - arquitetura
+  - cloudflare
+  - migracao
+---
+
+## O cenário
+
+Você herda dezenas de aplicações que nasceram separadas. Cada uma com endereço próprio, deploy próprio e o próprio portão de senha na entrada. Cada uma com seu banco.
+
+Individualmente, nenhuma é um problema. Juntas, são: quem usa recebe uma lista de links e senhas diferentes; quem mantém tem uma configuração de autenticação e um pipeline por aplicação. E ninguém consegue responder quem acessou o quê, porque senha compartilhada não identifica pessoa.
+
+A tarefa é óbvia: juntar tudo num lugar só, atrás de um login de verdade.
+
+## A armadilha
+
+"Consolidar 44 aplicações" é lido, quase sempre, como "consolidar 44 bancos".
+
+E aí o projeto muda de natureza. Você precisa de um mapa de esquemas, de uma estratégia para colisão de nome de tabela, de um script de migração idempotente, de uma janela de manutenção, de um plano de rollback, e de coragem para apertar o botão. Cada uma dessas coisas é uma chance de perder dado de produção.
+
+O detalhe é que **ninguém pediu isso.** O pedido era um login só e um endereço só. A fusão dos bancos entrou pela porta dos fundos, como consequência assumida de uma palavra — "consolidar".
+
+## O que a plataforma já resolvia
+
+Nas plataformas de borda modernas, um banco não é um arquivo num servidor: é um recurso com identificador estável. A aplicação declara um vínculo para ele, e o vínculo aponta para o identificador — não para uma máquina, não para um caminho.
+
+Isso muda o problema inteiro. Se o dado é endereçado por identificador, mover o código para outro lugar não move o dado. E se não move, não há o que migrar.
+
+A aplicação consolidada recebeu um vínculo por painel, cada um apontando para o mesmo banco que já existia. O código de cada painel, ao ser movido, trocou o acesso genérico ao banco pelo acesso ao vínculo específico dele. Foi só isso.
+
+O resultado é que a consolidação virou uma operação puramente de código: revisável em diff, testável antes, e **reversível** — se algo desse errado, bastava não publicar. Nenhum byte de produção estava em movimento.
+
+## Por que scriptar, e não fazer à mão
+
+Quarenta e quatro migrações manuais produzem quarenta e quatro resultados ligeiramente diferentes. Não porque alguém seja descuidado, mas porque a atenção humana degrada na décima repetição, e ninguém lembra na trigésima qual convenção usou na terceira.
+
+Escrevi um script que faz o movimento padrão: move rotas, API e código, reescreve os imports e o acesso ao banco, e gera o layout aninhado. Rodar quarenta e quatro vezes o mesmo script produz quarenta e quatro resultados idênticos em estrutura.
+
+O que o script **não** fez foi tão importante quanto: as aplicações fora do padrão — outra estrutura de diretórios, CRUD complexo, dependências próprias — foram tratadas à mão, de propósito. Tentar generalizar o script para cobrir os casos raros teria produzido um script frágil que ninguém entende, para economizar algumas horas.
+
+E tem um efeito colateral que eu não tinha antecipado e passei a valorizar: o script é a documentação da migração. Seis meses depois, "o que exatamente mudou em cada painel?" tem uma resposta legível, que é o próprio script.
+
+## O que ficou deliberadamente de fora
+
+Um painel não entrou: o público, aberto ao cidadão.
+
+A aplicação consolidada está inteiramente atrás de login institucional. Migrar o painel público para dentro dela teria, tecnicamente, funcionado — e teria tirado o acesso exatamente de quem ele existe para atender.
+
+Vale explicitar o princípio, porque ele reaparece em todo projeto de consolidação: **uniformidade de arquitetura não é um valor em si.** Painel público e painel interno têm requisitos de acesso opostos. Forçar os dois na mesma moldura quebra um dos dois, e normalmente quebra o público — que não tem quem reclame na reunião de status.
+
+## O que eu faria diferente
+
+Uma coisa: teria escrito o script antes de migrar o primeiro painel à mão, e não depois do terceiro. Migrei alguns manualmente para "entender o padrão", o que é razoável — mas eu já sabia que faria script, e os três primeiros ficaram sutilmente diferentes dos outros quarenta e um. Tive que voltar.
+
+O padrão você entende lendo dois. O terceiro já é repetição.
+
+## O que fica
+
+Se a sua plataforma endereça dados por identificador, pergunte-se por que a consolidação envolveria mover dados. Na maior parte das vezes, envolve porque alguém leu "consolidar" e pensou "fundir" — e não porque o problema exigia.
+
+A pergunta que separa os dois casos é simples: **depois da mudança, algum byte precisa estar num lugar diferente de onde está hoje?** Se a resposta é não, você tem um problema de código, e problema de código não precisa de janela de manutenção.
