@@ -18,7 +18,13 @@ export const AUTHOR = {
   github: "https://github.com/DiorgenesT",
   linkedin: "https://www.linkedin.com/in/diorgenesgeorge",
   instagram: "https://www.instagram.com/diorgenestavares/",
+  whatsapp: "5531991519864",
 } as const;
+
+/** wa.me com mensagem pronta: quem chega já abre a conversa com contexto. */
+export function whatsappHref(greeting: string): string {
+  return `https://wa.me/${AUTHOR.whatsapp}?text=${encodeURIComponent(greeting)}`;
+}
 
 /** sameAs do JSON-LD: perfis que confirmam a mesma entidade para buscador e IA. */
 export const SAME_AS: readonly string[] = [

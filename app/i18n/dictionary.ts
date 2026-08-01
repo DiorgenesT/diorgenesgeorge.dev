@@ -18,6 +18,14 @@ export type Dictionary = {
   "meta.contact.title": string;
   "meta.work.title": string;
   "meta.writing.title": string;
+  "contact.heading": string;
+  "contact.intro": string;
+  "contact.whatsapp": string;
+  "contact.whatsappGreeting": string;
+  "cv.experience": string;
+  "cv.education": string;
+  "cv.skills": string;
+  "cv.current": string;
   "a11y.skipToContent": string;
   "theme.toggle": string;
   "theme.dark": string;
