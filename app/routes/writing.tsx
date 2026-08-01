@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { listArticles, listTags } from "../content/registry";
+import { listArticleIndex, listTagIndex } from "../content/index";
 import { documentHref, tagHref } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
 import { formatDate } from "../i18n/format";
@@ -20,8 +20,8 @@ export function meta({ location }: Route.MetaArgs) {
 export default function Writing() {
   const locale = useLocale();
   const t = getDictionary(locale);
-  const articles = listArticles(locale);
-  const tags = listTags(locale);
+  const articles = listArticleIndex(locale);
+  const tags = listTagIndex(locale);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-24">

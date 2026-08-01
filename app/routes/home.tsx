@@ -3,7 +3,7 @@ import { AnswerBlock } from "../components/answer-block";
 import { JsonLd } from "../components/json-ld";
 import { ProofStrip } from "../components/proof-strip";
 import { AUTHOR } from "../config/site";
-import { listArticles } from "../content/registry";
+import { listArticleIndex } from "../content/index";
 import { documentHref, localizedHref, type RouteKey } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
 import { formatDate } from "../i18n/format";
@@ -25,7 +25,7 @@ export function meta({ location }: Route.MetaArgs) {
 export default function Home() {
   const locale = useLocale();
   const t = getDictionary(locale);
-  const latest = listArticles(locale).slice(0, 3);
+  const latest = listArticleIndex(locale).slice(0, 3);
 
   const paths: { key: RouteKey; label: string; hint: string }[] = [
     { key: "cv", label: t["home.pathRecruiter"], hint: t["home.pathRecruiterHint"] },

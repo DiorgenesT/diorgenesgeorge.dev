@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { AUTHOR } from "../config/site";
-import { listCases } from "../content/registry";
+import { listCaseIndex } from "../content/index";
 import { documentHref } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
 import { localeFromPathname, useLocale } from "../i18n/use-locale";
@@ -20,7 +20,7 @@ export function meta({ location }: Route.MetaArgs) {
 export default function Work() {
   const locale = useLocale();
   const t = getDictionary(locale);
-  const cases = listCases(locale);
+  const cases = listCaseIndex(locale);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-24">

@@ -1,4 +1,8 @@
-import { getArticle, getCase, getPage } from "../content/registry";
+import {
+  findArticleIndex,
+  findCaseIndex,
+  pageIndex,
+} from "../content/index";
 import { documentHref, localizedHref, type RouteKey } from "../i18n/config";
 import { localeFromPathname } from "../i18n/use-locale";
 import { buildMeta } from "./meta";
@@ -12,7 +16,7 @@ import {
 /** Página cujo texto vive em MDX: título e descrição saem do frontmatter, nunca duplicados. */
 export function prosePageMeta(pathname: string, key: RouteKey, pageKey: string) {
   const locale = localeFromPathname(pathname);
-  const page = getPage(locale, pageKey);
+  const page = pageIndex(locale, pageKey);
   if (!page) throw new Error(`página ${pageKey} ausente no idioma ${locale}`);
 
   return buildMeta({
@@ -43,7 +47,7 @@ export function staticPageMeta(
 
 export function caseMeta(pathname: string, slug: string | undefined) {
   const locale = localeFromPathname(pathname);
-  const doc = slug ? getCase(locale, slug) : undefined;
+  const doc = slug ? findCaseIndex(locale, slug) : undefined;
   if (!doc) return [{ title: "404" }, { name: "robots", content: "noindex" }];
 
   return buildMeta({
@@ -58,7 +62,7 @@ export function caseMeta(pathname: string, slug: string | undefined) {
 
 export function articleMeta(pathname: string, slug: string | undefined) {
   const locale = localeFromPathname(pathname);
-  const doc = slug ? getArticle(locale, slug) : undefined;
+  const doc = slug ? findArticleIndex(locale, slug) : undefined;
   if (!doc) return [{ title: "404" }, { name: "robots", content: "noindex" }];
 
   return buildMeta({

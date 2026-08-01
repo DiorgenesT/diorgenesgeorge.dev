@@ -1,4 +1,4 @@
-import { documentTranslations } from "../content/registry";
+import { documentTranslationSlugs } from "../content/index";
 import {
   ROUTE_PATHS,
   SEGMENT_TO_LOCALE,
@@ -36,7 +36,7 @@ function documentPath(
   const slug = parsed.slug.slice(prefix.length);
   if (slug === "" || slug.includes("/")) return null;
 
-  const translated = documentTranslations(kind, parsed.locale, slug)[target];
+  const translated = documentTranslationSlugs(kind, parsed.locale, slug)[target];
   return translated ? documentHref(parent, target, translated) : null;
 }
 

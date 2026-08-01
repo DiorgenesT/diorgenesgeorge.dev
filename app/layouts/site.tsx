@@ -1,7 +1,7 @@
 import { Link, Outlet } from "react-router";
 import { LocaleSwitcher } from "../components/locale-switcher";
 import { ThemeToggle } from "../components/theme-toggle";
-import { listArticles, listCases } from "../content/registry";
+import { listArticleIndex, listCaseIndex } from "../content/index";
 import { localizedHref, type RouteKey } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
 import { useLocale } from "../i18n/use-locale";
@@ -13,10 +13,10 @@ export default function SiteLayout() {
   // Um índice vazio não entra no menu: link que leva a lugar nenhum é pior que menu curto.
   const links: { key: RouteKey; label: string }[] = [
     { key: "about", label: t["nav.about"] },
-    ...(listCases(locale).length > 0
+    ...(listCaseIndex(locale).length > 0
       ? [{ key: "work" as const, label: t["nav.work"] }]
       : []),
-    ...(listArticles(locale).length > 0
+    ...(listArticleIndex(locale).length > 0
       ? [{ key: "writing" as const, label: t["nav.writing"] }]
       : []),
     { key: "services", label: t["nav.services"] },
