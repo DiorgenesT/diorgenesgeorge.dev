@@ -1,0 +1,43 @@
+---
+title: "Quando exportar Word em vez de PDF é a decisão certa"
+answer: "Os três documentos que a lei de contratação pública exige antes de qualquer compra eram produzidos em ficheiros de texto isolados por cada área, sem rastreabilidade nem normalização. Passaram a nascer dentro de um sistema, com trilho de auditoria e geração automática do documento final."
+translationKey: contrataplan
+status: rascunho
+updated: "2026-08-01"
+org: Fundação Beta
+role: Programador full stack
+period: "2026"
+stack:
+  - Next.js
+  - TypeScript
+  - Cloudflare Workers
+  - D1
+outcome: "Documento obrigatório por lei saiu do ficheiro solto em cada área e ganhou trilho de auditoria."
+order: 2
+---
+
+## O problema
+
+A lei brasileira de contratação pública exige três documentos antes de qualquer aquisição: a formalização da necessidade, o estudo técnico preliminar e o caderno de encargos. São eles que definem o que a administração vai comprar e porquê.
+
+Cada área produzia os três em processador de texto, no computador de quem escrevia. Sem rastreabilidade, sem normalização e sem visibilidade para a gestão. Duas áreas a comprar a mesma coisa não tinham como saber. E quando alguém saía do cargo, o histórico saía com ele.
+
+## A decisão
+
+A decisão que carrega este projecto é contra-intuitiva: **o sistema exporta documento em formato editável, não PDF.**
+
+PDF é o padrão técnico. É imutável, é universal, é o que qualquer programador escolheria sem pensar duas vezes — e é exactamente por isso que a escolha certa aqui é a outra.
+
+Na administração, o documento não termina quando é gerado. Percorre fisicamente os serviços, e pelo caminho um funcionário precisa de ajustar uma redacção, incluir uma justificação, assinar o impresso. Um formato imutável não travaria só uma etapa: travaria o circuito inteiro de aprovação, e a resposta previsível da organização seria abandonar o sistema e voltar ao processador de texto.
+
+Escolher o formato pior tecnicamente porque é o que o processo humano suporta é o tipo de decisão que só aparece a quem entregou software dentro de uma organização. Quem apenas publicou aplicação nunca precisou de perguntar o que acontece ao ficheiro depois da transferência.
+
+A segunda decisão foi de isolamento: uma base por aplicação, em vez de uma base partilhada entre os sistemas. O motivo é raio de dano — uma migração mal feita noutro painel não pode alcançar os documentos de contratação.
+
+## O que isto evitou
+
+O desfecho mais comum de sistema público mal ajustado ao processo: adopção no primeiro mês, abandono no terceiro, e a área de volta ao ficheiro solto — agora com a diferença de que ninguém confia na ferramenta seguinte.
+
+## O resultado
+
+Os três documentos nascem dentro do sistema, com um registo central da contratação e o conteúdo estruturado por trás. A gestão passou a ver o planeamento de compra em curso, e não apenas o resultado publicado. E o documento continua a percorrer os serviços da maneira que a organização sabe fazer.

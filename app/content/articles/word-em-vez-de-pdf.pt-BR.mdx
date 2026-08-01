@@ -1,0 +1,70 @@
+---
+title: "Quando o formato tecnicamente pior é a decisão certa"
+answer: "Escolhi exportar documento em Word em vez de PDF num sistema público, sabendo que PDF é o padrão técnico. O motivo é que o documento continua percorrendo as secretarias em papel, e um formato imutável não travaria uma etapa: travaria o circuito inteiro de aprovação."
+translationKey: formato-que-o-processo-suporta
+status: rascunho
+updated: "2026-08-01"
+published: "2026-08-01"
+tags:
+  - produto
+  - setor-publico
+---
+
+## A decisão, logo de cara
+
+Um sistema de planejamento de contratação pública gera três documentos exigidos por lei. Eu fiz o sistema exportar **Word**, não PDF.
+
+Se você trabalha com software, algo em você reagiu a essa frase. PDF é imutável, é universal, preserva formatação, não depende de suíte de escritório, e é o que qualquer desenvolvedor escolheria em cinco segundos. Eu concordo com tudo isso.
+
+E ainda assim, PDF teria matado o sistema.
+
+## Por que PDF é quase sempre a escolha certa
+
+Vale reconhecer a força do argumento antes de contrariá-lo.
+
+Um documento que precisa ser arquivado, auditado ou publicado quer ser imutável. Se qualquer pessoa pode abrir e alterar, o arquivo deixa de ser prova de qualquer coisa. Em contratação pública, onde o documento define o que o poder público vai comprar, essa propriedade parece essencial.
+
+É por isso que PDF é o padrão. Não é moda: é a resposta certa para "este artefato precisa ser confiável no futuro".
+
+## O processo que o software não controla
+
+O que muda tudo é o que acontece com o documento **depois** que ele é gerado.
+
+Numa prefeitura, ele não termina no download. Ele percorre fisicamente as secretarias. No caminho, um servidor precisa ajustar uma redação que ficou ambígua, incluir uma justificativa que o setor jurídico pediu, corrigir um dado que mudou desde a semana passada, e assinar o impresso.
+
+Esse circuito não foi desenhado por ninguém do time de tecnologia, não está documentado em lugar nenhum, e não vai mudar porque um sistema novo entrou no ar.
+
+Com PDF, cada uma dessas etapas vira um atrito. E o atrito não se distribui: ele se acumula no ponto mais fraco, que é a pessoa que precisa entregar o processo até sexta.
+
+## O desfecho previsível
+
+Aqui está a parte que quem nunca entregou software dentro de uma organização costuma não ver: **quando o sistema atrapalha o processo, não é o processo que muda.**
+
+A secretaria não vai reformar o circuito de aprovação porque a ferramenta nova prefere PDF. Ela vai gerar o PDF, abrir um editor ao lado, redigitar o conteúdo, e seguir a vida. Em um mês, o sistema virou uma etapa extra. Em três, alguém pergunta por que estão pagando por ele.
+
+E o dano não para aí. O próximo sistema que a equipe de tecnologia propuser vai encontrar uma organização que já aprendeu que sistema atrapalha. Confiança se gasta uma vez e demora a voltar.
+
+## O que a escolha "pior" comprou
+
+Exportando Word, o documento nasce dentro do sistema — padronizado, com trilha de auditoria, com registro de quem criou e quando — e continua fluindo do jeito que a organização sabe fazer.
+
+Repare no que se ganhou: **rastreabilidade da origem**, que é o que realmente faltava. O problema nunca foi o documento ser editável; era ninguém saber que ele existia, quem escreveu e a partir de qual demanda. Isso o sistema resolve, e resolve sem exigir que ninguém mude de comportamento.
+
+A imutabilidade, que o PDF traria, era uma propriedade desejável. A adoção era uma propriedade necessária. Quando as duas colidem, a necessária ganha.
+
+## Como generalizar sem virar desculpa
+
+Este raciocínio é perigoso, porque justifica qualquer coisa se aplicado com preguiça. "O usuário está acostumado" já defendeu muita interface ruim.
+
+A distinção que eu uso é esta: **o processo humano é uma restrição do sistema, e não uma preferência dos usuários.**
+
+- Se o comportamento existe porque a ferramenta antiga era ruim, mude o comportamento. É migração, e vale a fricção.
+- Se o comportamento existe porque uma lei, uma auditoria ou um circuito físico exige, é restrição. Projete para ela, mesmo que doa tecnicamente.
+
+Assinatura em papel numa secretaria não é preferência de usuário: é o processo real de aprovação, com base legal, envolvendo pessoas que não respondem ao time de produto.
+
+## O que fica
+
+Software dentro de uma organização não é avaliado pela pureza das suas escolhas. É avaliado por atravessar o processo que já existe sem quebrá-lo.
+
+A pergunta que eu passei a fazer antes de definir formato, integração ou fluxo de aprovação é sempre a mesma: **o que acontece com este artefato depois que ele sai do meu sistema?** Se eu não sei responder, ainda não entendi o problema — e a decisão tecnicamente elegante que eu tomar tem grande chance de ser a errada.

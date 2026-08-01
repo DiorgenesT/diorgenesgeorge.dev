@@ -1,0 +1,64 @@
+---
+title: "Número sem dono não entra em painel de gestão"
+answer: "Dado errado para um gestor público é pior do que ausência de dado, porque a decisão vira ficção com aparência de dado. Todo indicador exibido precisa de origem rastreável e de alguém responsável por atualizá-lo — e quando não tem, a resposta certa é não exibir."
+translationKey: numero-sem-dono
+status: rascunho
+updated: "2026-08-01"
+published: "2026-08-01"
+tags:
+  - dados
+  - governanca
+---
+
+## A frase que virou regra
+
+Escrevi isto no repositório de um dos sistemas que mantenho, e passei a aplicar em todos: **dado errado para um gestor público é pior do que ausência de dado.**
+
+Parece dramático até você acompanhar a cadeia. Um painel exibe um indicador. Alguém decide com base nele — onde alocar equipe, qual bairro priorizar, qual contrato renovar. Se o número estava errado, a decisão não foi ruim por falta de informação: foi ruim *com confiança*, porque quem decidiu achava que estava olhando para a realidade.
+
+Painel nenhum teria produzido uma pergunta. Painel errado produziu uma certeza.
+
+## O sintoma: o número que ninguém sabe de onde vem
+
+O padrão aparece sempre igual. Você abre um painel e vê um cartão com um número grande. Pergunta de onde ele vem.
+
+As respostas ruins são conhecidas: "veio da planilha da secretaria" (qual?), "o sistema calcula" (a partir do quê?), "estava assim quando eu peguei" (a mais honesta).
+
+E tem a pior de todas, que é o número *hardcoded* — colocado ali como exemplo durante o desenvolvimento, aprovado numa demonstração, e nunca substituído. Ele não está errado por acidente de cálculo: ele nunca teve relação com a realidade. E é indistinguível dos outros na tela.
+
+## Duas perguntas que resolvem
+
+Antes de qualquer indicador entrar num painel que eu construo, ele precisa responder duas coisas:
+
+1. **Qual é a origem?** Não "a secretaria", mas o artefato: qual arquivo, qual tabela, qual endpoint, qual linha.
+2. **Quem atualiza, e de quanto em quanto tempo?** Um indicador sem dono não é atualizado; é abandonado. E indicador abandonado continua na tela parecendo atual.
+
+Se as duas respostas não existem, o indicador não entra. Não é rigor por gosto: é que exibir um número sem essas respostas transfere para quem lê uma confiança que ninguém pode sustentar.
+
+## A origem como campo, não como documentação
+
+Numa migração que fiz, cerca de 468 acordos vinham de nove planilhas incompatíveis, cada secretaria com a sua. A tentação é normalizar tudo, gerar o painel bonito e escrever num README de onde os dados vieram.
+
+Fiz diferente: **cada registro guarda o arquivo de origem como campo do próprio dado.**
+
+A diferença aparece no primeiro conflito. Alguém abre o painel, vê um número que não bate com a lembrança que tinha, e a conversa começa. Sem o campo, você está defendendo o ETL — argumentando que o seu código está certo contra a memória de outra pessoa, e ninguém ganha essa discussão. Com o campo, você não defende nada: aponta. Este registro veio daquele arquivo, daquela linha. Vamos olhar juntos.
+
+Em três meses de operação, isso muda a política do sistema. O painel deixa de ser "o que a tecnologia diz" e vira "o que os dados de vocês dizem, organizados".
+
+## Quando planilha é a interface certa
+
+Uma consequência que incomoda desenvolvedor: às vezes o jeito certo de resolver a origem é **planilha**.
+
+Num painel executivo, os indicadores estavam hardcoded e precisavam de dono. A saída óbvia seria construir um CRUD — telas de cadastro, validação, permissão, auditoria. Levaria semanas e exigiria que cada secretaria aprendesse um sistema novo para digitar doze números por ano.
+
+Em vez disso, gerei planilhas estruturadas, uma por área, com as células certas, metas e comparação com o ano anterior por fórmula. A secretaria mantém o que já sabe manter, e cada célula tem um dono identificável.
+
+O critério que uso: **quando o dado muda algumas vezes por ano, tem um responsável claro e não precisa de validação complexa, planilha é a interface certa.** Construir CRUD para isso é resolver o problema do desenvolvedor, não o do usuário.
+
+Mas atenção ao limite, que é onde muita gente erra: o que é **calculado** não se digita. Projeção, índice composto, correlação — essas páginas continuam sendo derivadas, porque digitar resultado de cálculo é criar uma segunda fonte da verdade que vai divergir da primeira em algum momento, sem avisar.
+
+## O que fica
+
+Um painel de gestão é uma promessa: o que está aqui é verdade suficiente para você decidir. Cada número sem origem é um pequeno furo nessa promessa, e furos não ficam isolados — quando um indicador se mostra errado, o gestor passa a duvidar da tela inteira, inclusive das partes corretas.
+
+Por isso a resposta certa para "não temos essa informação confiável ainda" nunca é preencher com estimativa. É deixar o espaço vazio, com uma frase dizendo o que falta. Um painel com quatro números confiáveis vale mais que um com doze, dos quais três são chute.

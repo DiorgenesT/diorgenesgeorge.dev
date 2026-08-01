@@ -1,0 +1,43 @@
+---
+title: "Quando exportar Word em vez de PDF é a decisão certa"
+answer: "Os três documentos que a lei de licitações exige antes de qualquer compra pública eram produzidos em arquivos de texto isolados por cada secretaria, sem rastreabilidade nem padronização. Passaram a nascer dentro de um sistema, com trilha de auditoria e geração automática do documento final."
+translationKey: contrataplan
+status: rascunho
+updated: "2026-08-01"
+org: Fundação Beta
+role: Desenvolvedor full stack
+period: "2026"
+stack:
+  - Next.js
+  - TypeScript
+  - Cloudflare Workers
+  - D1
+outcome: "Documento obrigatório por lei saiu do arquivo solto em cada secretaria e ganhou trilha de auditoria."
+order: 2
+---
+
+## O problema
+
+A Lei 14.133/2021 exige três documentos antes de qualquer contratação pública: a formalização da demanda, o estudo técnico preliminar e o termo de referência. São eles que definem o que a administração vai comprar e por quê.
+
+Cada secretaria produzia os três em editor de texto, no computador de quem escrevia. Sem rastreabilidade, sem padronização e sem visibilidade para a gestão. Duas secretarias comprando a mesma coisa não tinham como saber. E quando alguém saía do cargo, o histórico saía junto.
+
+## A decisão
+
+A decisão que carrega este projeto é contraintuitiva: **o sistema exporta documento em formato editável, não PDF.**
+
+PDF é o padrão técnico. É imutável, é universal, é o que qualquer desenvolvedor escolheria sem pensar duas vezes — e é exatamente por isso que a escolha certa aqui é a outra.
+
+Na prefeitura, o documento não termina quando é gerado. Ele percorre fisicamente as secretarias, e no caminho um servidor precisa ajustar uma redação, incluir uma justificativa, assinar o impresso. Um formato imutável não travaria só uma etapa: travaria o circuito inteiro de aprovação, e a resposta previsível da organização seria abandonar o sistema e voltar ao editor de texto.
+
+Escolher o formato pior tecnicamente porque é o que o processo humano suporta é o tipo de decisão que só aparece para quem entregou software dentro de uma organização. Quem só publicou aplicativo nunca precisou perguntar o que acontece com o arquivo depois do download.
+
+A segunda decisão foi de isolamento: um banco por aplicação, em vez de um banco compartilhado entre os sistemas. O motivo é raio de dano — uma migração mal feita em outro painel não pode alcançar os documentos de licitação.
+
+## O que isso evitou
+
+O desfecho mais comum de sistema público mal ajustado ao processo: adoção no primeiro mês, abandono no terceiro, e a secretaria de volta ao arquivo solto — agora com a diferença de que ninguém confia mais na próxima ferramenta.
+
+## O resultado
+
+Os três documentos nascem dentro do sistema, com um registro central da contratação e o conteúdo estruturado por trás. A gestão passou a enxergar o planejamento de compra em andamento, não só o resultado publicado. E o documento continua percorrendo as secretarias do jeito que a organização sabe fazer.

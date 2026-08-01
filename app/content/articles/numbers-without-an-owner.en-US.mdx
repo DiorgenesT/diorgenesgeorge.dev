@@ -1,0 +1,64 @@
+---
+title: "A number without an owner does not belong on a dashboard"
+answer: "Wrong data for a public official is worse than no data, because the decision becomes fiction wearing the appearance of data. Every indicator on display needs a traceable origin and someone responsible for updating it — and when it has neither, the right answer is not to display it."
+translationKey: numero-sem-dono
+status: rascunho
+updated: "2026-08-01"
+published: "2026-08-01"
+tags:
+  - dados
+  - governanca
+---
+
+## The sentence that became a rule
+
+I wrote this in the repository of one of the systems I maintain, and now apply it to all of them: **wrong data for a public official is worse than no data.**
+
+It sounds dramatic until you follow the chain. A dashboard displays an indicator. Someone decides based on it — where to allocate staff, which neighborhood to prioritize, which contract to renew. If the number was wrong, the decision was not bad for lack of information: it was bad *with confidence*, because the person deciding believed they were looking at reality.
+
+No dashboard at all would have produced a question. A wrong dashboard produced a certainty.
+
+## The symptom: the number nobody can source
+
+The pattern always looks the same. You open a dashboard and see a card with a big number. You ask where it comes from.
+
+The bad answers are familiar: "it comes from the department's spreadsheet" (which one?), "the system calculates it" (from what?), "it was like that when I got here" (the most honest one).
+
+And there is the worst of them, the hardcoded number — put there as an example during development, approved in a demo, never replaced. It is not wrong by a calculation accident: it never had any relationship with reality. And on screen it is indistinguishable from the others.
+
+## Two questions that settle it
+
+Before any indicator goes into a dashboard I build, it has to answer two things:
+
+1. **What is the origin?** Not "the department", but the artifact: which file, which table, which endpoint, which row.
+2. **Who updates it, and how often?** An indicator without an owner is not updated; it is abandoned. And an abandoned indicator stays on screen looking current.
+
+If both answers do not exist, the indicator does not go in. This is not rigor for its own sake: displaying a number without those answers transfers to the reader a confidence nobody can back.
+
+## Origin as a field, not as documentation
+
+In one migration, around 468 agreements came from nine incompatible spreadsheets, one per department. The temptation is to normalize everything, ship the nice dashboard, and write down in a README where the data came from.
+
+I did it differently: **every record stores its source file as a field of the data itself.**
+
+The difference shows up at the first conflict. Someone opens the dashboard, sees a number that does not match their memory, and the conversation starts. Without the field, you are defending the ETL — arguing that your code is right against another person's recollection, and nobody wins that argument. With the field, you defend nothing: you point. This record came from that file, that row. Let's look together.
+
+Within three months of operation, that changes the politics of the system. The dashboard stops being "what the technology team says" and becomes "what your own data says, organized".
+
+## When a spreadsheet is the right interface
+
+One consequence developers dislike: sometimes the right way to solve origin is **a spreadsheet**.
+
+On an executive dashboard, the indicators were hardcoded and needed owners. The obvious answer would be to build a CRUD — forms, validation, permissions, audit. It would take weeks and require every department to learn a new system in order to type twelve numbers a year.
+
+Instead, I generated structured spreadsheets, one per area, with the right cells, targets and previous-year comparison by formula. The department maintains what it already knows how to maintain, and every cell has an identifiable owner.
+
+The criterion I use: **when data changes a few times a year, has a clear owner and needs no complex validation, a spreadsheet is the right interface.** Building a CRUD for that solves the developer's problem, not the user's.
+
+But mind the limit, which is where many people get it wrong: what is **computed** is not typed in. Projections, composite indices, correlations — those stay derived, because typing in the result of a calculation creates a second source of truth that will diverge from the first at some point, quietly.
+
+## The takeaway
+
+A management dashboard is a promise: what is here is true enough for you to decide on. Every unsourced number is a small hole in that promise, and holes do not stay local — once one indicator turns out to be wrong, the official starts doubting the whole screen, including the parts that were right.
+
+That is why the correct answer to "we don't have that reliably yet" is never to fill it with an estimate. It is to leave the space empty, with a sentence saying what is missing. A dashboard with four trustworthy numbers is worth more than one with twelve, three of which are guesses.

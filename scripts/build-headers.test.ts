@@ -1,36 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { THEME_INIT_SCRIPT } from "../app/design/theme";
 import {
-  extractInlineScripts,
+  cspLength,
+  executableInlineScripts,
   renderHeadersFile,
   sha256Base64,
 } from "./build-headers";
-
-describe("extractInlineScripts", () => {
-  it("should return the body of an inline script", () => {
-    expect(extractInlineScripts("<script>alert(1)</script>")).toEqual([
-      "alert(1)",
-    ]);
-  });
-
-  it("should ignore scripts loaded from a src attribute", () => {
-    expect(extractInlineScripts('<script src="/a.js"></script>')).toEqual([]);
-  });
-
-  it("should return every inline script on the page", () => {
-    const html = "<script>a()</script><p>x</p><script>b()</script>";
-    expect(extractInlineScripts(html)).toEqual(["a()", "b()"]);
-  });
-
-  it("should handle attributes on the script tag", () => {
-    expect(extractInlineScripts('<script type="module">c()</script>')).toEqual([
-      "c()",
-    ]);
-  });
-
-  it("should return an empty array when there is no script", () => {
-    expect(extractInlineScripts("<p>nada</p>")).toEqual([]);
-  });
-});
 
 describe("sha256Base64", () => {
   it("should produce the known digest for an empty string", () => {
@@ -41,26 +16,66 @@ describe("sha256Base64", () => {
 });
 
 describe("renderHeadersFile", () => {
-  it("should forbid framing on every path", () => {
-    expect(renderHeadersFile([])).toContain("frame-ancestors 'none'");
-  });
-
-  it("should never allow unsafe-inline in script-src", () => {
-    const output = renderHeadersFile(["abc="]);
-    const scriptSrc = output
-      .split(";")
-      .find((part) => part.includes("script-src"));
-    expect(scriptSrc).toBeDefined();
-    expect(scriptSrc).not.toContain("unsafe-inline");
-  });
-
   it("should include every provided hash in script-src", () => {
     const output = renderHeadersFile(["abc=", "def="]);
+
     expect(output).toContain("'sha256-abc='");
     expect(output).toContain("'sha256-def='");
   });
 
+  it("should never allow unsafe-inline in script-src", () => {
+    const scriptSrc = /script-src ([^;]+);/.exec(renderHeadersFile(["abc="]))?.[1] ?? "";
+
+    expect(scriptSrc).not.toContain("unsafe-inline");
+  });
+
+  it("should forbid framing on every path", () => {
+    expect(renderHeadersFile([])).toContain("frame-ancestors 'none'");
+  });
+
   it("should set a long immutable cache policy for hashed assets", () => {
     expect(renderHeadersFile([])).toContain("/assets/*");
+  });
+
+  it("should declare markdown as the content type of the .md twins", () => {
+    expect(renderHeadersFile([])).toContain("text/markdown");
+  });
+});
+
+describe("cspLength", () => {
+  it("should measure only the policy, not the whole file", () => {
+    const headers = renderHeadersFile(["abc="]);
+
+    expect(cspLength(headers)).toBeLessThan(headers.length);
+  });
+});
+
+describe("executableInlineScripts", () => {
+  it("should return the body of an inline script", () => {
+    expect(executableInlineScripts("<script>alert(1)</script>")).toEqual([
+      "alert(1)",
+    ]);
+  });
+
+  it("should ignore a script loaded from a src attribute", () => {
+    expect(executableInlineScripts('<script src="/a.js"></script>')).toEqual([]);
+  });
+
+  it("should ignore a JSON-LD data block, which the browser never executes", () => {
+    const html = `<script type="application/ld+json">{"a":1}</script>`;
+
+    expect(executableInlineScripts(html)).toEqual([]);
+  });
+
+  it("should include a module script", () => {
+    expect(
+      executableInlineScripts('<script type="module">c()</script>'),
+    ).toEqual(["c()"]);
+  });
+
+  it("should include the theme script, which must stay inline to block the first paint", () => {
+    const html = `<script>${THEME_INIT_SCRIPT}</script>`;
+
+    expect(executableInlineScripts(html)).toEqual([THEME_INIT_SCRIPT]);
   });
 });

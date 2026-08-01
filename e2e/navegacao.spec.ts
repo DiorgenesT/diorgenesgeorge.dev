@@ -88,6 +88,33 @@ test("should serve every canonical url without an intermediate redirect", async 
   }
 });
 
+test("should answer an unknown path with the designed 404", async ({ page }) => {
+  const response = await page.goto("/en/does-not-exist/");
+
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "This page does not exist",
+  );
+});
+
+test("should answer the 404 in the language of the path", async ({ page }) => {
+  await page.goto("/pt-br/nao-existe/");
+
+  await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Esta página não existe",
+  );
+});
+
+test("should keep the 404 out of the index", async ({ page }) => {
+  await page.goto("/en/does-not-exist/");
+
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    "noindex",
+  );
+});
+
 test("should not report any content security policy violation", async ({
   page,
 }) => {

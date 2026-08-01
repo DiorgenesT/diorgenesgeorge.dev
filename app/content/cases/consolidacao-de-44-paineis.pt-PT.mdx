@@ -1,0 +1,55 @@
+---
+title: "Consolidar 44 painéis sem migrar uma única base"
+answer: "Quarenta e quatro painéis independentes, cada um com endereço e palavra-passe próprios, passaram a um único hub com autenticação institucional — sem mover qualquer base de dados. A migração foi automatizada e manteve-se reversível, porque os dados vivem na plataforma por identificador e mover o código não lhes toca."
+translationKey: central
+status: rascunho
+updated: "2026-08-01"
+org: Fundação Beta
+role: Programador full stack
+period: "2026"
+stack:
+  - Next.js
+  - TypeScript
+  - Cloudflare Workers
+  - D1
+  - Supabase
+outcome: "Uma autenticação institucional em vez de palavra-passe partilhada por painel, e uma publicação em vez de dezenas."
+order: 1
+proof:
+  value: "44"
+  label: painéis consolidados num hub
+---
+
+## O problema
+
+Cada painel de gestão da administração municipal tinha nascido como aplicação independente. Endereço próprio, publicação própria, e o seu próprio portão de palavra-passe partilhada à entrada.
+
+Para o gestor, isto era um punhado de ligações soltas e palavras-passe diferentes — e palavra-passe partilhada por painel significa que ninguém sabe quem viu o quê. Para quem mantinha, era uma configuração de autenticação e uma publicação por aplicação, multiplicadas por dezenas.
+
+O catálogo tinha 146 entradas, e 44 painéis precisavam de passar a um só sítio.
+
+## A decisão
+
+A leitura óbvia de "consolidar 44 aplicações" é migrar 44 bases de dados para uma só. É a leitura que cria janela de indisponibilidade, exige plano de recuperação e coloca dados de produção em risco.
+
+Não migrei nenhuma.
+
+Na plataforma onde estes painéis correm, a base é endereçada por identificador, não por localização. A aplicação consolidada recebeu uma ligação por painel, a apontar para a mesma base de origem, e o código passou a aceder à ligação específica em vez da genérica. A consolidação passou a ser uma operação puramente de código — reversível, sem tocar em qualquer dado.
+
+A segunda metade da decisão foi não fazer as migrações à mão. Escrevi um script que move rotas, API e código de cada painel, reescreve as importações e o acesso à base, e gera a disposição aninhada. Os casos fora do padrão — aplicações com estrutura diferente ou com CRUD complexo — foram tratados individualmente.
+
+Quarenta e quatro migrações manuais produzem quarenta e quatro divergências subtis. Automatizar produz um resultado uniforme e, já agora, um registo do que foi feito.
+
+## O que isto evitou
+
+Uma janela de manutenção com 44 bases em movimento, e o risco que vem com ela: migração parcial, recuperação a meio, dados perdidos em silêncio. Nada disto chegou a existir como possibilidade, porque a operação nunca tocou nos dados.
+
+## A decisão de não consolidar tudo
+
+Um painel ficou deliberadamente de fora: o de indicadores públicos, aberto ao cidadão. A aplicação consolidada está inteiramente atrás de autenticação institucional, e migrá-lo teria retirado o acesso a quem mais importa ali.
+
+Painel público e painel de gestão têm requisitos de acesso opostos. Forçar os dois na mesma moldura quebra um deles — normalmente o público, que não tem quem reclame internamente.
+
+## O resultado
+
+Uma autenticação institucional em vez de palavra-passe partilhada por painel. Uma publicação em vez de dezenas. E um catálogo navegável por categoria e por área, em lugar de uma lista de endereços que circulava por mensagem.

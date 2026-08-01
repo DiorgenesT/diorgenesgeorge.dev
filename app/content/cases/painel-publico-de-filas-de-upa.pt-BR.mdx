@@ -1,0 +1,45 @@
+---
+title: "Fila de pronto-atendimento pública, em tempo quase real"
+answer: "Para saber qual unidade de pronto-atendimento estava mais cheia, era preciso ir até lá e olhar a fila. Um painel público passou a mostrar espera e classificação de risco das quatro unidades do município, sem que o acesso do cidadão gere carga no sistema assistencial de origem."
+translationKey: upa-agora
+status: rascunho
+updated: "2026-08-01"
+org: Fundação Beta
+role: Desenvolvedor full stack
+period: "2026"
+stack:
+  - React
+  - TypeScript
+  - Cloudflare Workers
+  - KV
+  - Cron Triggers
+outcome: "Informação que só existia dentro da unidade passou a ser consultável antes de sair de casa."
+order: 4
+proof:
+  value: "4"
+  label: unidades com fila pública em tempo quase real
+---
+
+## O problema
+
+Para saber qual unidade de pronto-atendimento estava mais cheia, a pessoa precisava ir até lá e olhar a fila. A informação existia — o sistema de regulação assistencial do município sabia quantas pessoas estavam em cada etapa — mas ficava atrás de um sistema interno, longe de quem ia decidir para onde levar uma criança com febre às onze da noite.
+
+## A decisão
+
+O caminho ingênuo seria consultar a origem a cada visita ao painel. Ele funciona no teste e falha exatamente quando importa: no dia em que o painel é divulgado, ou na noite em que muita gente adoece ao mesmo tempo, o pico de acesso do cidadão vira carga no sistema que os profissionais de saúde estão usando para trabalhar.
+
+**A origem não é consultada por visita.** Uma tarefa agendada a cada quinze minutos busca os dados e grava o resultado no armazenamento de chave-valor da borda. A interface consulta apenas esse armazenamento, a cada trinta segundos.
+
+O efeito é o que importa: mil pessoas abrindo o painel ao mesmo tempo geram zero requisição adicional no sistema assistencial. O custo de leitura passou a ser independente da audiência, e o dado de saúde ao vivo nunca fica a um clique de sobrecarga.
+
+O painel também tem dois caminhos de origem — a API do sistema de regulação, quando as credenciais estão disponíveis, e planilhas publicadas como alternativa. Sem nenhuma das duas, a tela mostra estado vazio em vez de quebrar. Sistema que a população consulta para decidir sobre saúde não pode ter tela branca.
+
+## A decisão que ninguém vê
+
+A segunda escolha é menos glamourosa e igualmente decisiva: **o parser aceita o que o operador digita de verdade.**
+
+Duração de espera chega escrita de todo jeito — com dois pontos, com a palavra "min", com "1h30", ou só o número. O casamento de colunas ignora acento, caixa e espaço extra. Nada disso é elegante, e é a diferença entre um sistema que funciona no papel e um que sobrevive ao preenchimento humano real, feito por alguém no meio de um plantão.
+
+## O resultado
+
+Informação que só existia dentro da unidade passou a ser pública e consultável antes de a pessoa sair de casa. Quem precisa de atendimento escolhe a unidade pela fila, e não só pela proximidade — e quem trabalha na unidade não sente nada disso na carga do sistema.

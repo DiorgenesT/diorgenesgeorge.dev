@@ -19,6 +19,10 @@ worker-configuration.d.ts
 .env.*
 !.env.example
 
+# Insumos de conteúdo: material bruto com detalhe de sistema interno, nunca versionado aqui
+insumos/
+*:Zone.Identifier
+
 # Ferramentas locais
 CLAUDE.md
 .superpowers/
