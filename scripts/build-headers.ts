@@ -1,23 +1,37 @@
 import { createHash } from "node:crypto";
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { CLIENT_DIR, htmlFiles } from "./html-files";
 
-const CLIENT_DIR = "build/client";
+const SCRIPT_TAG = /<script([^>]*)>([\s\S]*?)<\/script>/gi;
 
-const INLINE_SCRIPT = /<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi;
-
-export function extractInlineScripts(html: string): string[] {
-  return [...html.matchAll(INLINE_SCRIPT)]
-    .map((match) => match[1] ?? "")
-    .filter((body) => body.length > 0);
-}
+/**
+ * Orçamento do cabeçalho de CSP, em bytes. Ele cresce com o número de *rotas*, não de
+ * páginas: mil artigos compartilham o mesmo script de módulo da rota de artigo. O valor
+ * é idêntico em toda resposta, então a compressão de cabeçalho do HTTP/2 o envia uma vez
+ * por conexão. Se estourar, alguma rota passou a emitir script inline por página — o que
+ * seria crescimento sem teto, e aí a saída é regra por diretório no _headers.
+ */
+const CSP_BUDGET_BYTES = 4096;
 
 export function sha256Base64(source: string): string {
   return createHash("sha256").update(source, "utf8").digest("base64");
 }
 
+/** Data block (JSON-LD) não é executado pelo browser, então a CSP não o alcança. */
+export function executableInlineScripts(html: string): string[] {
+  return [...html.matchAll(SCRIPT_TAG)]
+    .filter(([, attrs]) => !/\bsrc\s*=/i.test(attrs ?? ""))
+    .filter(([, attrs]) => {
+      const type = /\btype\s*=\s*["']?([^"'\s>]*)/i.exec(attrs ?? "")?.[1];
+      return type === undefined || type === "" || type === "module";
+    })
+    .map(([, , body]) => body ?? "")
+    .filter((body) => body.trim() !== "");
+}
+
 export function renderHeadersFile(hashes: string[]): string {
-  const scriptHashes = hashes.map((h) => `'sha256-${h}'`).join(" ");
+  const scriptHashes = hashes.map((hash) => `'sha256-${hash}'`).join(" ");
   const csp = [
     "default-src 'self'",
     `script-src 'self' ${scriptHashes}`.trim(),
@@ -41,35 +55,42 @@ export function renderHeadersFile(hashes: string[]): string {
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+/*.md
+  Content-Type: text/markdown; charset=utf-8
 `;
 }
 
-async function htmlFiles(dir: string): Promise<string[]> {
-  const entries = await readdir(dir, { withFileTypes: true });
-  const found = await Promise.all(
-    entries.map(async (entry) => {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) return htmlFiles(full);
-      return entry.name.endsWith(".html") ? [full] : [];
-    }),
-  );
-  return found.flat();
+export function cspLength(headers: string): number {
+  return (/Content-Security-Policy: (.*)/.exec(headers)?.[1] ?? "").length;
 }
 
 async function main(): Promise<void> {
-  const files = await htmlFiles(CLIENT_DIR);
+  const files = await htmlFiles();
   const bodies = new Set<string>();
 
   for (const file of files) {
     const html = await readFile(file, "utf8");
-    for (const body of extractInlineScripts(html)) bodies.add(body);
+    for (const body of executableInlineScripts(html)) bodies.add(body);
   }
 
   const hashes = [...bodies].map(sha256Base64).sort();
-  await writeFile(join(CLIENT_DIR, "_headers"), renderHeadersFile(hashes));
+  const headers = renderHeadersFile(hashes);
+  const size = cspLength(headers);
+
+  if (size > CSP_BUDGET_BYTES) {
+    throw new Error(
+      `CSP com ${size} bytes, acima do orçamento de ${CSP_BUDGET_BYTES}. ` +
+        `São ${hashes.length} scripts inline distintos em ${files.length} páginas: ` +
+        `se o número cresce por página e não por rota, o modelo de conteúdo passou a ` +
+        `emitir dado embutido por página e a CSP precisa virar regra por diretório.`,
+    );
+  }
+
+  await writeFile(join(CLIENT_DIR, "_headers"), headers);
 
   console.log(
-    `_headers gerado: ${files.length} páginas, ${hashes.length} scripts inline`,
+    `_headers gerado: ${files.length} páginas, ${hashes.length} hashes, CSP com ${size} de ${CSP_BUDGET_BYTES} bytes`,
   );
 }
 

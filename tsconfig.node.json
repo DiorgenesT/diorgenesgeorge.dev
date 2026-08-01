@@ -7,7 +7,9 @@
     "react-router.config.ts",
     "scripts/**/*",
     "e2e/**/*",
-    "app/i18n/**/*"
+    "app/i18n/**/*",
+    // O pós-build precisa do script de tema para saber qual inline pode sobreviver à CSP.
+    "app/design/theme.ts"
   ],
   "compilerOptions": {
     "composite": true,
