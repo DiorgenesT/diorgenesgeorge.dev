@@ -1,7 +1,18 @@
+@import "@fontsource-variable/instrument-sans/index.css";
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource/instrument-serif/400-italic.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/ibm-plex-mono/600.css";
+
 @import "tailwindcss" source(".");
 @import "./design/tokens.css";
 
 @theme inline {
+  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
   --color-bg: var(--bg);
   --color-bg-raised: var(--bg-raised);
   --color-fg: var(--fg);
@@ -17,6 +28,7 @@
   html {
     background-color: var(--bg);
     color: var(--fg);
+    font-family: var(--font-sans);
   }
 
   :focus-visible {
