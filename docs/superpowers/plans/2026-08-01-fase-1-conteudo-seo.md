@@ -2796,6 +2796,41 @@ Hero 3D e telemetria ao vivo (Fase 2), agente de IA e `/ia` (Fase 3), formulári
 | O alinhamento institucional atrasa os cases | Nada a publicar em `/trabalho` | O case do ODS é inteiramente público e sustenta a rota sozinho. `/trabalho` sai da navegação enquanto estiver vazio |
 | Tempo do Playwright cresce demais com dezenas de rotas | E2E passa de 10 minutos no CI | Dividir por tema em dois projetos, ou rodar axe em nightly. Nunca reduzir a lista de rotas |
 
+## Notas de execução — 2026-08-01
+
+Executado inline, nesta ordem, com commit por task. `npm run check` e `npm run e2e` verdes ao fim de cada uma.
+
+Divergências entre o plano e a realidade:
+
+| Plano assumia | Realidade | Resolução |
+|---|---|---|
+| Externalizar scripts inline resolve a CSP | Quebra a hidratação: o `<Scripts>` é componente React e é renderizado de novo no cliente | Abordagem abandonada. Hash de todo inline, com orçamento de 4 KB verificado no build |
+| 404 como rota nomeada | ID de rota divergia do splat que atende a URL real | Sem rota nomeada: `/<seg>/404/` é pré-renderizado pelo próprio splat |
+| — | `routeDiscovery` em modo `lazy` buscava `/__manifest` em runtime, 404 em toda página | Fixado em `initial` |
+| Zod validando no registro | Zod 4 compila validadores com `new Function`, que a CSP bloqueia | Validação movida para o build (`scripts/validate-content.ts`); o registro do browser confia. Zod saiu do bundle do cliente |
+| Data de frontmatter como `2026-08-01` | Os dois analisadores de YAML convertiam para `Date` | Datas entre aspas; o schema exige string |
+| `manifest.node.ts` dentro de `app/` | `app/` é compilado com tipos de browser, sem `node:fs` | Código de build move para `scripts/`: `content-manifest.ts` e `prerender-paths.ts` |
+| Valor de frontmatter com dois-pontos | Quebra o YAML | Todo `title`, `answer` e `outcome` entre aspas; o validador reporta com o nome do arquivo |
+| `SoftwareSourceCode` por case | Nenhum case tem repositório público | `TechArticle` com `about` apontando para `SoftwareApplication` |
+| `.md` para toda página | Home e índices são navegação, não conteúdo | `.md` para páginas de prosa, cases, artigos e CV. `llms.txt` cumpre o papel de índice |
+| — | O nome legal e as variações de busca chegaram durante a execução | `alternateName`, `legalName`, `givenName` e `familyName` no `Person`; menção única no `/sobre` |
+| `/contato` sem canal direto | O Diorgenes optou por publicar o WhatsApp | `wa.me` com mensagem pronta, decidido com o risco de raspagem explicitado |
+
+### Estado da definição de pronto
+
+Verificado: `npm run check` (203 testes), `npm run e2e` (116 testes), build com a guarda de CSP, 24 páginas HTML nos três idiomas, 404 respondendo 404 no idioma do caminho, `hreflang` recíproco com `x-default`, sitemap com alternates e sem rascunho, robots liberando os cinco crawlers de IA, feed RSS e JSON por idioma, 12 arquivos `.md` servidos como `text/markdown`, `llms.txt` e `llms-full.txt`, axe em todas as rotas nos dois temas, e **zero requisição a domínio externo**.
+
+Pendente, e não é código:
+
+- **Validação externa do JSON-LD** no validador do schema.org e no teste de resultados enriquecidos do Google. A estrutura é verificada por teste, mas a conferência externa depende de rede.
+- **Navegação por teclado à mão**, que não é automatizável de forma honesta.
+- **CI verde**: o repositório ainda não tem remote, então o workflow não roda.
+- **Leitura e aprovação do Diorgenes** dos cinco cases e três artigos, todos em `status: rascunho`. Enquanto isso, `/trabalho` e `/escritos` mostram estado vazio explicado e ficam fora do menu.
+
+### Mudança de critério, registrada
+
+A definição de pronto pedia "CSP com exatamente um hash". Isso vinha da abordagem refutada. O critério real passou a ser **orçamento de 4 KB verificado no build**, hoje em 1938 bytes com 32 hashes, crescendo com rotas e não com páginas.
+
 ## Insumos que ainda dependem do Diorgenes
 
 1. **Aprovação institucional** do que pode ser descrito publicamente sobre os sistemas internos — trava os cases da Central e do ContrataPlan em particular.
