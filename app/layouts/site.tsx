@@ -1,4 +1,6 @@
 import { Link, Outlet } from "react-router";
+import { LocaleSwitcher } from "../components/locale-switcher";
+import { ThemeToggle } from "../components/theme-toggle";
 import { localizedHref } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
 import { useLocale } from "../i18n/use-locale";
@@ -33,7 +35,10 @@ export default function SiteLayout() {
           >
             {t["nav.colophon"]}
           </Link>
-          <div className="ml-auto flex items-center gap-3" />
+          <div className="ml-auto flex items-center gap-3">
+            <LocaleSwitcher />
+            <ThemeToggle />
+          </div>
         </nav>
       </header>
 
