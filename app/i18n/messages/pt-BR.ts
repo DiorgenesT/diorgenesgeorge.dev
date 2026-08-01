@@ -11,4 +11,9 @@ export const ptBR: Dictionary = {
   "footer.builtWith": "Construído na borda da Cloudflare",
   "meta.home.title": "Diorgenes George — Desenvolvedor Full Stack",
   "meta.colophon.title": "Colofão — Diorgenes George",
+  "meta.notFound.title": "Página não encontrada — Diorgenes George",
+  "notFound.heading": "Esta página não existe",
+  "notFound.body":
+    "O endereço pode ter mudado ou o link pode estar quebrado. O caminho de volta está logo abaixo.",
+  "notFound.back": "Ir para a página inicial",
 };

@@ -21,12 +21,13 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   "en-US": "English",
 };
 
-export type RouteKey = "home" | "colophon";
+export type RouteKey = "home" | "colophon" | "notFound";
 
 /** Slug por rota e por idioma. String vazia significa a raiz do idioma. */
 export const ROUTE_PATHS: Record<RouteKey, Record<Locale, string>> = {
   home: { "pt-BR": "", "pt-PT": "", "en-US": "" },
   colophon: { "pt-BR": "colofao", "pt-PT": "colofao", "en-US": "colophon" },
+  notFound: { "pt-BR": "404", "pt-PT": "404", "en-US": "404" },
 };
 
 /**

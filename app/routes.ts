@@ -15,6 +15,9 @@ export default LOCALES.flatMap((locale) => {
       route(ROUTE_PATHS.colophon[locale], "routes/colophon.tsx", {
         id: `colophon-${segment}`,
       }),
+      // Sem rota nomeada para o 404: o caminho pré-renderizado precisa casar com o mesmo
+      // splat que atende qualquer URL desconhecida, ou o id de rota diverge na hidratação.
+      route("*", "routes/not-found.tsx", { id: `splat-${segment}` }),
     ]),
   ]);
 }) satisfies RouteConfig;

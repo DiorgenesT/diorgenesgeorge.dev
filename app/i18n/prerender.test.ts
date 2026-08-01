@@ -1,9 +1,19 @@
 import { describe, expect, it } from "vitest";
+import { LOCALES, ROUTE_PATHS } from "./config";
 import { prerenderPaths } from "./prerender";
 
 describe("prerenderPaths", () => {
   it("should produce one path per route per locale", () => {
-    expect(prerenderPaths()).toHaveLength(6);
+    expect(prerenderPaths()).toHaveLength(
+      Object.keys(ROUTE_PATHS).length * LOCALES.length,
+    );
+  });
+
+  it("should include the 404 of every locale, which the build turns into 404.html", () => {
+    const paths = prerenderPaths();
+
+    expect(paths).toContain("/pt-br/404/");
+    expect(paths).toContain("/en/404/");
   });
 
   it("should include the root of every locale", () => {

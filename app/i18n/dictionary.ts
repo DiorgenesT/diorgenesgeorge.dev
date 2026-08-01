@@ -14,6 +14,10 @@ export type Dictionary = {
   "footer.builtWith": string;
   "meta.home.title": string;
   "meta.colophon.title": string;
+  "meta.notFound.title": string;
+  "notFound.heading": string;
+  "notFound.body": string;
+  "notFound.back": string;
 };
 
 const DICTIONARIES: Record<Locale, Dictionary> = {

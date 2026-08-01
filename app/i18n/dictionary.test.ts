@@ -1,32 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { LOCALES } from "./config";
+import { DEFAULT_LOCALE, LOCALES } from "./config";
 import { getDictionary } from "./dictionary";
 
-const REQUIRED_KEYS = [
-  "nav.home",
-  "nav.colophon",
-  "a11y.skipToContent",
-  "theme.toggle",
-  "theme.dark",
-  "theme.light",
-  "locale.label",
-  "footer.builtWith",
-  "meta.home.title",
-  "meta.colophon.title",
-] as const;
+/** O tipo Dictionary já garante o conjunto de chaves em compilação; aqui vale a paridade entre idiomas. */
+const referenceKeys = Object.keys(getDictionary(DEFAULT_LOCALE)).sort();
 
 describe("getDictionary", () => {
-  it.each(LOCALES)("should define every required key for %s", (locale) => {
-    const dict = getDictionary(locale);
-    for (const key of REQUIRED_KEYS) {
-      expect(dict[key], `chave ausente em ${locale}: ${key}`).toBeTruthy();
-    }
+  it.each(LOCALES)("should define exactly the same keys for %s", (locale) => {
+    expect(Object.keys(getDictionary(locale)).sort()).toEqual(referenceKeys);
   });
 
-  it.each(LOCALES)("should not define extra keys for %s", (locale) => {
-    expect(Object.keys(getDictionary(locale)).sort()).toEqual(
-      [...REQUIRED_KEYS].sort(),
-    );
+  it.each(LOCALES)("should leave no empty string in %s", (locale) => {
+    const empty = Object.entries(getDictionary(locale))
+      .filter(([, value]) => value.trim() === "")
+      .map(([key]) => key);
+
+    expect(empty).toEqual([]);
   });
 
   it("should use distinct wording for pt-BR and en-US", () => {
