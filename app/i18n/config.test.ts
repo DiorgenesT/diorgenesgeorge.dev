@@ -34,14 +34,14 @@ describe("localizedHref", () => {
   });
 
   it("should use the portuguese slug for the colophon in pt-BR", () => {
-    expect(localizedHref("colophon", "pt-BR")).toBe("/pt-br/colofao");
+    expect(localizedHref("colophon", "pt-BR")).toBe("/pt-br/colofao/");
   });
 
   it("should use the english slug for the colophon in en-US", () => {
-    expect(localizedHref("colophon", "en-US")).toBe("/en/colophon");
+    expect(localizedHref("colophon", "en-US")).toBe("/en/colophon/");
   });
 
   it("should use the portuguese slug for the colophon in pt-PT", () => {
-    expect(localizedHref("colophon", "pt-PT")).toBe("/pt-pt/colofao");
+    expect(localizedHref("colophon", "pt-PT")).toBe("/pt-pt/colofao/");
   });
 });

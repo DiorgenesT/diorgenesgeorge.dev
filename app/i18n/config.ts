@@ -29,8 +29,12 @@ export const ROUTE_PATHS: Record<RouteKey, Record<Locale, string>> = {
   colophon: { "pt-BR": "colofao", "pt-PT": "colofao", "en-US": "colophon" },
 };
 
+/**
+ * Sempre com barra final: os assets estáticos são arquivos de índice de diretório,
+ * e sem isto o edge devolveria um 307 antes de cada página.
+ */
 export function localizedHref(routeKey: RouteKey, locale: Locale): string {
   const segment = LOCALE_SEGMENTS[locale];
   const slug = ROUTE_PATHS[routeKey][locale];
-  return slug === "" ? `/${segment}/` : `/${segment}/${slug}`;
+  return slug === "" ? `/${segment}/` : `/${segment}/${slug}/`;
 }

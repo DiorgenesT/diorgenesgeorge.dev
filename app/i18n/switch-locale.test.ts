@@ -7,11 +7,15 @@ describe("switchLocalePath", () => {
   });
 
   it("should translate the colophon slug when switching to english", () => {
-    expect(switchLocalePath("/pt-br/colofao", "en-US")).toBe("/en/colophon");
+    expect(switchLocalePath("/pt-br/colofao", "en-US")).toBe("/en/colophon/");
   });
 
   it("should translate the colophon slug when switching to portuguese", () => {
-    expect(switchLocalePath("/en/colophon", "pt-PT")).toBe("/pt-pt/colofao");
+    expect(switchLocalePath("/en/colophon", "pt-PT")).toBe("/pt-pt/colofao/");
+  });
+
+  it("should accept a path that already carries a trailing slash", () => {
+    expect(switchLocalePath("/pt-br/colofao/", "en-US")).toBe("/en/colophon/");
   });
 
   it("should return the target locale home for an unknown path", () => {
@@ -23,6 +27,6 @@ describe("switchLocalePath", () => {
   });
 
   it("should be a no-op when the target locale is the current one", () => {
-    expect(switchLocalePath("/pt-br/colofao", "pt-BR")).toBe("/pt-br/colofao");
+    expect(switchLocalePath("/pt-br/colofao", "pt-BR")).toBe("/pt-br/colofao/");
   });
 });

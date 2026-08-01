@@ -15,9 +15,9 @@ describe("prerenderPaths", () => {
 
   it("should include the localized colophon slugs", () => {
     const paths = prerenderPaths();
-    expect(paths).toContain("/pt-br/colofao");
-    expect(paths).toContain("/pt-pt/colofao");
-    expect(paths).toContain("/en/colophon");
+    expect(paths).toContain("/pt-br/colofao/");
+    expect(paths).toContain("/pt-pt/colofao/");
+    expect(paths).toContain("/en/colophon/");
   });
 
   it("should never include the bare root, which the worker redirects", () => {
