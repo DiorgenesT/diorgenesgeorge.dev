@@ -18,6 +18,17 @@ export type Dictionary = {
   "meta.contact.title": string;
   "meta.work.title": string;
   "meta.writing.title": string;
+  "home.taglineLead": string;
+  "home.taglineAccent": string;
+  "home.answer": string;
+  "home.pathsHeading": string;
+  "home.pathRecruiter": string;
+  "home.pathRecruiterHint": string;
+  "home.pathClient": string;
+  "home.pathClientHint": string;
+  "home.pathDev": string;
+  "home.pathDevHint": string;
+  "home.latestWriting": string;
   "work.empty": string;
   "writing.empty": string;
   "writing.tagHeading": string;
