@@ -4,6 +4,7 @@ import { ThemeToggle } from "../components/theme-toggle";
 import { listArticleIndex, listCaseIndex } from "../content/index";
 import { localizedHref, type RouteKey } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
+import { PageTransition } from "../motion/page-transition";
 import { useLocale } from "../i18n/use-locale";
 
 export default function SiteLayout() {
@@ -63,7 +64,9 @@ export default function SiteLayout() {
       </header>
 
       <div id="conteudo" className="flex-1">
-        <Outlet />
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </div>
 
       <footer className="border-t border-hairline">

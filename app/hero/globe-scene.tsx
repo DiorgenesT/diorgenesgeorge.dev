@@ -6,6 +6,7 @@ import {
   SphereGeometry,
   Vector3,
 } from "three";
+import { settleTween, targetRotation } from "./camera-motion";
 import { greatCircle, toVector, type Coord } from "./projection";
 import type { TelemetryState } from "./telemetry";
 
@@ -94,6 +95,52 @@ function Globe({ state }: { state: TelemetryState }) {
       store.__frames = 0;
     }
   }, []);
+
+  // A câmera para quando encontra: desacelera com inércia até a região do visitante,
+  // e só então o arco é desenhado. Antes disso o giro é declaradamente "procurando".
+  useEffect(() => {
+    if (!group.current || vLat === undefined || vLon === undefined) return;
+
+    let cancelled = false;
+
+    void import("gsap").then(({ gsap }) => {
+      const node = group.current;
+      if (cancelled || !node) return;
+
+      const from = { x: node.rotation.x, y: node.rotation.y };
+      const to = targetRotation({ lat: vLat, lon: vLon });
+      const tween = settleTween(from, to);
+
+      const timeline = gsap.timeline();
+      timeline.to(node.rotation, {
+        x: to.x,
+        y: to.y,
+        duration: tween.duration,
+        ease: tween.ease,
+        onUpdate: invalidate,
+      });
+
+      if (arc) {
+        const count = arc.attributes.position?.count ?? 0;
+        arc.setDrawRange(0, 0);
+        const progress = { value: 0 };
+
+        timeline.to(progress, {
+          value: count,
+          duration: 0.7,
+          ease: "power1.inOut",
+          onUpdate: () => {
+            arc.setDrawRange(0, Math.round(progress.value));
+            invalidate();
+          },
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [vLat, vLon, arc, invalidate]);
 
   return (
     <group ref={group}>
