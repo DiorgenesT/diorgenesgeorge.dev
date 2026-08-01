@@ -2094,7 +2094,31 @@ git commit -m "chore: publica fase 0 em subdominio de previsualizacao"
 
 Conteúdo real das páginas, hero 3D, telemetria ao vivo, movimento GSAP, agente de IA, MDX/blog, JSON-LD, sitemap, `llms.txt`, feeds, OG images, formulário de contato. Cada um pertence às Fases 1–4 e terá plano próprio.
 
+## Notas de execução — 2026-07-31
+
+Executado inline. Tasks 1–10 concluídas; **Task 11 (deploy) adiada por decisão do usuário** para não publicar conteúdo de esqueleto indexável.
+
+Divergências entre o plano e a realidade, todas resolvidas:
+
+| Plano assumia | Realidade | Resolução |
+|---|---|---|
+| React Router v7 | v8.3.0 | API de `routes`/`prerender` idêntica; nenhuma mudança de código |
+| C3 aceita `--lang=ts` | Rejeita para o template React Router | Flag removida |
+| Instalar Tailwind v4 | Já vem no scaffold | Passo dispensado |
+| Saída em `dist/client` | `build/client` | `CLIENT_DIR` corrigido |
+| `tsconfig.json` único | 3 arquivos com project references | Flags no base; `tsc -b` mantido; `lib: DOM` no projeto node para os callbacks de `page.evaluate` |
+| — | Scaffold importava Inter do Google Fonts | Removido |
+| Task 7 monta layout com controles da Task 8 | Dependência invertida | Task 7 entregou o shell; Task 8 encaixou os controles |
+| `useEffect` + `setState` no ThemeToggle | Lint barra renderização em cascata | Reescrito com `useSyncExternalStore` |
+| URLs sem barra final | `html_handling` força barra → 307 em toda página | `localizedHref` emite barra final; `html_handling` explícito |
+| Testes assumiam tema escuro por padrão | O script honra `prefers-color-scheme` | Testes emulam as duas preferências |
+| — | axe acusou falta de `<title>` | `meta` localizado por rota (WCAG 2.4.2) |
+
+Correção de design encontrada por medição: `--fg-subtle` `#7D766F` dava 4.45:1 sobre `--bg` e reprovava em AA. Corrigido para `#857E76` (4.97:1) no plano e no spec.
+
 ## Lacunas conhecidas, deliberadas
 
 - **`style-src 'unsafe-inline'`** permanece nesta fase: o React Router injeta estilos inline durante a hidratação. A Fase 4 endurece isso com hashes, junto com o restante do trabalho de segurança.
-- **Tokens do tema claro** são um ponto de partida. A Task 4 exige que sejam ajustados até passarem na auditoria de contraste; os valores finais podem divergir dos escritos aqui.
+- **Tokens do tema claro** são um ponto de partida. A Task 4 exige que sejam ajustados até passarem na auditoria de contraste; os valores finais podem divergir dos escritos aqui. *(Execução: passaram sem ajuste.)*
+- **A CSP por hash não escala linearmente.** Cada página pré-renderizada contribui com um script inline próprio do React Router: 6 páginas geraram 11 hashes (~800 bytes de header). Com as ~50 páginas da Fase 1 o header passaria de 3 KB em toda resposta. A Fase 1 precisa resolver isso — regras `_headers` por diretório, ou tirar o contexto de hidratação do script inline.
+- **Não há página 404 desenhada.** `not_found_handling: "404-page"` está configurado, mas nenhum `404.html` é gerado, então a resposta é um 404 sem layout. Pertence à Fase 1.
