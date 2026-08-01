@@ -1,5 +1,5 @@
 import type { Config } from "@react-router/dev/config";
-import { prerenderPaths } from "./app/i18n/prerender";
+import { prerenderPaths } from "./scripts/prerender-paths";
 
 export default {
   ssr: true,

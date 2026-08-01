@@ -1,0 +1,31 @@
+---
+title: How this site was built
+answer: This site is prerendered at build time and served as static HTML from Cloudflare's edge, in three languages, with no request to any external domain. The code is open and every technical decision here has a written reason.
+translationKey: colofao
+status: publicado
+updated: 2026-08-01
+---
+
+## Why static HTML
+
+All the content on this site is known at build time. Rendering on the server for every visit would only add latency to a problem that does not exist. Pages are generated once, published as files, and served from the datacenter closest to the reader.
+
+## A security policy with no exceptions
+
+The site loads no font, script, stylesheet, or image from a third-party domain. That makes a genuinely strict content security policy possible, with no `unsafe-inline` for scripts.
+
+One detail took work and is worth telling. The framework injects inline scripts into every page, and each one has to be allowed by its hash. The obvious move was to externalize them into files, leaving a single hash in the header — and it fails in an instructive way: the script tags are rendered by React itself, which compares them against the document during hydration. Rewriting a tag after the build makes server and client disagree, and React throws away the whole tree, taking with it the theme that was applied before the first paint.
+
+The answer turned out simpler than the attempt. Every script stays inline, allowed by hash, and the build fails if the policy grows past four thousand bytes. The number of hashes grows with the number of routes, not pages: a thousand articles share the same script for the article route. And since the header is byte-for-byte identical on every response, HTTP/2 header compression sends it once per connection.
+
+## Typography
+
+Instrument Sans for text, Instrument Serif italic for editorial breaks, IBM Plex Mono for data and code. All three are self-hosted as subset `woff2` files, with fallback metrics so nothing shifts while they load.
+
+## Accessibility
+
+Contrast is measured, never estimated: a function computes the ratio of every color pair in both themes, and a test fails the build if anything falls below what WCAG 2.1 AA requires. Automated checking with axe runs on every page, in both themes, and keyboard navigation is verified by hand before each release.
+
+## Three languages, no ghost pages
+
+Every document declares which languages it exists in. `hreflang` is emitted only for translations that actually exist, and the language switcher takes the reader to the same page in the other language — or to that language's home, when the translation has not been written yet. Never to an empty address.

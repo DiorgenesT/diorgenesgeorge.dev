@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { LOCALES, ROUTE_PATHS } from "./config";
-import { prerenderPaths } from "./prerender";
+import { LOCALES, ROUTE_PATHS } from "../app/i18n/config";
+import { prerenderPaths } from "./prerender-paths";
 
 describe("prerenderPaths", () => {
   it("should produce one path per route per locale", () => {

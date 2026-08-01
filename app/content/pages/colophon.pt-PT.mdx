@@ -1,0 +1,31 @@
+---
+title: Como este sítio foi construído
+answer: Este sítio é pré-renderizado em build e servido como HTML estático na periferia da Cloudflare, em três idiomas, sem qualquer pedido a domínio externo. O código é aberto e cada decisão técnica aqui tem um motivo escrito.
+translationKey: colofao
+status: publicado
+updated: 2026-08-01
+---
+
+## Porquê HTML estático
+
+Todo o conteúdo deste sítio é conhecido em tempo de build. Renderizar no servidor a cada visita apenas somaria latência a um problema que não existe. As páginas são geradas uma vez, publicadas como ficheiros e servidas do centro de dados mais próximo de quem lê.
+
+## Política de segurança sem excepção
+
+O sítio não carrega tipo de letra, script, folha de estilo ou imagem de domínio de terceiro. Isso permite uma política de segurança de conteúdo estrita a sério, sem `unsafe-inline` para scripts.
+
+Um detalhe deu trabalho e vale a pena contar. A framework injecta scripts inline em cada página, e cada um precisa de ser autorizado pelo seu hash. A tentativa óbvia foi movê-los para ficheiros externos, deixando um único hash no cabeçalho — e falha de forma instrutiva: as etiquetas de script são renderizadas pelo próprio React, que as compara com o documento durante a hidratação. Trocar a etiqueta depois do build faz servidor e cliente divergirem, e o React descarta a árvore inteira, levando com ela o tema aplicado antes da primeira pintura.
+
+A solução ficou mais simples do que a tentativa. Todos os scripts continuam inline, autorizados por hash, e o build falha se a política passar dos quatro mil bytes. O número de hashes cresce com a quantidade de rotas, não de páginas: mil artigos partilham o mesmo script da rota de artigo. E como o cabeçalho é idêntico em todas as respostas, a compressão do HTTP/2 envia-o uma vez por ligação.
+
+## Tipografia
+
+Instrument Sans para texto, Instrument Serif itálico para as quebras editoriais, IBM Plex Mono para dados e código. As três são alojadas no próprio sítio em subconjuntos `woff2`, com métricas de recurso para não haver salto de disposição enquanto carregam.
+
+## Acessibilidade
+
+O contraste é medido, nunca estimado: uma função calcula a razão de cada par de cores dos dois temas e um teste falha o build se algo ficar abaixo do exigido pela WCAG 2.1 AA. A verificação automatizada com axe corre em todas as páginas, nos dois temas, e a navegação por teclado é conferida à mão antes de cada entrega.
+
+## Três idiomas, sem página fantasma
+
+Cada documento declara em que idiomas existe. O `hreflang` é emitido apenas para tradução que existe de facto, e o selector de idioma leva o leitor para a mesma página no outro idioma — ou para a raiz desse idioma, quando a tradução ainda não foi escrita. Nunca para um endereço vazio.

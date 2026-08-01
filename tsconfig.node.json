@@ -8,13 +8,16 @@
     "scripts/**/*",
     "e2e/**/*",
     "app/i18n/**/*",
+    // O build lê o conteúdo para derivar a lista de pré-renderização.
+    "app/content/**/*",
     // O pós-build precisa do script de tema para saber qual inline pode sobreviver à CSP.
     "app/design/theme.ts"
   ],
   "compilerOptions": {
     "composite": true,
     "strict": true,
-    "types": ["node"],
+    // vite/client porque este projeto também cobre os arquivos que rodam dentro do Vite.
+    "types": ["node", "vite/client"],
     // DOM é necessário para os callbacks de page.evaluate, que rodam no browser.
     "lib": ["ES2022", "DOM"],
     "target": "ES2022",
