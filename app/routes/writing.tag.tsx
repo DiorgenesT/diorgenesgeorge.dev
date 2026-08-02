@@ -27,23 +27,24 @@ export default function Tag() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-24">
-      <h1 className="font-sans text-4xl font-bold tracking-tight">
+      <h1 className="text-4xl leading-tight sm:text-5xl">
         {t["writing.tagHeading"]} {tag}
       </h1>
 
-      <ul className="mt-12 space-y-10">
+      <ul className="mt-14">
         {articles.map(({ slug, frontmatter }) => (
-          <li key={slug}>
-            <article>
+          <li key={slug} className="border-t border-hairline last:border-b">
+            <article className="group relative grid gap-x-6 py-6 sm:grid-cols-[9rem_1fr]">
               <p className="font-mono text-meta uppercase tracking-widest text-fg-subtle">
                 <time dateTime={frontmatter.published}>
                   {formatDate(locale, frontmatter.published)}
                 </time>
               </p>
-              <h2 className="mt-2 text-xl font-semibold tracking-tight">
+              <h2 className="text-xl leading-tight">
                 <Link
                   to={documentHref("writing", locale, slug)}
-                  className="hover:text-accent"
+                  viewTransition
+                  className="after:absolute after:inset-0 group-hover:text-accent"
                 >
                   {frontmatter.title}
                 </Link>

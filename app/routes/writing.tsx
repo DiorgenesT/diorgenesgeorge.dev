@@ -25,9 +25,7 @@ export default function Writing() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-24">
-      <h1 className="font-sans text-4xl font-bold tracking-tight">
-        {t["nav.writing"]}
-      </h1>
+      <h1 className="text-4xl leading-tight sm:text-5xl">{t["nav.writing"]}</h1>
 
       {articles.length === 0 ? (
         <p className="mt-8 max-w-prose text-lg leading-relaxed text-fg-muted">
@@ -36,13 +34,17 @@ export default function Writing() {
       ) : (
         <>
           {tags.length > 0 && (
-            <nav aria-label={t["writing.tags"]} className="mt-8">
-              <ul className="flex flex-wrap gap-3">
+            <nav
+              aria-label={t["writing.tags"]}
+              className="mt-8 border-y border-hairline py-3"
+            >
+              <ul className="flex flex-wrap gap-x-5 gap-y-2">
                 {tags.map((tag) => (
                   <li key={tag}>
                     <Link
                       to={tagHref(locale, tag)}
-                      className="font-mono text-meta uppercase tracking-widest text-accent"
+                      viewTransition
+                      className="font-mono text-meta uppercase tracking-widest text-accent hover:text-fg"
                     >
                       {tag}
                     </Link>
@@ -52,37 +54,42 @@ export default function Writing() {
             </nav>
           )}
 
-          <ul className="mt-16 space-y-6">
-            {articles.map(({ slug, frontmatter }) => (
-              <li key={slug}>
-                <article className="group relative rounded-xl border border-hairline p-7 transition-colors hover:border-accent focus-within:border-accent sm:p-9">
-                  <p className="font-mono text-meta uppercase tracking-widest text-fg-subtle">
-                    <time dateTime={frontmatter.published}>
-                      {formatDate(locale, frontmatter.published)}
-                    </time>
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-balance">
-                    <Link
-                      to={documentHref("writing", locale, slug)}
-                      className="after:absolute after:inset-0 group-hover:text-accent"
-                    >
-                      {frontmatter.title}
-                    </Link>
-                  </h2>
-                  <p className="mt-4 max-w-prose text-fg-muted">
-                    {frontmatter.answer}
-                  </p>
+          <ul className="mt-16">
+            {articles.map(({ slug, frontmatter }, index) => (
+              <li key={slug} className="border-t border-hairline last:border-b">
+                <article className="group relative grid gap-x-6 py-8 sm:grid-cols-[4rem_1fr]">
+                  <span
+                    aria-hidden
+                    className="font-mono text-meta tabular-nums text-fg-subtle"
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
 
-                  <ul className="mt-6 flex flex-wrap gap-2">
-                    {frontmatter.tags.map((tag) => (
-                      <li
-                        key={tag}
-                        className="rounded-full border border-hairline px-3 py-1 font-mono text-meta uppercase tracking-widest text-fg-subtle"
+                  <div>
+                    <h2 className="text-2xl leading-tight text-balance sm:text-3xl">
+                      <Link
+                        to={documentHref("writing", locale, slug)}
+                        viewTransition
+                        className="after:absolute after:inset-0 group-hover:text-accent"
                       >
-                        {tag}
-                      </li>
-                    ))}
-                  </ul>
+                        {frontmatter.title}
+                      </Link>
+                    </h2>
+
+                    <p className="mt-4 max-w-prose text-fg-muted">
+                      {frontmatter.answer}
+                    </p>
+
+                    {/* Data e etiquetas numa linha de rótulo só, no lugar das
+                        pílulas: mesma informação, sem competir com o título. */}
+                    <p className="mt-6 font-mono text-meta uppercase tracking-widest text-fg-subtle">
+                      <time dateTime={frontmatter.published}>
+                        {formatDate(locale, frontmatter.published)}
+                      </time>
+                      {frontmatter.tags.length > 0 &&
+                        ` · ${frontmatter.tags.join(", ")}`}
+                    </p>
+                  </div>
                 </article>
               </li>
             ))}

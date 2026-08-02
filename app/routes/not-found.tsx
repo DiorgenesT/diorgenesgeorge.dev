@@ -18,16 +18,18 @@ export default function NotFound() {
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col items-start gap-6 px-6 py-32">
-      <p className="font-mono text-sm uppercase tracking-widest text-accent">
+      {/* O único número da página merece o peso: display em corpo grande. */}
+      <p aria-hidden className="font-display text-8xl leading-none text-accent">
         404
       </p>
-      <h1 className="font-sans text-4xl font-bold tracking-tight">
+      <h1 className="text-4xl leading-tight sm:text-5xl">
         {t["notFound.heading"]}
       </h1>
       <p className="max-w-prose text-fg-muted">{t["notFound.body"]}</p>
       <Link
         to={localizedHref("home", locale)}
-        className="font-mono text-sm text-accent underline underline-offset-4"
+        viewTransition
+        className="mt-2 border-t border-hairline pt-4 font-mono text-meta uppercase tracking-widest text-accent hover:text-fg"
       >
         {t["notFound.back"]}
       </Link>

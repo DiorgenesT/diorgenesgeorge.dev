@@ -52,7 +52,7 @@ export default function Cv() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-24">
-      <h1 className="font-sans text-4xl font-bold tracking-tight text-balance">
+      <h1 className="text-4xl leading-tight text-balance sm:text-5xl">
         {AUTHOR.name}
       </h1>
       <p className="mt-4 font-mono text-meta uppercase tracking-widest text-fg-subtle">
@@ -60,32 +60,43 @@ export default function Cv() {
       </p>
       <AnswerBlock>{cv.summary}</AnswerBlock>
 
-      <section className="mt-16">
-        <h2 className="text-2xl font-semibold tracking-tight">
+      <section className="mt-20">
+        <h2 className="border-b-2 border-fg pb-3 font-mono text-meta uppercase tracking-widest text-fg">
           {t["cv.experience"]}
         </h2>
         {cv.positions.map((position) => (
-          <article key={`${position.org}-${position.start}`} className="mt-10">
-            <h3 className="text-lg font-semibold">{position.role}</h3>
-            <p className="mt-1 text-fg-muted">{position.org}</p>
-            <Period position={position} locale={locale} />
-            <ul className="mt-4 list-disc space-y-2 ps-6 text-fg-muted">
-              {position.highlights.map((highlight) => (
-                <li key={highlight}>{highlight}</li>
-              ))}
-            </ul>
+          <article
+            key={`${position.org}-${position.start}`}
+            className="grid gap-x-8 border-b border-hairline py-8 sm:grid-cols-[11rem_1fr]"
+          >
+            {/* O periodo na coluna da margem: numa ficha impressa a data ancora a
+                leitura, e o cargo fica livre para ocupar a largura do texto. */}
+            <div>
+              <Period position={position} locale={locale} />
+            </div>
+
+            <div>
+              <h3 className="text-xl leading-tight">{position.role}</h3>
+              <p className="mt-1 text-fg-muted">{position.org}</p>
+              <ul className="mt-4 list-disc space-y-2 ps-6 text-fg-muted">
+                {position.highlights.map((highlight) => (
+                  <li key={highlight}>{highlight}</li>
+                ))}
+              </ul>
+            </div>
           </article>
         ))}
       </section>
 
-      <section className="mt-16">
-        <h2 className="text-2xl font-semibold tracking-tight">
+      <section className="mt-20">
+        <h2 className="border-b-2 border-fg pb-3 font-mono text-meta uppercase tracking-widest text-fg">
           {t["cv.education"]}
         </h2>
         {cv.education.map((entry) => (
-          <article key={entry.degree} className="mt-8">
-            <h3 className="text-lg font-semibold">{entry.degree}</h3>
-            <p className="mt-1 text-fg-muted">{entry.org}</p>
+          <article
+            key={entry.degree}
+            className="grid gap-x-8 border-b border-hairline py-8 sm:grid-cols-[11rem_1fr]"
+          >
             <p className="font-mono text-meta uppercase tracking-widest text-fg-subtle">
               <time dateTime={entry.start}>
                 {formatMonth(locale, entry.start)}
@@ -93,21 +104,29 @@ export default function Cv() {
               {" — "}
               <time dateTime={entry.end}>{formatMonth(locale, entry.end)}</time>
             </p>
+
+            <div>
+              <h3 className="text-xl leading-tight">{entry.degree}</h3>
+              <p className="mt-1 text-fg-muted">{entry.org}</p>
+            </div>
           </article>
         ))}
       </section>
 
-      <section className="mt-16">
-        <h2 className="text-2xl font-semibold tracking-tight">
+      <section className="mt-20">
+        <h2 className="border-b-2 border-fg pb-3 font-mono text-meta uppercase tracking-widest text-fg">
           {t["cv.skills"]}
         </h2>
-        <dl className="mt-8 space-y-6">
+        <dl>
           {cv.skills.map((group) => (
-            <div key={group.group}>
+            <div
+              key={group.group}
+              className="grid gap-x-8 border-b border-hairline py-6 sm:grid-cols-[11rem_1fr]"
+            >
               <dt className="font-mono text-meta uppercase tracking-widest text-fg-subtle">
                 {group.group}
               </dt>
-              <dd className="mt-2 text-fg-muted">{group.items.join(" · ")}</dd>
+              <dd className="text-fg-muted">{group.items.join(", ")}</dd>
             </div>
           ))}
         </dl>

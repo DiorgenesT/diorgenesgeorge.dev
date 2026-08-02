@@ -24,9 +24,7 @@ export default function Work() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-24">
-      <h1 className="font-sans text-4xl font-bold tracking-tight">
-        {t["nav.work"]}
-      </h1>
+      <h1 className="text-4xl leading-tight sm:text-5xl">{t["nav.work"]}</h1>
 
       {cases.length === 0 ? (
         <p className="mt-8 max-w-prose text-lg leading-relaxed text-fg-muted">
@@ -41,46 +39,40 @@ export default function Work() {
           </a>
         </p>
       ) : (
-        <ul className="mt-16 space-y-6">
+        <ul className="mt-16">
           {cases.map(({ slug, frontmatter }, index) => (
-            <li key={slug}>
-              {/* group para o cartão inteiro reagir ao ponteiro, não só o título. */}
-              <article className="group relative rounded-xl border border-hairline p-7 transition-colors hover:border-accent focus-within:border-accent sm:p-9">
-                <div className="flex items-baseline gap-4">
-                  <span
-                    aria-hidden
-                    className="font-mono text-meta tabular-nums text-fg-subtle"
-                  >
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <h2 className="text-2xl font-semibold tracking-tight text-balance">
+            <li key={slug} className="border-t border-hairline last:border-b">
+              {/* group para a linha inteira reagir ao ponteiro, não só o título. */}
+              <article className="group relative grid gap-x-6 py-8 sm:grid-cols-[4rem_1fr]">
+                <span
+                  aria-hidden
+                  className="font-mono text-meta tabular-nums text-fg-subtle"
+                >
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+
+                <div>
+                  <h2 className="text-2xl leading-tight text-balance sm:text-3xl">
                     <Link
                       to={documentHref("work", locale, slug)}
+                      viewTransition
                       className="after:absolute after:inset-0 group-hover:text-accent"
                     >
                       {frontmatter.title}
                     </Link>
                   </h2>
+
+                  <p className="mt-4 max-w-prose text-fg-muted">
+                    {frontmatter.outcome}
+                  </p>
+
+                  {/* A pilha vira uma linha de rótulo junto da procedência: mesma
+                      informação, sem uma dúzia de pílulas competindo com o título. */}
+                  <p className="mt-6 font-mono text-meta uppercase tracking-widest text-fg-subtle">
+                    {frontmatter.org} · {frontmatter.period} ·{" "}
+                    {frontmatter.stack.join(", ")}
+                  </p>
                 </div>
-
-                <p className="mt-4 max-w-prose text-fg-muted">
-                  {frontmatter.outcome}
-                </p>
-
-                <ul className="mt-6 flex flex-wrap gap-2">
-                  {frontmatter.stack.map((tool) => (
-                    <li
-                      key={tool}
-                      className="rounded-full border border-hairline px-3 py-1 font-mono text-meta uppercase tracking-widest text-fg-subtle"
-                    >
-                      {tool}
-                    </li>
-                  ))}
-                </ul>
-
-                <p className="mt-6 font-mono text-meta uppercase tracking-widest text-fg-subtle">
-                  {frontmatter.org} · {frontmatter.period}
-                </p>
               </article>
             </li>
           ))}
