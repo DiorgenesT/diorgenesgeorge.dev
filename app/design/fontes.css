@@ -1,0 +1,25 @@
+/*
+ * font-display: optional, e nao swap. A diferenca importa: swap pinta com a fonte do
+ * sistema e troca quando a customizada chega, o que desloca texto ja lido e conta como
+ * CLS. optional desiste da troca se a fonte nao chegou a tempo, entao o visitante em
+ * rede ruim le na fonte do sistema aquele carregamento inteiro, sem nada pular.
+ *
+ * Os arquivos sao versionados em vez de instalados: sao dois binarios que nunca mudam,
+ * e os pacotes do fontsource fixam font-display em swap, que e o que nao queremos.
+ * Licencas OFL ao lado dos arquivos.
+ */
+@font-face {
+  font-family: "Anton";
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+  src: url("./fontes/anton-latin-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Special Elite";
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+  src: url("./fontes/special-elite-latin-400.woff2") format("woff2");
+}

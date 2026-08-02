@@ -24,7 +24,7 @@ O page-dev tem 4.983 linhas de fonte, das quais 2.516 sao infraestrutura de i18n
 | Idiomas | Os tres ja existentes: pt-BR, pt-PT, en-US |
 | Escopo visual | Zine total, em todas as rotas, inclusive corpo de texto |
 | Tema | Um so. O tema claro e escuro sai |
-| Tipografia | Uma display subsetada, apenas em titulos. Corpo na fonte do sistema |
+| Tipografia | Duas customizadas com papeis distintos (Anton e Special Elite). Corpo na fonte do sistema |
 | Movimento | Direcao "papel na sua mao", sem marcador de cursor |
 | Elemento vivo da home | Carimbo de recepcao, alimentado por `/api/edge` |
 | Rotas | As oito atuais mais uma nova, `lab` |
@@ -39,7 +39,24 @@ Estetica DIY, zine e punk dos anos 90 e 2000: fanzine xerocado, colagem manual, 
 
 **Paleta:** papel `#f4f1ea`, tinta `#12100e`, vermelho punk, amarelo fita crepe. O contraste de cada acento sobre cada fundo e validado em 4.5:1 por teste automatizado, nunca presumido. Os tokens de `app/design/contrast.ts` ja fazem essa checagem e sao reaproveitados.
 
-**Tipografia:** uma display condensada ou stencil, subsetada em woff2 latin, aplicada apenas a titulos, com `font-display: optional` para que jamais segure o LCP. O corpo do texto usa a pilha sans-serif do sistema. A escolha da display acontece na Fase 1, com opcoes comparadas no navegador.
+**Tipografia:** duas familias customizadas, decidido em 2026-08-02 depois de comparar as opcoes no navegador. Um fanzine e por definicao uma colagem de tipografias, e as duas mapeiam objetos fisicos diferentes de um zine real: o recorte de cartaz e a legenda datilografada.
+
+| Familia | Papel | Onde entra | Piso de tamanho |
+|---|---|---|---|
+| **Anton** | O recorte de cartaz | Titulos, numeros grandes, capa. Token `--font-display` | sem piso |
+| **Special Elite** | A legenda datilografada | Rotulo, metadado, etiqueta, carimbo de recepcao, rodape. Ocupa o token `--font-mono`, que ficou vago quando a IBM Plex Mono saiu | **13px** |
+| Pilha do sistema | A leitura | Todo corpo de texto: paragrafo, artigo, case, CV. Token `--font-sans` | sem piso |
+
+As duas sao self-hosted em woff2 latin, nunca por CDN: a CSP declara `connect-src 'self'` e `font-src 'self'`, e o site nao faz requisicao a dominio externo. As duas usam `font-display: optional`, entao nenhuma segura o LCP em hipotese alguma: em rede ruim o visitante ve a pilha do sistema naquele carregamento, e o custo e de dados, nao de tempo de pintura.
+
+Peso medido em 2026-08-02: Anton 18.612 bytes e Special Elite 53.296 bytes, somando 71.908. A Special Elite e cara justamente pelo que a torna util, o desgaste da tinta e contorno extra em cada glifo. Alternativas limpas (Cutive Mono com 21.824 bytes, Courier Prime com 18.640) foram comparadas no navegador, com a granulacao aplicada por cima, e a decisao consciente foi pagar os 31,5 KB a mais pelo desgaste desenhado. O teto do orcamento e 75.000 bytes para as duas somadas.
+
+**Duas regras duras sobre a Special Elite**, que existem porque datilografia gasta e ruim de ler em corpo pequeno e o alvo de acessibilidade e 100:
+
+1. Nunca abaixo de 13px. Medido no navegador: em 11,5px ela desmonta, em 13px se segura.
+2. Nunca recebe texto longo. So rotulo, metadado, etiqueta, carimbo e rodape. Frase corrida e paragrafo sao sempre da pilha do sistema.
+
+A Fase 1 trava as duas regras em teste, para que nao dependam de disciplina.
 
 **Estrutura de pagina:** cada rota e uma pagina numerada do fanzine, com sumario no cabecalho.
 
@@ -141,7 +158,7 @@ Bloqueia merge se estourar.
 | LCP | menor que 2.0s |
 | CLS | menor que 0.05 |
 | Long tasks durante scroll | zero acima de 50ms |
-| Fontes customizadas | uma, subsetada, `font-display: optional` |
+| Fontes customizadas | duas (Anton e Special Elite), self-hosted, latin, `font-display: optional`, teto de 75.000 bytes |
 
 Baseline medido em 2026-08-02: **119.065 bytes** de JS critico com 9 documentos publicados, contra o teto de 132 KB que vigorava.
 
@@ -217,7 +234,7 @@ Criterio de aceite: a 404 continua respondendo status 404, e nada do minigame en
 
 ## 12. Questoes em aberto
 
-- **Qual display**: decidido na Fase 1, com opcoes comparadas no navegador.
+Nao ha questoes em aberto no momento. As duas anteriores foram resolvidas: o `dev-portifolio` foi confirmado morto e a tipografia foi decidida em 2026-08-02 (ver a secao 3).
 - **Restricao institucional**: nomear os sistemas da prefeitura no portfolio foi aprovado. Se surgir qualquer restricao da Fundacao Beta, o conteudo volta ao formato anonimizado que ja esta escrito nos rascunhos.
 
 ## 13. Fora de escopo

@@ -1,12 +1,12 @@
 :root {
-  color-scheme: dark;
-  --bg: #0a0908;
-  --bg-raised: #1a1512;
-  --fg: #f2eee9;
-  --fg-muted: #a8a099;
-  --fg-subtle: #857e76;
-  --accent: #ffa033;
-  --accent-fg: #17120e;
-  --signal: #4be38a;
-  --hairline: rgb(242 238 233 / 0.1);
+  color-scheme: light;
+  --bg: #f2ede4;
+  --bg-raised: #faf7f1;
+  --fg: #0a0a0a;
+  --fg-muted: #57504a;
+  --fg-subtle: #645c55;
+  --accent: #c81d25;
+  --accent-fg: #ffffff;
+  --fita: #e8b923;
+  --hairline: rgb(10 10 10 / 0.14);
 }

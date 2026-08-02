@@ -16,7 +16,7 @@ export function DocumentHeader({
       </h1>
 
       {meta && meta.length > 0 && (
-        <p className="mt-4 font-mono text-xs uppercase tracking-widest text-fg-subtle">
+        <p className="mt-4 font-mono text-meta uppercase tracking-widest text-fg-subtle">
           {meta.join(" · ")}
         </p>
       )}

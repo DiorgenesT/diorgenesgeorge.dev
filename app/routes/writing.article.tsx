@@ -58,7 +58,7 @@ export default function Article() {
           <li key={tag}>
             <Link
               to={tagHref(locale, tag)}
-              className="font-mono text-xs uppercase tracking-widest text-accent"
+              className="font-mono text-meta uppercase tracking-widest text-accent"
             >
               {tag}
             </Link>

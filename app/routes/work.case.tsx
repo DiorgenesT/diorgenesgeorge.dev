@@ -52,7 +52,7 @@ export default function WorkCase() {
         <Content />
       </Prose>
 
-      <p className="mt-14 font-mono text-xs uppercase tracking-widest text-fg-subtle">
+      <p className="mt-14 font-mono text-meta uppercase tracking-widest text-fg-subtle">
         {frontmatter.stack.join(" · ")}
       </p>
     </main>

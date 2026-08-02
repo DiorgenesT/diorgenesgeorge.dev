@@ -1,12 +1,18 @@
+@import "./design/fontes.css";
 @import "tailwindcss" source(".");
 @import "./design/tokens.css";
 
 @theme inline {
+  /* Tres papeis sem sobreposicao: cartaz, legenda datilografada e leitura. */
+  --font-display: "Anton", Impact, "Haettenschweiler", sans-serif;
+  --font-mono: "Special Elite", ui-monospace, Courier, monospace;
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Piso da datilografada. Medido no navegador: em 11,5px ela desmonta. */
+  --text-meta: 0.8125rem;
+  --text-meta--line-height: 1.45;
 
   --color-bg: var(--bg);
   --color-bg-raised: var(--bg-raised);
@@ -15,7 +21,7 @@
   --color-fg-subtle: var(--fg-subtle);
   --color-accent: var(--accent);
   --color-accent-fg: var(--accent-fg);
-  --color-signal: var(--signal);
+  --color-fita: var(--fita);
   --color-hairline: var(--hairline);
 }
 
@@ -24,6 +30,17 @@
     background-color: var(--bg);
     color: var(--fg);
     font-family: var(--font-sans);
+  }
+
+  /*
+   * A display e o recorte de cartaz, entao vale para o titulo da pagina e o da secao,
+   * e para nada abaixo disso. h3 e menor e vive dentro de texto corrido: uma condensada
+   * pesada nesse tamanho atrapalha a leitura em vez de dar peso.
+   */
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
   }
 
   :focus-visible {
@@ -48,5 +65,24 @@
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
+  }
+}
+
+/*
+ * Granulacao de fotocopia: um tile de 64x64 com 356 bytes, repetido, em multiply.
+ * Nunca uma imagem de textura em tela cheia.
+ */
+@utility textura-granulada {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background-image: url("/textura/granulacao.svg");
+    background-repeat: repeat;
+    mix-blend-mode: multiply;
   }
 }
