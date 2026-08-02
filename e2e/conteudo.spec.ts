@@ -14,7 +14,7 @@ test("should keep the reader on the same page when switching language", async ({
   page,
 }) => {
   await page.goto("/pt-br/sobre/");
-  await page.getByRole("combobox").selectOption("en-US");
+  await page.getByRole("link", { name: "English" }).click();
 
   await expect(page).toHaveURL(/\/en\/about\/$/);
 });
@@ -23,7 +23,7 @@ test("should follow the european portuguese spelling of contact", async ({
   page,
 }) => {
   await page.goto("/en/contact/");
-  await page.getByRole("combobox").selectOption("pt-PT");
+  await page.getByRole("link", { name: "Português (Portugal)" }).click();
 
   await expect(page).toHaveURL(/\/pt-pt\/contacto\/$/);
 });

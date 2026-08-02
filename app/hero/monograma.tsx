@@ -43,23 +43,27 @@ function Letra({ children }: { children: string }) {
  * O monograma é decoração: o nome de verdade é o `h1` ao lado. Daí o `aria-hidden`,
  * sem o qual um leitor de tela leria "D G" solto antes do título da página.
  *
- * `carga` vem da latência medida pelo edge e comanda a intensidade do desregistro.
- * `recebendo` dispara a chegada uma única vez, quando o dado responde.
+ * **Reimprimir é responsabilidade de quem chama, e se faz trocando a `key`.** O
+ * componente não guarda estado nem roda efeito: a animação começa na montagem, e
+ * remontar é o jeito mais barato e mais direto de reiniciar animação de CSS.
+ *
+ * A tentativa anterior usava um booleano `recebendo` e falhava: assim que ele ficava
+ * verdadeiro na chegada do edge, a classe nunca mais saía, e animação de CSS só
+ * reinicia quando a classe é removida e readicionada. Era por isso que o repique do
+ * sumário não acontecia depois da primeira impressão.
  */
 export function Monograma({
   carga,
-  recebendo,
   duracao,
 }: {
   carga: number;
-  recebendo: boolean;
   duracao: number;
 }) {
   return (
     <span
       aria-hidden="true"
       data-monograma
-      className={`monograma${recebendo ? " monograma-recebendo" : ""}`}
+      className="monograma monograma-recebendo"
       style={
         {
           "--carga": carga,

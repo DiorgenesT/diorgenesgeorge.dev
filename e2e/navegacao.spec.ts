@@ -24,7 +24,7 @@ test("should keep the user on the colophon when switching language", async ({
   page,
 }) => {
   await page.goto("/pt-br/colofao/");
-  await page.getByRole("combobox").selectOption("en-US");
+  await page.getByRole("link", { name: "English" }).click();
   await expect(page).toHaveURL(/\/en\/colophon\/$/);
 });
 

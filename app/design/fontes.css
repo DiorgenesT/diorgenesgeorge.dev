@@ -7,19 +7,23 @@
  * Os arquivos sao versionados em vez de instalados: sao dois binarios que nunca mudam,
  * e os pacotes do fontsource fixam font-display em swap, que e o que nao queremos.
  * Licencas OFL ao lado dos arquivos.
+ *
+ * Trocadas em 2026-08-02, junto com o abandono do fanzine. Anton era condensada demais
+ * para um monograma que precisa dominar a tela, e Special Elite, datilografia gasta,
+ * era o ultimo residuo de zine no sistema e custava 53 KB sozinha.
  */
 @font-face {
-  font-family: "Anton";
+  font-family: "Archivo Black";
   font-style: normal;
   font-weight: 400;
   font-display: optional;
-  src: url("./fontes/anton-latin-400.woff2") format("woff2");
+  src: url("./fontes/archivo-black-latin-400.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "Special Elite";
+  font-family: "Space Mono";
   font-style: normal;
   font-weight: 400;
   font-display: optional;
-  src: url("./fontes/special-elite-latin-400.woff2") format("woff2");
+  src: url("./fontes/space-mono-latin-400.woff2") format("woff2");
 }

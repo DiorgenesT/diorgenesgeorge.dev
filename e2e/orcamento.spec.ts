@@ -1,7 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-/** Teto da spec para as duas fontes somadas, em bytes. */
-const TETO_DE_FONTES = 75_000;
+/**
+ * Teto da spec para as duas fontes somadas, em bytes. Caiu de 75.000 para 40.000 em
+ * 2026-08-02, quando Anton e Special Elite deram lugar a Archivo Black e Space Mono:
+ * a datilografada gasta custava 53 KB sozinha, e o desgaste desenhado que justificava
+ * o preco deixou de fazer sentido quando o fanzine saiu.
+ */
+const TETO_DE_FONTES = 40_000;
 
 test("should ship exactly the two fonts the spec allows", async ({ page }) => {
   const fontes: { url: string; bytes: number }[] = [];

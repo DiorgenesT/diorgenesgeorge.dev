@@ -24,7 +24,7 @@ O page-dev tem 4.983 linhas de fonte, das quais 2.516 sao infraestrutura de i18n
 | Idiomas | Os tres ja existentes: pt-BR, pt-PT, en-US |
 | Escopo visual | Identidade unica em todas as rotas. Reescrita em 2026-08-02: era zine, virou "Impresso" (ver secao 3.1) |
 | Tema | Um so. O tema claro e escuro sai |
-| Tipografia | Duas customizadas com papeis distintos (Anton e Special Elite). Corpo na fonte do sistema |
+| Tipografia | Duas customizadas com papeis distintos (Archivo Black e Space Mono). Corpo na fonte do sistema |
 | Movimento | Um gesto assinatura: a marca chega impressa, fora de registro |
 | Elemento vivo da home | O desregistro do monograma, alimentado pela latencia do `/api/edge` |
 | Rotas | As oito atuais mais uma nova, `lab` |
@@ -47,18 +47,18 @@ O site se comporta como um **objeto impresso**, nao como uma pagina que rola: pa
 
 | Familia | Papel | Onde entra | Piso de tamanho |
 |---|---|---|---|
-| **Anton** | A display | Monograma, titulos, numeros grandes. Token `--font-display` | sem piso |
-| **Special Elite** | O rotulo tecnico | Metadado, numeracao de sumario, rodape. Token `--font-mono` | **13px** |
+| **Archivo Black** | A display | Monograma, titulos, numeros grandes. Token `--font-display` | sem piso |
+| **Space Mono** | O rotulo tecnico | Metadado, numeracao de sumario, rodape. Token `--font-mono` | **13px** |
 | Pilha do sistema | A leitura | Todo corpo de texto: paragrafo, artigo, case, CV. Token `--font-sans` | sem piso |
 
 As duas sao self-hosted em woff2 latin, nunca por CDN: a CSP declara `connect-src 'self'` e `font-src 'self'`, e o site nao faz requisicao a dominio externo. As duas usam `font-display: optional`, entao nenhuma segura o LCP em hipotese alguma: em rede ruim o visitante ve a pilha do sistema naquele carregamento, e o custo e de dados, nao de tempo de pintura.
 
-Peso medido em 2026-08-02: Anton 18.612 bytes e Special Elite 53.296 bytes, somando 71.908. A Special Elite e cara justamente pelo que a torna util, o desgaste da tinta e contorno extra em cada glifo. Alternativas limpas (Cutive Mono com 21.824 bytes, Courier Prime com 18.640) foram comparadas no navegador, com a granulacao aplicada por cima, e a decisao consciente foi pagar os 31,5 KB a mais pelo desgaste desenhado. O teto do orcamento e 75.000 bytes para as duas somadas.
+Peso medido em 2026-08-02: Archivo Black 18.604 bytes e Space Mono 16.520 bytes, somando 35.124, com teto de 40.000. As duas primeiras escolhas, Anton e Special Elite, custavam 71.908 juntas e sairam quando o fanzine foi abandonado: Anton era condensada demais para um monograma que precisa dominar a tela, e a Special Elite pagava 53 KB por um desgaste datilografado que deixou de fazer sentido.
 
-**Duas regras duras sobre a Special Elite**, que existem porque datilografia gasta e ruim de ler em corpo pequeno e o alvo de acessibilidade e 100:
+**Duas regras duras sobre o rotulo tecnico:**
 
-1. Nunca abaixo de 13px. Medido no navegador: em 11,5px ela desmonta, em 13px se segura.
-2. Nunca recebe texto longo. So rotulo, metadado, etiqueta, carimbo e rodape. Frase corrida e paragrafo sao sempre da pilha do sistema.
+1. Nunca abaixo de 13px. A regra nasceu com a Special Elite, que desmontava em 11,5px; com a Space Mono a razao passa a ser consistencia e conforto de leitura, e o valor fica.
+2. Nunca recebe texto longo. So rotulo, metadado, numeracao e rodape. Frase corrida e paragrafo sao sempre da pilha do sistema.
 
 A Fase 1 trava as duas regras em teste, para que nao dependam de disciplina.
 
@@ -185,7 +185,7 @@ Bloqueia merge se estourar.
 | LCP | menor que 2.0s |
 | CLS | menor que 0.05 |
 | Long tasks durante scroll | zero acima de 50ms |
-| Fontes customizadas | duas (Anton e Special Elite), self-hosted, latin, `font-display: optional`, teto de 75.000 bytes |
+| Fontes customizadas | duas (Archivo Black e Space Mono), self-hosted, latin, `font-display: optional`, teto de 40.000 bytes |
 
 Baseline medido em 2026-08-02: **119.065 bytes** de JS critico com 9 documentos publicados, contra o teto de 132 KB que vigorava.
 

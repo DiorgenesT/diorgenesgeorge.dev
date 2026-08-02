@@ -7,8 +7,8 @@ import { Monograma } from "./monograma";
 // Sem `globals: true`, a testing-library nao registra a limpeza automatica.
 afterEach(cleanup);
 
-function montar(carga = 0.1) {
-  return render(<Monograma carga={carga} recebendo={false} duracao={800} />);
+function montar(carga = 0.34) {
+  return render(<Monograma carga={carga} duracao={900} />);
 }
 
 describe("Monograma", () => {
@@ -38,11 +38,10 @@ describe("Monograma", () => {
   it("should give both plates the same box, or they start from different origins", () => {
     const { container } = montar();
     const letra = container.querySelector(".monograma-letra");
-    const camadas = letra?.querySelectorAll(".monograma-camada");
 
     // As duas camadas são irmãs dentro da mesma letra, e nenhuma delas está em fluxo:
     // é isso que garante que partam do mesmo ponto.
-    expect(camadas).toHaveLength(2);
+    expect(letra?.querySelectorAll(".monograma-camada")).toHaveLength(2);
     expect(letra?.querySelectorAll(".monograma-medida")).toHaveLength(1);
   });
 
@@ -53,21 +52,18 @@ describe("Monograma", () => {
     expect(marca.style.getPropertyValue("--carga")).toBe("0.42");
   });
 
-  it("should stay still until the edge answers", () => {
-    const { container } = render(
-      <Monograma carga={0.1} recebendo={false} duracao={800} />,
-    );
+  it("should honour the duration it was given", () => {
+    const { container } = render(<Monograma carga={0.34} duracao={900} />);
+    const marca = container.querySelector("[data-monograma]") as HTMLElement;
 
-    expect(
-      container.querySelector("[data-monograma]")?.className,
-    ).not.toContain("recebendo");
+    expect(marca.style.getPropertyValue("--duracao")).toBe("900ms");
   });
 
-  it("should receive once the edge answers", () => {
-    const { container } = render(
-      <Monograma carga={0.1} recebendo duracao={800} />,
-    );
+  it("should print on mount, because remounting is what restarts the animation", () => {
+    const { container } = montar();
 
+    // Quem reimprime e quem chama, trocando a `key`. O componente nao guarda estado:
+    // ele ja nasce imprimindo, e por isso a classe esta sempre presente.
     expect(container.querySelector("[data-monograma]")?.className).toContain(
       "monograma-recebendo",
     );

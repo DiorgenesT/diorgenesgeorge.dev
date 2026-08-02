@@ -3,14 +3,18 @@
 @import "./design/tokens.css";
 
 @theme inline {
-  /* Tres papeis sem sobreposicao: cartaz, legenda datilografada e leitura. */
-  --font-display: "Anton", Impact, "Haettenschweiler", sans-serif;
-  --font-mono: "Special Elite", ui-monospace, Courier, monospace;
+  /* Tres papeis sem sobreposicao: display, rotulo tecnico e leitura. */
+  --font-display: "Archivo Black", "Arial Black", Impact, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
 
-  /* Piso da datilografada. Medido no navegador: em 11,5px ela desmonta. */
+  /*
+   * Piso do rotulo tecnico. Nasceu porque a Special Elite desmontava em 11,5px; com a
+   * Space Mono a razao passa a ser consistencia e conforto de leitura, nao socorro a
+   * uma fonte fraca. O valor fica, e o portao em scripts/tipografia.test.ts tambem.
+   */
   --text-meta: 0.8125rem;
   --text-meta--line-height: 1.45;
 
@@ -77,6 +81,7 @@
   .monograma-eco {
     transform: translate(-2px, 1px) !important;
   }
+
 }
 
 /*
@@ -91,8 +96,15 @@
   display: flex;
   align-items: center;
   user-select: none;
+  /* A marca nunca empurra o que esta ao lado: a coluna manda, e ela se ajusta. */
+  max-width: 100%;
   font-family: var(--font-display);
-  font-size: clamp(7rem, 31vw, 26rem);
+  /*
+   * Corpo menor que o da Anton para a mesma presenca. A Archivo Black e larga por
+   * desenho, e no mesmo font-size ela ocupa cerca de 40% mais largura: manter os 31vw
+   * anteriores transbordava a coluna e empurrava o sumario para fora.
+   */
+  font-size: clamp(5rem, 19vw, 16rem);
   /*
    * Um, e nao menos. As fatias recortam em porcentagem da caixa do elemento: com
    * entrelinha menor que o desenho da letra, o que sobra acima de 0% e abaixo de 100%
@@ -100,21 +112,20 @@
    */
   line-height: 1;
   /*
-   * A Anton ja e condensada. Apertar mais que isto funde o D com o G num borrao, e o
-   * monograma deixa de ser legivel como duas letras, que e a unica coisa que ele
-   * precisa fazer.
+   * A Archivo Black e larga por desenho, entao aceita e pede um aperto. As duas letras
+   * ficam juntas como um monograma, sem a folga que as fazia parecer duas iniciais
+   * soltas, e sem o aperto negativo que as fundia num borrao.
+   *
+   * As fatias nao colidem entre as letras: a tabela de desregistro e a mesma nas duas,
+   * entao a faixa de mesma altura do D e do G escorrega sempre junta, no mesmo sentido.
    */
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
   color: var(--fg);
 }
 
 .monograma-letra {
   position: relative;
   display: inline-block;
-}
-
-.monograma-letra + .monograma-letra {
-  margin-inline-start: -0.04em;
 }
 
 .monograma-medida {
@@ -159,18 +170,23 @@
     cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/*
+ * Deslocamento em `em`, e nao em pixels: assim ele acompanha o corpo da marca em vez
+ * de ser generoso no celular e timido no desktop, e a folga entre as letras continua
+ * proporcional ao escorregao em qualquer tela.
+ */
 @keyframes monograma-escorrega {
   0% {
-    transform: translateX(calc(var(--direcao) * var(--carga) * 150px));
+    transform: translateX(calc(var(--direcao) * var(--carga) * 0.42em));
   }
   28% {
-    transform: translateX(calc(var(--direcao) * var(--carga) * 62px));
+    transform: translateX(calc(var(--direcao) * var(--carga) * 0.17em));
   }
   52% {
-    transform: translateX(calc(var(--direcao) * var(--carga) * -24px));
+    transform: translateX(calc(var(--direcao) * var(--carga) * -0.07em));
   }
   74% {
-    transform: translateX(calc(var(--direcao) * var(--carga) * 8px));
+    transform: translateX(calc(var(--direcao) * var(--carga) * 0.02em));
   }
   100% {
     transform: translateX(0);
@@ -180,8 +196,8 @@
 @keyframes monograma-registro {
   0% {
     transform: translate(
-      calc(var(--carga) * -62px),
-      calc(var(--carga) * 16px)
+      calc(var(--carga) * -0.17em),
+      calc(var(--carga) * 0.045em)
     );
   }
   100% {
@@ -189,6 +205,42 @@
       calc(-2px - var(--carga) * 4px),
       calc(1px + var(--carga) * 2px)
     );
+  }
+}
+
+/*
+ * A marca d'agua. Um unico DG em corpo enorme, mais claro que o papel, sangrando pelo
+ * canto inferior direito.
+ *
+ * Mais claro, e nao mais escuro: sobre papel bege isso le como relevo seco, a marca
+ * gravada na folha sem tinta, que e um gesto de impressao e nao de tela. Escuro leria
+ * como sujeira, que foi exatamente o problema das manchas.
+ *
+ * Fica no canto oposto ao monograma da capa, de proposito. Atras da marca de verdade
+ * ela seria redundancia; no quadrante vazio ela e composicao.
+ *
+ * Fixa em relacao a janela: o conteudo passa por cima dela como tinta passa por cima do
+ * papel, em vez de rolarem juntos. Uma forma so, sem repeticao, sem movimento.
+ */
+.marca-dagua {
+  position: fixed;
+  z-index: 0;
+  inset-block-end: -14vh;
+  inset-inline-end: -6vw;
+  font-family: var(--font-display);
+  font-size: 64vh;
+  line-height: 0.78;
+  letter-spacing: -0.045em;
+  color: var(--bg-raised);
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (width < 64rem) {
+  .marca-dagua {
+    inset-block-end: -8vh;
+    inset-inline-end: -14vw;
+    font-size: 42vh;
   }
 }
 

@@ -39,6 +39,12 @@ export default function SiteLayout() {
         {t["a11y.skipToContent"]}
       </a>
 
+      {/* Marca d'agua: decoracao pura, entao sai da arvore de acessibilidade. O nome
+          de quem e a pagina esta no h1, nunca aqui. */}
+      <span aria-hidden="true" className="marca-dagua">
+        DG
+      </span>
+
       {/*
         O z-2 aqui, no conteudo e no rodape existe porque a granulacao aplica um ::after
         com z-index 1 sobre a pagina inteira: sem isto os links ficariam abaixo do veu e
@@ -82,7 +88,12 @@ export default function SiteLayout() {
       </div>
 
       <footer className="relative z-2 border-t border-hairline">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-8 font-mono text-meta text-fg-subtle">
+        {/* Sem `font-mono` aqui: o rodape e chrome do site, nao metadado tecnico.
+            A monoespacada fica reservada ao que e leitura de maquina (numeracao do
+            sumario, cabecalho de edicao, endereco), e o resto usa a pilha do sistema
+            em caixa alta com entreletra larga, que da o mesmo ar editorial sem o eco
+            de datilografia. */}
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-8 text-meta uppercase tracking-widest text-fg-subtle">
           <span>{t["footer.builtWith"]}</span>
           <Link
             to={localizedHref("colophon", locale)}
