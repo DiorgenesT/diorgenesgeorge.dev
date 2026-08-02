@@ -8,8 +8,14 @@ import { CLIENT_DIR } from "./html-files";
  * ficam fora desta conta de propósito: carregam depois do LCP e só para quem as recebe.
  * Foi a ausência deste portão que deixou 34 KB de conteúdo desnecessário passarem na
  * Fase 1 — a home baixava o texto de todas as páginas do site.
+ *
+ * O teto existe para barrar **regressão**, não publicação. O índice de frontmatter
+ * cresce cerca de 800 bytes por documento, e isso é conteúdo legítimo: com 30
+ * documentos o crítico fica em ~122 KB. Um vazamento como o da Fase 1 chega de uma vez,
+ * em dezenas de KB, e continua sendo pego. Ajustado de 120 para 132 KB em 2026-08-01,
+ * quando publicar o quinto case deixou 280 bytes de folga.
  */
-const CRITICAL_BUDGET_BYTES = 120 * 1024;
+const CRITICAL_BUDGET_BYTES = 132 * 1024;
 
 const ASSET = /\/assets\/([A-Za-z0-9._-]+\.js)/g;
 

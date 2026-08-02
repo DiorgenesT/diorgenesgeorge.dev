@@ -262,8 +262,10 @@ WCAG 2.1 AA, verificado nos dois temas.
 | LCP | < 1,8 s |
 | INP | < 200 ms |
 | CLS | < 0,05 |
-| JS inicial (gzip) | < 100 KB |
-| Cena 3D (gzip) | < 120 KB |
+| JS até interatividade (gzip) | < 132 KB, verificado no build |
+| Cena e movimento (gzip) | < 310 KB, carregados após o LCP e só para quem os recebe |
+
+**Mudança consciente de 2026-08-01.** O orçamento deixou de ser um número único porque três públicos pagam contas diferentes. A cena em Three.js mediu 227 KB comprimidos — não os 120 previstos aqui — e o Diorgenes optou por mantê-la com o número na mesa. Quem pede movimento reduzido, está em aparelho modesto ou sem WebGL não baixa nada disso e fica em ~122 KB, recebendo o mesmo desenho em SVG. O detalhe está em `docs/superpowers/specs/2026-08-01-fase-2-hero-design.md`.
 
 Fontes auto-hospedadas com `preload` do subset crítico. Imagens em AVIF/WebP com dimensões explícitas. Code splitting por rota. Cloudflare Web Analytics (sem cookie, sem banner).
 

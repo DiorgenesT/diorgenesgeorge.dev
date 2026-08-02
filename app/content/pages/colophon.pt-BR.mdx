@@ -18,6 +18,14 @@ Um detalhe deu trabalho e vale contar. O framework injeta scripts inline em cada
 
 A solução ficou mais simples do que a tentativa. Todos os scripts continuam inline, liberados por hash, e o build falha se a política passar de quatro mil bytes. O número de hashes cresce com a quantidade de rotas, não de páginas: mil artigos compartilham o mesmo script da rota de artigo. E como o cabeçalho é idêntico em toda resposta, a compressão do HTTP/2 o envia uma vez por conexão.
 
+## O hero mede, não decora
+
+O painel do topo mostra de onde partiu a sua requisição e qual datacenter a atendeu, com a distância entre os dois e o tempo de ida e volta cronometrado no seu próprio navegador. Nada disso é armazenado: os dados vêm da requisição, são mostrados a você e descartados quando a aba fecha.
+
+O globo custa caro e vale dizer quanto. A cena em Three.js pesa 227 KB comprimidos, e as bibliotecas de movimento somam outros 81. Nenhum desses bytes é baixado por quem pede movimento reduzido no sistema operacional, nem por quem está num aparelho modesto ou sem WebGL — essas pessoas recebem o mesmo desenho em SVG, que custa quase nada e usa exatamente a mesma matemática de projeção.
+
+O JavaScript que toda visita paga, esse sim, é verificado no build: se passar do teto, a publicação falha. Foi assim que se descobriu que a home carregava o texto de todas as páginas do site sem precisar.
+
 ## Tipografia
 
 Instrument Sans para texto, Instrument Serif itálico para as quebras editoriais, IBM Plex Mono para dados e código. As três são auto-hospedadas em subconjuntos `woff2`, com métricas de fallback para não haver salto de layout enquanto carregam.
