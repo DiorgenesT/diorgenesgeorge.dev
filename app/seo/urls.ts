@@ -1,10 +1,10 @@
 import {
-  documentTranslations,
-  getPage,
-  listArticles,
-  listCases,
-  translationsOf,
-} from "../content/registry";
+  documentTranslationSlugs,
+  listArticleIndex,
+  listCaseIndex,
+  pageIndex,
+  pageTranslationLocales,
+} from "../content/index";
 import {
   LOCALES,
   ROUTE_PATHS,
@@ -26,7 +26,7 @@ export function caseTranslations(
   slug: string,
 ): Partial<Record<Locale, string>> {
   return Object.fromEntries(
-    Object.entries(documentTranslations("case", locale, slug)).map(
+    Object.entries(documentTranslationSlugs("case", locale, slug)).map(
       ([target, translated]) => [
         target,
         documentHref("work", target as Locale, translated),
@@ -40,7 +40,7 @@ export function articleTranslations(
   slug: string,
 ): Partial<Record<Locale, string>> {
   return Object.fromEntries(
-    Object.entries(documentTranslations("article", locale, slug)).map(
+    Object.entries(documentTranslationSlugs("article", locale, slug)).map(
       ([target, translated]) => [
         target,
         documentHref("writing", target as Locale, translated),
@@ -90,7 +90,7 @@ export function allIndexableUrls(buildDate: string): IndexableUrl[] {
       });
     }
 
-    for (const doc of listCases(locale)) {
+    for (const doc of listCaseIndex(locale)) {
       urls.push({
         path: documentHref("work", locale, doc.slug),
         locale,
@@ -101,7 +101,7 @@ export function allIndexableUrls(buildDate: string): IndexableUrl[] {
       });
     }
 
-    for (const doc of listArticles(locale)) {
+    for (const doc of listArticleIndex(locale)) {
       urls.push({
         path: documentHref("writing", locale, doc.slug),
         locale,
@@ -126,7 +126,7 @@ function pageFor(key: RouteKey, locale: Locale) {
   const pageKey = PAGE_KEYS[key];
   if (!pageKey) return undefined;
 
-  const page = getPage(locale, pageKey);
+  const page = pageIndex(locale, pageKey);
   if (!page) return undefined;
 
   return {
@@ -141,14 +141,10 @@ export function pageTranslations(key: RouteKey): Partial<Record<Locale, string>>
   const pageKey = PAGE_KEYS[key];
   if (!pageKey) return staticTranslations(key);
 
-  const anyPage = LOCALES.map((locale) => getPage(locale, pageKey)).find(
-    Boolean,
-  );
-  if (!anyPage) return staticTranslations(key);
+  const locales = pageTranslationLocales(pageKey);
+  if (locales.length === 0) return staticTranslations(key);
 
   return Object.fromEntries(
-    Object.keys(translationsOf("page", anyPage.frontmatter.translationKey)).map(
-      (locale) => [locale, localizedHref(key, locale as Locale)],
-    ),
+    locales.map((locale) => [locale, localizedHref(key, locale)]),
   );
 }

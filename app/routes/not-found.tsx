@@ -18,7 +18,9 @@ export default function NotFound() {
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col items-start gap-6 px-6 py-32">
-      <p className="font-mono text-sm uppercase tracking-widest text-accent">404</p>
+      <p className="font-mono text-sm uppercase tracking-widest text-accent">
+        404
+      </p>
       <h1 className="font-sans text-4xl font-bold tracking-tight">
         {t["notFound.heading"]}
       </h1>

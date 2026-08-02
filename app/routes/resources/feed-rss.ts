@@ -9,10 +9,9 @@ export function loader({ request }: { request: Request }) {
   const locale = localeFromPathname(path);
   const title = getDictionary(locale)["meta.writing.title"];
 
-  return new Response(
-    renderRss(locale, title, path, listArticles(locale)),
-    { headers: { "Content-Type": "application/rss+xml; charset=utf-8" } },
-  );
+  return new Response(renderRss(locale, title, path, listArticles(locale)), {
+    headers: { "Content-Type": "application/rss+xml; charset=utf-8" },
+  });
 }
 
 export const feedPath = (locale: Parameters<typeof localizedHref>[1]) =>

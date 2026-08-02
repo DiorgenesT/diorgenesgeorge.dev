@@ -1,6 +1,7 @@
 import { createRequestHandler } from "react-router";
 import { LOCALE_SEGMENTS } from "../app/i18n/config";
 import { negotiateLocale } from "../app/i18n/negotiate";
+import { handleEdge } from "./api/edge";
 
 const requestHandler = createRequestHandler(
   () => import("virtual:react-router/server-build"),
@@ -10,6 +11,10 @@ const requestHandler = createRequestHandler(
 export default {
   async fetch(request) {
     const url = new URL(request.url);
+
+    if (url.pathname === "/api/edge") {
+      return handleEdge(request);
+    }
 
     if (url.pathname === "/") {
       const locale = negotiateLocale(request.headers.get("accept-language"));

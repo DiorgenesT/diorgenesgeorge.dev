@@ -21,7 +21,9 @@ export default function About() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-24">
-      <JsonLd data={profilePageJsonLd(locale, localizedHref("about", locale))} />
+      <JsonLd
+        data={profilePageJsonLd(locale, localizedHref("about", locale))}
+      />
       <DocumentHeader title={frontmatter.title} answer={frontmatter.answer} />
       <Prose>
         <Content />

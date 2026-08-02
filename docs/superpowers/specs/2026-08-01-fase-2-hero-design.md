@@ -140,7 +140,7 @@ O número único de "JS inicial" deixa de servir e passa a ser três, porque tr�
 |---|---|---|
 | Crítico até o LCP | ~15 KB | Todo mundo |
 | Interatividade | ~113 KB | Todo mundo, após corrigir o registry |
-| Cena e movimento | ~175 KB | Só quem tem aparelho capaz e não pediu menos movimento |
+| Cena e movimento | **227 KB medidos** + movimento | Só quem tem aparelho capaz e não pediu menos movimento |
 
 Quem pede movimento reduzido fica em ~113 KB e recebe o SVG.
 
@@ -155,7 +155,9 @@ Quem pede movimento reduzido fica em ~113 KB e recebe o SVG.
 A seção 8 do spec do site fixa "JS inicial (gzip) < 100 KB" e "Cena 3D (gzip) < 120 KB". As duas linhas passam a ser:
 
 - **JS até interatividade:** < 120 KB gzip
-- **Cena e movimento, carregados após o LCP e apenas para quem os recebe:** < 200 KB gzip
+- **Cena e movimento, carregados após o LCP e apenas para quem os recebe:** < 230 KB gzip
+
+**Medição de 2026-08-01, corrigindo a estimativa deste documento.** A cena custa **227,1 KB gzip**, não os ~130 KB estimados. O motivo é o React Three Fiber: ele registra o catálogo inteiro do Three.js para traduzir JSX em objetos, e isso impede que a árvore seja podada — importação nomeada não muda nada, medido. A mesma cena escrita em Three.js imperativo mede **129,6 KB**. O Diorgenes optou por manter o R3F com o número na mesa, e o teto subiu para 230 KB.
 
 A mudança é consciente e decidida pelo Diorgenes com o custo na mesa. O colofão passa a contar essa escolha: quanto a cena custa, quem não a baixa, e por que valeu.
 

@@ -1874,6 +1874,36 @@ Agente de IA e `/ia` (Fase 3). Formulário de contato, Cloudflare Email Service,
 | GSAP e Motion animando o mesmo elemento | Movimento brigando, jank | Fronteira explícita: GSAP só dentro de `app/hero/` e `app/motion/reveal.tsx`; Motion só em `page-transition.tsx` |
 | Aparelho intermediário sofrendo | Frame acima de 16 ms no teste real | Subir o limiar em `capability.ts`. Entregar o SVG a quem não aguenta é melhor que entregar uma cena travada |
 
+
+## Notas de execução — 2026-08-01
+
+Executado inline, com commit por tarefa. `npm run check` verificado pelo código de saída ao fim de cada uma — e ainda assim escapou um commit com lint vermelho, porque encadeei o comando com um `echo` antes do `&&`. Emendado.
+
+### Divergências entre o plano e a realidade
+
+| Plano assumia | Realidade | Resolução |
+|---|---|---|
+| Cena em R3F custa ~130 KB | **227,1 KB medidos.** O R3F registra o catálogo inteiro do Three.js, e importação nomeada não muda nada | Medido também o Three.js imperativo: 129,6 KB. O Diorgenes optou por manter o R3F com o número na mesa; teto da cena subiu para 230 KB |
+| Movimento custa ~45 KB | **81,5 KB medidos** — Motion sozinho pesa 38 | Registrado. A transição de rota é a que menos entrega pelo que cobra |
+| Câmera a 3,2 enquadra o globo | **Nunca enquadrou.** Altura visível é 2·d·tan(17,5°) = 2,02 contra diâmetro 2 | Distâncias derivadas da geometria, piso em 3,4, com teste que falha se alguém baixar |
+| Aproximar a câmera resolve o arco curto | Piorou: a esfera transbordou e a silhueta sumiu | A aproximação passou a ser suave, e par próximo mostra os pontos quase juntos — que é o que de fato aconteceu |
+| `targetRotation` traz o ponto para a frente | Levava para **trás**. Os testes verificavam sinal e magnitude, nunca o objetivo | Teste novo aplica a rotação de verdade e exige `z > 0.99`. A ordem correta é `XYZ`: em `applyEuler` a última letra é aplicada primeiro |
+| Cores da cena em hexadecimal fixo | Buraco preto no tema claro. O SVG herda tema por CSS; canvas não herda nada | `scene-colors.ts` lê os tokens e reage à troca de tema |
+| Transição de rota anima toda navegação | Animava também a primeira carga: pintava e escondia. axe acusou contraste de 2,72 em várias páginas | Só troca de rota anima. A revelação por scroll só esconde o que está fora da tela |
+| `reducedMotion` do Playwright verifica o portão | **Não chega ao `window.matchMedia`** nesta versão: `matches` continua falso e a cena monta. O teste passava por corrida | Sinal forçado por init script: o teste verifica o site, não o harness |
+| Teto de 120 KB para o crítico | Publicar o quinto case deixou **280 bytes** de folga | Subiu para 132 KB, com o motivo escrito: o portão existe para barrar regressão, não publicação |
+| `setState` em efeito para ler o ambiente | Lint barra render em cascata, como na Fase 0 | `useSyncExternalStore` com cache de módulo |
+
+### Estado da definição de pronto
+
+Verificado: `npm run check` (287 testes), `npm run e2e` (127 testes), build com o portão de orçamento em 118,9 de 132 KB, `/api/edge` com `no-store` e sem IP ou operadora, globo 3D com os dois pontos e o arco, SVG com o mesmo desenho, **nenhum dos quatro chunks baixado sob movimento reduzido**, falha da telemetria dizendo "não foi possível medir", LCP em texto, render pausando fora do viewport, e o colofão contando o custo com os números medidos.
+
+Pendente, e não é código:
+
+- **Medição em aparelho real.** Só o Diorgenes pode fazer. Se engasgar, subir o limiar em `capability.ts` e entregar o SVG — é mais honesto que entregar cena travada.
+- **CI verde:** a branch ainda não foi enviada.
+- **Voz dos textos.** Crítica do Diorgenes de que o site parece genérico. A parte visual foi atacada com cartões e textura nos índices; a reescrita de voz ficou de fora por decisão dele.
+
 ## Insumos que dependem do Diorgenes
 
 1. **Um aparelho real** para a medição da Task 14, passo 3.

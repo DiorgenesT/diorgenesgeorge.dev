@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsx scripts/validate-content.ts && react-router build && tsx scripts/build-404.ts && tsx scripts/build-markdown.ts && tsx scripts/build-headers.ts",
+    "build": "tsx scripts/validate-content.ts && tsx scripts/build-content-index.ts && react-router build && tsx scripts/build-404.ts && tsx scripts/build-markdown.ts && tsx scripts/build-headers.ts && tsx scripts/check-budget.ts",
     "dev": "react-router dev",
     "typecheck": "wrangler types && react-router typegen && tsc -b",
     "lint": "eslint .",
@@ -21,10 +21,14 @@
     "@fontsource-variable/instrument-sans": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/instrument-serif": "^5.3.0",
+    "@react-three/fiber": "^9.7.0",
+    "gsap": "^3.15.0",
     "isbot": "^5.1.36",
+    "motion": "^12.43.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router": "^8",
+    "three": "^0.185.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -39,6 +43,7 @@
     "@types/node": "^22.20.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.185.3",
     "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^10.8.0",
     "eslint-plugin-react-hooks": "^7.1.1",

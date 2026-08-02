@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { listArticles, listTags } from "../content/registry";
+import { listArticleIndex, listTagIndex } from "../content/index";
 import { documentHref, tagHref } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
 import { formatDate } from "../i18n/format";
@@ -20,8 +20,8 @@ export function meta({ location }: Route.MetaArgs) {
 export default function Writing() {
   const locale = useLocale();
   const t = getDictionary(locale);
-  const articles = listArticles(locale);
-  const tags = listTags(locale);
+  const articles = listArticleIndex(locale);
+  const tags = listTagIndex(locale);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-24">
@@ -52,26 +52,37 @@ export default function Writing() {
             </nav>
           )}
 
-          <ul className="mt-16 space-y-14">
+          <ul className="mt-16 space-y-6">
             {articles.map(({ slug, frontmatter }) => (
               <li key={slug}>
-                <article>
+                <article className="group relative rounded-xl border border-hairline p-7 transition-colors hover:border-accent focus-within:border-accent sm:p-9">
                   <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
                     <time dateTime={frontmatter.published}>
                       {formatDate(locale, frontmatter.published)}
                     </time>
                   </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-balance">
                     <Link
                       to={documentHref("writing", locale, slug)}
-                      className="hover:text-accent"
+                      className="after:absolute after:inset-0 group-hover:text-accent"
                     >
                       {frontmatter.title}
                     </Link>
                   </h2>
-                  <p className="mt-3 max-w-prose text-fg-muted">
+                  <p className="mt-4 max-w-prose text-fg-muted">
                     {frontmatter.answer}
                   </p>
+
+                  <ul className="mt-6 flex flex-wrap gap-2">
+                    {frontmatter.tags.map((tag) => (
+                      <li
+                        key={tag}
+                        className="rounded-full border border-hairline px-3 py-1 font-mono text-[0.65rem] uppercase tracking-widest text-fg-subtle"
+                      >
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
                 </article>
               </li>
             ))}

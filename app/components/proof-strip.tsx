@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { listCases } from "../content/registry";
+import { listCaseIndex } from "../content/index";
 import { documentHref, type Locale } from "../i18n/config";
 
 /**
@@ -7,7 +7,7 @@ import { documentHref, type Locale } from "../i18n/config";
  * que explica de onde ele vem. Case em rascunho não aparece, então nenhum número fica órfão.
  */
 export function ProofStrip({ locale }: { locale: Locale }) {
-  const proofs = listCases(locale).flatMap((doc) =>
+  const proofs = listCaseIndex(locale).flatMap((doc) =>
     doc.frontmatter.proof ? [{ slug: doc.slug, ...doc.frontmatter.proof }] : [],
   );
 

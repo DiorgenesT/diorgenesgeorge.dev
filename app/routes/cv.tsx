@@ -19,12 +19,20 @@ export function meta({ location }: Route.MetaArgs) {
 }
 
 /** A duração nunca é armazenada: sai das datas na renderização e nunca envelhece. */
-function Period({ position, locale }: { position: CvPosition; locale: Locale }) {
+function Period({
+  position,
+  locale,
+}: {
+  position: CvPosition;
+  locale: Locale;
+}) {
   const t = getDictionary(locale);
 
   return (
     <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
-      <time dateTime={position.start}>{formatMonth(locale, position.start)}</time>
+      <time dateTime={position.start}>
+        {formatMonth(locale, position.start)}
+      </time>
       {" — "}
       {position.end ? (
         <time dateTime={position.end}>{formatMonth(locale, position.end)}</time>
@@ -90,7 +98,9 @@ export default function Cv() {
       </section>
 
       <section className="mt-16">
-        <h2 className="text-2xl font-semibold tracking-tight">{t["cv.skills"]}</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">
+          {t["cv.skills"]}
+        </h2>
         <dl className="mt-8 space-y-6">
           {cv.skills.map((group) => (
             <div key={group.group}>

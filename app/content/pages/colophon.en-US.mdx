@@ -18,6 +18,14 @@ One detail took work and is worth telling. The framework injects inline scripts 
 
 The answer turned out simpler than the attempt. Every script stays inline, allowed by hash, and the build fails if the policy grows past four thousand bytes. The number of hashes grows with the number of routes, not pages: a thousand articles share the same script for the article route. And since the header is byte-for-byte identical on every response, HTTP/2 header compression sends it once per connection.
 
+## The hero measures, it does not decorate
+
+The panel at the top shows where your request came from and which datacenter answered it, with the distance between the two and the round trip timed in your own browser. None of it is stored: the data comes from the request, is shown to you, and is discarded when the tab closes.
+
+The globe is expensive and it is worth saying how much. The Three.js scene weighs 227 KB compressed, and the motion libraries add another 81. None of those bytes are downloaded by anyone who asks for reduced motion in their operating system, nor by anyone on a modest device or without WebGL — those visitors get the same drawing in SVG, which costs almost nothing and uses exactly the same projection math.
+
+The JavaScript every visit pays for is verified at build time: if it goes past the ceiling, publishing fails. That is how it was discovered that the home page was loading the text of every page on the site without needing it.
+
 ## Typography
 
 Instrument Sans for text, Instrument Serif italic for editorial breaks, IBM Plex Mono for data and code. All three are self-hosted as subset `woff2` files, with fallback metrics so nothing shifts while they load.
