@@ -31,7 +31,6 @@ export type Dictionary = {
   "hero.unavailable": string;
   "hero.privacy": string;
   "hero.needsJs": string;
-  "hero.mapLabel": string;
   "home.taglineLead": string;
   "home.taglineAccent": string;
   "home.answer": string;
@@ -56,9 +55,6 @@ export type Dictionary = {
   "cv.skills": string;
   "cv.current": string;
   "a11y.skipToContent": string;
-  "theme.toggle": string;
-  "theme.dark": string;
-  "theme.light": string;
   "locale.label": string;
   "footer.builtWith": string;
   "meta.home.title": string;

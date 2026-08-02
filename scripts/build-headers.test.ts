@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { THEME_INIT_SCRIPT } from "../app/design/theme";
 import {
   cspLength,
   executableInlineScripts,
@@ -73,9 +72,10 @@ describe("executableInlineScripts", () => {
     ).toEqual(["c()"]);
   });
 
-  it("should include the theme script, which must stay inline to block the first paint", () => {
-    const html = `<script>${THEME_INIT_SCRIPT}</script>`;
+  it("should include a classic script that has to run before the first paint", () => {
+    const script = `(function(){try{document.documentElement.dataset.x="1";}catch(e){}})();`;
+    const html = `<script>${script}</script>`;
 
-    expect(executableInlineScripts(html)).toEqual([THEME_INIT_SCRIPT]);
+    expect(executableInlineScripts(html)).toEqual([script]);
   });
 });

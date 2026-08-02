@@ -1,7 +1,7 @@
 import type { Dictionary } from "../i18n/dictionary";
 import type { Locale } from "../i18n/config";
 import { formatNumber } from "../i18n/format";
-import { distanceKm } from "./projection";
+import { distanceKm } from "./distance";
 import type { TelemetryState } from "./telemetry";
 
 export type Row = { label: string; value: string };

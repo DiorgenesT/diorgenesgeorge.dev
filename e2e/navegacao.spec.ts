@@ -28,37 +28,6 @@ test("should keep the user on the colophon when switching language", async ({
   await expect(page).toHaveURL(/\/en\/colophon\/$/);
 });
 
-test.describe("tema", () => {
-  test.use({ colorScheme: "dark" });
-
-  test("should follow a dark system preference on first visit", async ({
-    page,
-  }) => {
-    await page.goto("/en/");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  });
-
-  test("should persist the chosen theme across a reload", async ({ page }) => {
-    await page.goto("/en/");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-    await page.getByRole("button", { name: "Toggle theme" }).click();
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    await page.reload();
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  });
-});
-
-test.describe("tema claro do sistema", () => {
-  test.use({ colorScheme: "light" });
-
-  test("should follow a light system preference on first visit", async ({
-    page,
-  }) => {
-    await page.goto("/en/");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  });
-});
-
 test("should reach the skip link as the first keyboard stop", async ({
   page,
 }) => {
@@ -126,14 +95,9 @@ test("should not report any content security policy violation", async ({
   });
 
   await page.goto("/en/");
-  const before = await page
-    .locator("html")
-    .getAttribute("data-theme");
-  await page.getByRole("button", { name: "Toggle theme" }).click();
-  await expect(page.locator("html")).not.toHaveAttribute(
-    "data-theme",
-    before ?? "dark",
-  );
+  // Navegar de rota exercita o script de módulo, que é o que a CSP poderia barrar.
+  await page.getByRole("link", { name: "About" }).click();
+  await expect(page).toHaveURL(/\/en\/about\/$/);
 
   expect(violations).toEqual([]);
 });
