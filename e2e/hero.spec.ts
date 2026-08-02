@@ -170,10 +170,18 @@ test.describe("movimento reduzido", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/pt-br/");
 
-    const animando = await page
-      .locator("[data-monograma] .monograma-fatia")
-      .first()
-      .evaluate((el) => getComputedStyle(el).animationName);
+    // A marca remonta quando a telemetria chega, porque a `key` muda. Esperar a rede
+    // sossegar evita medir durante a remontagem; resolver o elemento dentro do
+    // `evaluate` evita medir um elemento ja desanexado, que devolveria string vazia
+    // em vez do valor calculado.
+    await page.waitForLoadState("networkidle");
+
+    const animando = await page.evaluate(() => {
+      const fatia = document.querySelector("[data-monograma] .monograma-fatia");
+      return fatia === null
+        ? "marca ausente"
+        : getComputedStyle(fatia).animationName;
+    });
 
     expect(animando).toBe("none");
   });
