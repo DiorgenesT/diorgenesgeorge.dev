@@ -13,24 +13,26 @@ const TELEMETRY = {
   tlsVersion: "TLSv1.3",
 };
 
-test("should fill the panel with what the edge reported", async ({ page }) => {
+test("should stamp what the edge reported", async ({ page }) => {
   await page.route("**/api/edge", (route) => route.fulfill({ json: TELEMETRY }));
 
   await page.goto("/pt-br/");
+  const carimbo = page.locator("[data-carimbo]");
 
-  await expect(page.getByText("Betim, BR")).toBeVisible();
-  await expect(page.getByText("GIG")).toBeVisible();
-  await expect(page.getByText("331 km")).toBeVisible();
+  await expect(carimbo.getByText("Betim, BR")).toBeVisible();
+  await expect(carimbo.getByText(/GIG/)).toBeVisible();
+  await expect(carimbo.getByText(/331 km/)).toBeVisible();
 });
 
-test("should say it could not measure instead of showing a zero", async ({
-  page,
-}) => {
+test("should stamp nothing when the edge cannot answer", async ({ page }) => {
   await page.route("**/api/edge", (route) => route.fulfill({ status: 500 }));
 
   await page.goto("/pt-br/");
+  const carimbo = page.locator("[data-carimbo]");
 
-  await expect(page.getByText("Não foi possível medir").first()).toBeVisible();
+  // O invólucro continua lá, reservando o espaço; o que não existe é conteúdo.
+  await expect(carimbo).toBeAttached();
+  await expect(carimbo).toHaveText("");
   await expect(page.getByText("0 km")).toHaveCount(0);
 });
 
@@ -44,11 +46,39 @@ test("should never invent a position when the colo is unknown", async ({
   await page.goto("/pt-br/");
 
   // A cidade veio, então ela aparece; a distância não tem como existir.
-  await expect(page.getByText("Betim, BR")).toBeVisible();
+  await expect(page.locator("[data-carimbo]").getByText("Betim, BR")).toBeVisible();
   await expect(page.getByText("331 km")).toHaveCount(0);
 });
 
-test("should tell a visitor without javascript why the numbers are missing", async ({
+/**
+ * O risco real desta fase: o carimbo só existe depois que o cliente busca o edge, e o
+ * espaço dele é reservado desde o servidor justamente para que a queda não empurre nada.
+ */
+test("should not shift the layout when the stamp lands", async ({ page }) => {
+  await page.route("**/api/edge", (route) => route.fulfill({ json: TELEMETRY }));
+
+  await page.goto("/pt-br/");
+
+  const cls = await page.evaluate(
+    () =>
+      new Promise<number>((resolve) => {
+        let total = 0;
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries() as (PerformanceEntry & {
+            value: number;
+            hadRecentInput: boolean;
+          })[]) {
+            if (!entry.hadRecentInput) total += entry.value;
+          }
+        }).observe({ type: "layout-shift", buffered: true });
+        setTimeout(() => resolve(total), 3000);
+      }),
+  );
+
+  expect(cls).toBeLessThan(0.05);
+});
+
+test("should keep the stamp out of the page for a visitor without javascript", async ({
   browser,
 }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
@@ -56,8 +86,9 @@ test("should tell a visitor without javascript why the numbers are missing", asy
 
   await page.goto("/pt-br/");
 
-  await expect(page.getByText("A medição depende de JavaScript")).toBeVisible();
-  await expect(page.getByText("Medindo")).toHaveCount(0);
+  // Sem JavaScript não há medição, e sem medição não há o que carimbar. O espaço
+  // reservado continua lá, e vazio, que é o estado correto.
+  await expect(page.locator("[data-carimbo]")).toHaveText("");
 
   await context.close();
 });
