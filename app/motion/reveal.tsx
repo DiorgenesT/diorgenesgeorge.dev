@@ -20,6 +20,11 @@ export function Reveal({ children }: { children: ReactNode }) {
         if (cancelled) return;
 
         gsap.registerPlugin(ScrollTrigger);
+
+        // Só esconde o que ainda está fora da tela. O que já foi pintado permanece
+        // legível: animar a entrada de conteúdo visível é escondê-lo de quem já o lê.
+        if (node.getBoundingClientRect().top < window.innerHeight) return;
+
         gsap.fromTo(
           node,
           { opacity: 0, y: 24 },

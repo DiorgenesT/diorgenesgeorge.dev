@@ -52,26 +52,37 @@ export default function Writing() {
             </nav>
           )}
 
-          <ul className="mt-16 space-y-14">
+          <ul className="mt-16 space-y-6">
             {articles.map(({ slug, frontmatter }) => (
               <li key={slug}>
-                <article>
+                <article className="group relative rounded-xl border border-hairline p-7 transition-colors hover:border-accent focus-within:border-accent sm:p-9">
                   <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
                     <time dateTime={frontmatter.published}>
                       {formatDate(locale, frontmatter.published)}
                     </time>
                   </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-balance">
                     <Link
                       to={documentHref("writing", locale, slug)}
-                      className="hover:text-accent"
+                      className="after:absolute after:inset-0 group-hover:text-accent"
                     >
                       {frontmatter.title}
                     </Link>
                   </h2>
-                  <p className="mt-3 max-w-prose text-fg-muted">
+                  <p className="mt-4 max-w-prose text-fg-muted">
                     {frontmatter.answer}
                   </p>
+
+                  <ul className="mt-6 flex flex-wrap gap-2">
+                    {frontmatter.tags.map((tag) => (
+                      <li
+                        key={tag}
+                        className="rounded-full border border-hairline px-3 py-1 font-mono text-[0.65rem] uppercase tracking-widest text-fg-subtle"
+                      >
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
                 </article>
               </li>
             ))}

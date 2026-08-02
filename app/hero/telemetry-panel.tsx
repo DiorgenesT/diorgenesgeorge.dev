@@ -16,7 +16,10 @@ export function TelemetryPanel({ state }: { state: TelemetryState }) {
         className="grid gap-x-6 gap-y-3 sm:grid-cols-2"
       >
         {rows.map((row) => (
-          <div key={row.label} className="flex items-baseline justify-between gap-4">
+          <div
+            key={row.label}
+            className="flex items-baseline justify-between gap-4"
+          >
             <dt className="uppercase tracking-widest text-fg-subtle">
               {row.label}
             </dt>

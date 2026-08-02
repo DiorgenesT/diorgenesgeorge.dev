@@ -30,7 +30,9 @@ export function Hero() {
 
         <p className="mt-6 max-w-2xl text-2xl leading-snug text-fg-muted text-balance">
           {t["home.taglineLead"]}{" "}
-          <em className="font-serif italic text-fg">{t["home.taglineAccent"]}</em>
+          <em className="font-serif italic text-fg">
+            {t["home.taglineAccent"]}
+          </em>
         </p>
 
         <AnswerBlock>{t["home.answer"]}</AnswerBlock>

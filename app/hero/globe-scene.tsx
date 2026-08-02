@@ -1,19 +1,28 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
+import { BufferGeometry, Group, SphereGeometry, Vector3 } from "three";
 import {
-  BufferGeometry,
-  Group,
-  SphereGeometry,
-  Vector3,
-} from "three";
-import { settleTween, targetRotation } from "./camera-motion";
+  cameraDistance,
+  markerRadius,
+  settleTween,
+  targetRotation,
+} from "./camera-motion";
 import { greatCircle, toVector, type Coord } from "./projection";
+import { useSceneColors, type SceneColors } from "./scene-colors";
 import type { TelemetryState } from "./telemetry";
 
 const RADIUS = 1;
 const IDLE_SPIN = 0.12;
 
 /** O arco sobe acima da superfície proporcionalmente à distância que percorre. */
+export function angularSpan(from: Coord, to: Coord): number {
+  const a = toVector(from);
+  const b = toVector(to);
+  return Math.acos(
+    Math.min(1, Math.max(-1, a.x * b.x + a.y * b.y + a.z * b.z)),
+  );
+}
+
 function arcGeometry(from: Coord, to: Coord): BufferGeometry {
   const path = greatCircle(from, to, 96);
   const span = Math.acos(
@@ -29,7 +38,8 @@ function arcGeometry(from: Coord, to: Coord): BufferGeometry {
       ),
     ),
   );
-  const peak = 0.06 + (span / Math.PI) * 0.35;
+  // Piso de altura: um par próximo precisa se ler como salto, não como risco.
+  const peak = Math.max(0.09, 0.06 + (span / Math.PI) * 0.35);
 
   const points = path.map((coord, index) => {
     const t = index / (path.length - 1);
@@ -42,20 +52,34 @@ function arcGeometry(from: Coord, to: Coord): BufferGeometry {
   return new BufferGeometry().setFromPoints(points);
 }
 
-function Marker({ coord, color }: { coord: Coord; color: string }) {
-  const position = toVector(coord, RADIUS * 1.005);
+function Marker({
+  coord,
+  color,
+  radius,
+}: {
+  coord: Coord;
+  color: string;
+  radius: number;
+}) {
+  const position = toVector(coord, RADIUS * 1.012);
 
   return (
     <mesh position={[position.x, position.y, position.z]}>
-      <sphereGeometry args={[0.022, 12, 12]} />
+      <sphereGeometry args={[radius, 12, 12]} />
       <meshBasicMaterial color={color} />
     </mesh>
   );
 }
 
-function Globe({ state }: { state: TelemetryState }) {
+function Globe({
+  state,
+  colors,
+}: {
+  state: TelemetryState;
+  colors: SceneColors;
+}) {
   const group = useRef<Group>(null);
-  const { invalidate } = useThree();
+  const { invalidate, camera } = useThree();
 
   const ready = state.status === "ready" ? state.data : undefined;
   const visitor =
@@ -68,6 +92,18 @@ function Globe({ state }: { state: TelemetryState }) {
   const vLon = visitor?.lon;
   const cLat = colo?.lat;
   const cLon = colo?.lon;
+
+  const span =
+    vLat !== undefined &&
+    vLon !== undefined &&
+    cLat !== undefined &&
+    cLon !== undefined
+      ? angularSpan({ lat: vLat, lon: vLon }, { lat: cLat, lon: cLon })
+      : undefined;
+
+  const dotRadius = markerRadius(
+    span === undefined ? 4 : cameraDistance(span),
+  );
 
   const arc = useMemo(() => {
     if (
@@ -112,6 +148,22 @@ function Globe({ state }: { state: TelemetryState }) {
       const tween = settleTween(from, to);
 
       const timeline = gsap.timeline();
+
+      if (cLat !== undefined && cLon !== undefined) {
+        timeline.to(
+          camera.position,
+          {
+            z: cameraDistance(
+              angularSpan({ lat: vLat, lon: vLon }, { lat: cLat, lon: cLon }),
+            ),
+            duration: tween.duration,
+            ease: tween.ease,
+            onUpdate: invalidate,
+          },
+          0,
+        );
+      }
+
       timeline.to(node.rotation, {
         x: to.x,
         y: to.y,
@@ -140,29 +192,35 @@ function Globe({ state }: { state: TelemetryState }) {
     return () => {
       cancelled = true;
     };
-  }, [vLat, vLon, arc, invalidate]);
+  }, [vLat, vLon, cLat, cLon, arc, invalidate, camera]);
 
   return (
     <group ref={group}>
       <mesh>
-        <sphereGeometry args={[RADIUS, 48, 48]} />
-        <meshBasicMaterial color="#12100e" />
+        <sphereGeometry args={[RADIUS, 64, 64]} />
+        <meshBasicMaterial color={colors.surface} />
       </mesh>
 
+      {/* Raio um pouco maior que o da esfera: no mesmo raio os dois brigam por
+          profundidade e a grade some, deixando a silhueta facetada. */}
       <lineSegments>
-        <wireframeGeometry args={[new SphereGeometry(RADIUS, 24, 16)]} />
-        <lineBasicMaterial color="#2a2521" transparent opacity={0.7} />
+        <wireframeGeometry
+          args={[new SphereGeometry(RADIUS * 1.004, 24, 16)]}
+        />
+        <lineBasicMaterial color={colors.grid} transparent opacity={0.35} />
       </lineSegments>
 
       {arc && (
         <line>
           <primitive object={arc} attach="geometry" />
-          <lineBasicMaterial color="#FFA033" linewidth={2} />
+          <lineBasicMaterial color={colors.arc} linewidth={2} />
         </line>
       )}
 
-      {visitor && <Marker coord={visitor} color="#F2EEE9" />}
-      {colo && <Marker coord={colo} color="#4BE38A" />}
+      {visitor && (
+        <Marker coord={visitor} color={colors.visitor} radius={dotRadius} />
+      )}
+      {colo && <Marker coord={colo} color={colors.colo} radius={dotRadius} />}
     </group>
   );
 }
@@ -180,6 +238,7 @@ function FrameCounter() {
 
 export default function GlobeScene({ state }: { state: TelemetryState }) {
   const holder = useRef<HTMLDivElement>(null);
+  const colors = useSceneColors();
 
   return (
     <div ref={holder} className="h-full w-full">
@@ -187,10 +246,10 @@ export default function GlobeScene({ state }: { state: TelemetryState }) {
         // demand: nada é renderizado sem alguém pedir, então a aba parada não gasta nada.
         frameloop="demand"
         dpr={[1, 2]}
-        camera={{ position: [0, 0, 3.2], fov: 35 }}
+        camera={{ position: [0, 0, 4], fov: 35 }}
         gl={{ antialias: true, alpha: true }}
       >
-        <Globe state={state} />
+        <Globe state={state} colors={colors} />
         <FrameCounter />
       </Canvas>
     </div>

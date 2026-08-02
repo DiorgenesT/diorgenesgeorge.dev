@@ -40,7 +40,8 @@ export function readEnvironment(): Environment {
   };
 
   return {
-    reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)")
+      .matches,
     webgl: supportsWebgl(),
     memoryGb: hints.deviceMemory,
     cores: hints.hardwareConcurrency,
