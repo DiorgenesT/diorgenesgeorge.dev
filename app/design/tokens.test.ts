@@ -11,6 +11,9 @@ const TEXT_PAIRS = [
   ["fg-muted", "bg-raised"],
   ["accent", "bg"],
   ["accent-fg", "accent"],
+  // A fita e preenchimento, nunca cor de texto. O que este par garante e o inverso:
+  // que o texto posto **sobre** a fita continue legivel, e ele e sempre a tinta.
+  ["fg", "fita"],
 ] as const;
 
 describe("TOKENS", () => {
@@ -25,7 +28,13 @@ describe("TOKENS", () => {
     },
   );
 
-  it("should meet 3:1 contrast when rendering the live-status signal on bg", () => {
-    expect(contrastRatio(TOKENS.signal!, TOKENS.bg!)).toBeGreaterThanOrEqual(3);
+  it("should keep the paper lighter than the ink, because the zine is printed, not screened", () => {
+    // contrastRatio e simetrico, entao ele sozinho nao distingue tinta sobre papel de
+    // papel sobre tinta. Medir cada um contra o branco resolve: quanto mais claro o
+    // tom, menor o contraste dele com o branco.
+    const papelContraBranco = contrastRatio(TOKENS.bg!, "#ffffff");
+    const tintaContraBranco = contrastRatio(TOKENS.fg!, "#ffffff");
+
+    expect(papelContraBranco).toBeLessThan(tintaContraBranco);
   });
 });
