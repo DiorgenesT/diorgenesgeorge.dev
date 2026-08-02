@@ -1,8 +1,10 @@
 import { AnswerBlock } from "../components/answer-block";
+import { FitaAdesiva } from "../components/fita-adesiva";
+import { PapelRasgado } from "../components/papel-rasgado";
 import { AUTHOR } from "../config/site";
 import { getDictionary } from "../i18n/dictionary";
 import { useLocale } from "../i18n/use-locale";
-import { TelemetryPanel } from "./telemetry-panel";
+import { CarimboDeRecepcao } from "./carimbo-de-recepcao";
 import { useEdgeTelemetry } from "./telemetry";
 import { useEnvironment } from "./use-environment";
 
@@ -16,29 +18,38 @@ export function Hero() {
   const telemetry = useEdgeTelemetry(env !== null);
 
   return (
-    <section className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
-      <div>
-        <h1 className="font-sans text-5xl font-bold tracking-tight text-balance sm:text-6xl">
-          {AUTHOR.name}
-        </h1>
+    <section className="relative">
+      {/* A fita é decoração e não carrega texto: o amarelo dá 1,58:1 sobre o papel. */}
+      <span
+        aria-hidden="true"
+        className="absolute -left-10 -top-6 hidden h-7 w-36 bg-fita opacity-90 sm:block"
+        style={{ transform: "rotate(-14deg)" }}
+      />
 
-        {/* Ênfase por peso e cor na mesma família. Trocar de família tipográfica no
-            meio da frase é o tique que mais denuncia página montada por máquina. */}
-        <p className="mt-6 max-w-2xl text-2xl leading-snug text-fg-muted text-pretty">
+      <p className="font-mono text-meta uppercase tracking-widest text-fg-subtle">
+        {t["home.masthead"]}
+      </p>
+
+      {/* O h1 é o elemento de LCP, e é por isso que ele não depende de nada que
+          chegue depois: nem de fonte, que carrega em optional, nem de dado. */}
+      <h1 className="mt-3 text-6xl leading-[0.92] text-balance sm:text-7xl lg:text-8xl">
+        {AUTHOR.name}
+      </h1>
+
+      <PapelRasgado className="mt-4 h-3 w-full text-bg" />
+
+      <div className="mt-8 max-w-2xl">
+        <p className="font-sans text-2xl leading-snug text-fg-muted text-pretty">
           {t["home.taglineLead"]}
         </p>
-        {/* Linha própria: inline, a ênfase começava no meio da linha e órfãos de uma
-            letra apareciam antes dela. */}
-        <p className="mt-2 max-w-2xl text-2xl font-semibold leading-snug text-fg text-pretty">
-          {t["home.taglineAccent"]}
+        <p className="mt-3 font-sans text-2xl font-semibold leading-snug text-pretty">
+          <FitaAdesiva indice={2}>{t["home.taglineAccent"]}</FitaAdesiva>
         </p>
-
-        <AnswerBlock>{t["home.answer"]}</AnswerBlock>
       </div>
 
-      {/* O painel fica. A Fase 2 troca esta lista por um carimbo de recepção,
-          alimentado pelo mesmo /api/edge. */}
-      <TelemetryPanel state={telemetry} />
+      <AnswerBlock>{t["home.answer"]}</AnswerBlock>
+
+      <CarimboDeRecepcao state={telemetry} />
     </section>
   );
 }

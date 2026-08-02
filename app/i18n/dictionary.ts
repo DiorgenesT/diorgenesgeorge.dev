@@ -21,16 +21,8 @@ export type Dictionary = {
   "meta.work.description": string;
   "meta.writing.description": string;
   "meta.contact.description": string;
-  "hero.you": string;
   "hero.servedBy": string;
-  "hero.distance": string;
-  "hero.rtt": string;
-  "hero.protocol": string;
-  "hero.tls": string;
-  "hero.measuring": string;
-  "hero.unavailable": string;
   "hero.privacy": string;
-  "hero.needsJs": string;
   "hero.stamp": string;
   "home.masthead": string;
   "home.taglineLead": string;
