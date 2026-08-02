@@ -13,48 +13,90 @@ const TELEMETRY = {
   tlsVersion: "TLSv1.3",
 };
 
-test("should stamp what the edge reported", async ({ page }) => {
+test("should carry the full name as the heading, not the monogram", async ({
+  page,
+}) => {
+  await page.goto("/pt-br/");
+
+  // O monograma é gráfico. Quem diz de quem é esta página é o h1, e é dele que
+  // dependem o buscador e a desambiguação de entidade do JSON-LD.
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Diorgenes George",
+  );
+});
+
+test("should keep the monogram out of the accessibility tree", async ({
+  page,
+}) => {
+  await page.goto("/pt-br/");
+
+  await expect(page.locator("[data-monograma]")).toHaveAttribute(
+    "aria-hidden",
+    "true",
+  );
+
+  // A árvore de acessibilidade é a autoridade aqui, e não o DOM: `getByText` acha
+  // o monograma mesmo escondido, porque ele varre a marcação. Letra a letra, um
+  // leitor de tela soletraria "D G" antes do título da página.
+  const arvore = await page.locator("main").ariaSnapshot();
+
+  expect(arvore).toContain("Diorgenes George");
+  expect(arvore).not.toContain("DG");
+});
+
+test("should never show the visitor telemetry on screen", async ({ page }) => {
   await page.route("**/api/edge", (route) => route.fulfill({ json: TELEMETRY }));
 
   await page.goto("/pt-br/");
-  const carimbo = page.locator("[data-carimbo]");
+  await page.waitForLoadState("networkidle");
 
-  await expect(carimbo.getByText("Betim, BR")).toBeVisible();
-  await expect(carimbo.getByText(/GIG/)).toBeVisible();
-  await expect(carimbo.getByText(/331 km/)).toBeVisible();
+  // A latência comanda a intensidade do desregistro e nada mais: cidade,
+  // datacenter, distância e protocolo não aparecem em lugar nenhum da página.
+  const corpo = (await page.locator("body").textContent()) ?? "";
+
+  expect(corpo).not.toContain("GIG");
+  expect(corpo).not.toContain("331");
+  expect(corpo).not.toContain("HTTP/3");
 });
 
-test("should stamp nothing when the edge cannot answer", async ({ page }) => {
-  await page.route("**/api/edge", (route) => route.fulfill({ status: 500 }));
-
+test("should offer the whole index on the cover", async ({ page }) => {
   await page.goto("/pt-br/");
-  const carimbo = page.locator("[data-carimbo]");
 
-  // O invólucro continua lá, reservando o espaço; o que não existe é conteúdo.
-  await expect(carimbo).toBeAttached();
-  await expect(carimbo).toHaveText("");
-  await expect(page.getByText("0 km")).toHaveCount(0);
+  // Seis portas: sobre, trabalho, escritos, currículo, serviços e contato.
+  await expect(page.locator("main nav a")).toHaveCount(6);
 });
 
-test("should never invent a position when the colo is unknown", async ({
+test("should not repeat the index in the header while on the cover", async ({
   page,
 }) => {
-  await page.route("**/api/edge", (route) =>
-    route.fulfill({ json: { ...TELEMETRY, colo: null } }),
-  );
-
   await page.goto("/pt-br/");
 
-  // A cidade veio, então ela aparece; a distância não tem como existir.
-  await expect(page.locator("[data-carimbo]").getByText("Betim, BR")).toBeVisible();
-  await expect(page.getByText("331 km")).toHaveCount(0);
+  // Na capa o sumário do hero já é o índice: repetir no cabeçalho seria dizer a
+  // mesma coisa duas vezes na mesma tela.
+  await expect(
+    page.getByRole("banner").getByRole("link", { name: "Trabalho" }),
+  ).toHaveCount(0);
+});
+
+test("should keep the header navigation on every other route", async ({
+  page,
+}) => {
+  await page.goto("/pt-br/sobre/");
+
+  // Fora da capa o cabeçalho é a única navegação que existe, e some-lo deixaria
+  // as outras oito rotas sem saída.
+  await expect(
+    page.getByRole("banner").getByRole("link", { name: "Trabalho" }),
+  ).toBeVisible();
 });
 
 /**
- * O risco real desta fase: o carimbo só existe depois que o cliente busca o edge, e o
- * espaço dele é reservado desde o servidor justamente para que a queda não empurre nada.
+ * A marca chega depois que o edge responde, e a recepção é uma animação de
+ * `transform`: ela não pode empurrar nada, ou o CLS estoura o orçamento de 0.05.
  */
-test("should not shift the layout when the stamp lands", async ({ page }) => {
+test("should not shift the layout while the mark is received", async ({
+  page,
+}) => {
   await page.route("**/api/edge", (route) => route.fulfill({ json: TELEMETRY }));
 
   await page.goto("/pt-br/");
@@ -78,7 +120,7 @@ test("should not shift the layout when the stamp lands", async ({ page }) => {
   expect(cls).toBeLessThan(0.05);
 });
 
-test("should keep the stamp out of the page for a visitor without javascript", async ({
+test("should print the mark for a visitor without javascript", async ({
   browser,
 }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
@@ -86,17 +128,17 @@ test("should keep the stamp out of the page for a visitor without javascript", a
 
   await page.goto("/pt-br/");
 
-  // Sem JavaScript não há medição, e sem medição não há o que carimbar. O espaço
-  // reservado continua lá, e vazio, que é o estado correto.
-  await expect(page.locator("[data-carimbo]")).toHaveText("");
+  // Sem JavaScript não há medição, então a marca aparece assentada. O que não
+  // pode acontecer é a capa ficar sem marca nenhuma.
+  await expect(page.locator("[data-monograma]")).toBeVisible();
 
   await context.close();
 });
 
 /**
  * A emulação `reducedMotion` do Playwright não chega ao `window.matchMedia` nesta
- * versão — medido: com ela ligada, `matches` continua falso e a cena monta. O sinal é
- * forçado aqui para o teste verificar o portão do site, e não a emulação do harness.
+ * versão — medido: com ela ligada, `matches` continua falso. O sinal é forçado aqui
+ * para o teste verificar o portão do site, e não a emulação do harness.
  */
 const forceReducedMotion = `
   const original = window.matchMedia.bind(window);
@@ -123,9 +165,21 @@ test.describe("movimento reduzido", () => {
       [],
     );
   });
+
+  test("should settle the mark instead of receiving it", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/pt-br/");
+
+    const animando = await page
+      .locator("[data-monograma] .monograma-fatia")
+      .first()
+      .evaluate((el) => getComputedStyle(el).animationName);
+
+    expect(animando).toBe("none");
+  });
 });
 
-test("should keep the headline as the largest paint", async ({ page }) => {
+test("should keep a text element as the largest paint", async ({ page }) => {
   await page.goto("/pt-br/");
 
   const tag = await page.evaluate(
@@ -141,7 +195,9 @@ test("should keep the headline as the largest paint", async ({ page }) => {
       }),
   );
 
-  expect(["H1", "P", "none"]).toContain(tag);
+  // O monograma é o maior elemento da capa, e ele é texto: pinta com a fonte do
+  // sistema antes de a display chegar, então nunca segura o LCP.
+  expect(["H1", "P", "SPAN", "none"]).toContain(tag);
 });
 
 test("should never send the network operator of the visitor to the browser", async ({

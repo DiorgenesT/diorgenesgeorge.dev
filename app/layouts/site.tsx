@@ -1,9 +1,6 @@
-import { Link, Outlet } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 import { LocaleSwitcher } from "../components/locale-switcher";
-import { NotaDeResgate } from "../components/nota-de-resgate";
-import { PapelRasgado } from "../components/papel-rasgado";
 import { listArticleIndex, listCaseIndex } from "../content/index";
-import { obterRotacao } from "../design/rotacao";
 import { localizedHref, type RouteKey } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
 import { useLocale } from "../i18n/use-locale";
@@ -11,6 +8,13 @@ import { useLocale } from "../i18n/use-locale";
 export default function SiteLayout() {
   const locale = useLocale();
   const t = getDictionary(locale);
+
+  /*
+    Na capa o sumário do hero já é o índice da publicação, então repetir os mesmos
+    links no cabeçalho seria dizer a mesma coisa duas vezes na mesma tela. Nas outras
+    oito rotas o cabeçalho é a única navegação que existe, e por isso ele não some.
+  */
+  const naCapa = useLocation().pathname === localizedHref("home", locale);
 
   // Um índice vazio não entra no menu: link que leva a lugar nenhum é pior que menu curto.
   const links: { key: RouteKey; label: string }[] = [
@@ -40,39 +44,44 @@ export default function SiteLayout() {
         com z-index 1 sobre a pagina inteira: sem isto os links ficariam abaixo do veu e
         deixariam de receber clique.
       */}
-      <header className="relative z-2 border-b-2 border-fg">
+      {/* A marca do cabeçalho é quieta de propósito: o gesto assinatura vive na
+          capa, e repeti-lo em toda página o gastaria. */}
+      <header className="relative z-2 border-b border-hairline">
         <nav
           aria-label={t["nav.home"]}
           className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-3 px-6 py-5"
         >
-          <Link to={localizedHref("home", locale)} viewTransition>
-            <NotaDeResgate texto="DG" />
+          <Link
+            to={localizedHref("home", locale)}
+            viewTransition
+            className="font-display text-2xl leading-none tracking-tight hover:text-accent"
+          >
+            DG
           </Link>
 
-          {links.map(({ key, label }, indice) => (
-            <Link
-              key={key}
-              to={localizedHref(key, locale)}
-              viewTransition
-              className="font-mono text-meta uppercase tracking-widest text-fg-muted hover:text-accent"
-              style={{ transform: `rotate(${obterRotacao(indice)}deg)` }}
-            >
-              {label}
-            </Link>
-          ))}
+          {!naCapa &&
+            links.map(({ key, label }) => (
+              <Link
+                key={key}
+                to={localizedHref(key, locale)}
+                viewTransition
+                className="font-mono text-meta uppercase tracking-widest text-fg-muted hover:text-accent"
+              >
+                {label}
+              </Link>
+            ))}
 
           <div className="ms-auto flex items-center gap-3">
             <LocaleSwitcher />
           </div>
         </nav>
-        <PapelRasgado className="h-3 w-full text-bg" />
       </header>
 
       <div id="conteudo" className="relative z-2 flex-1">
         <Outlet />
       </div>
 
-      <footer className="relative z-2 border-t-2 border-fg">
+      <footer className="relative z-2 border-t border-hairline">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-8 font-mono text-meta text-fg-subtle">
           <span>{t["footer.builtWith"]}</span>
           <Link

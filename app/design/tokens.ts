@@ -1,11 +1,13 @@
 /**
- * Paleta do zine, um tema so. Preto e branco de alto contraste como base, com dois
- * acentos: o vermelho punk carrega texto, o amarelo fita crepe nunca carrega.
+ * A paleta: papel, tinta e uma unica cor de acento. Um tema so.
  *
- * Cada valor entrou aqui depois de medido, nao antes. O teste ao lado e a autoridade
- * sobre estes numeros; este comentario so registra por que o amarelo e diferente dos
- * outros: sobre o papel ele da 1,58:1, longe dos 4,5:1 exigidos, entao ele existe como
- * preenchimento e recebe tinta por cima, o que da 10,74:1.
+ * Uma cor de destaque apenas, e usada pouco, e o que separa um impresso de uma
+ * interface. O amarelo que existia aqui saiu junto com a identidade de fanzine:
+ * reprovava em 1,58:1 sobre o papel, nunca pode carregar texto, e no fim nao pintava
+ * nada em lugar nenhum do site.
+ *
+ * Cada valor entrou depois de medido, nao antes. O teste ao lado e a autoridade sobre
+ * estes numeros.
  */
 export const TOKENS: Record<string, string> = {
   bg: "#f2ede4",
@@ -15,5 +17,4 @@ export const TOKENS: Record<string, string> = {
   "fg-subtle": "#645c55",
   accent: "#c81d25",
   "accent-fg": "#ffffff",
-  fita: "#e8b923",
 };

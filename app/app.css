@@ -21,7 +21,6 @@
   --color-fg-subtle: var(--fg-subtle);
   --color-accent: var(--accent);
   --color-accent-fg: var(--accent-fg);
-  --color-fita: var(--fita);
   --color-hairline: var(--hairline);
 }
 
@@ -65,6 +64,131 @@
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
+  }
+
+  /* O monograma aparece assentado: nenhuma fatia escorrega, e o eco fica no
+     desalinho minimo. A marca continua sendo uma impressao, so que ja pronta. */
+  .monograma-recebendo .monograma-fatia,
+  .monograma-recebendo .monograma-eco {
+    animation: none !important;
+    transform: none;
+  }
+
+  .monograma-eco {
+    transform: translate(-2px, 1px) !important;
+  }
+}
+
+/*
+ * O monograma. Duas camadas de tinta sobre a mesma caixa: a preta e a marca, opaca e
+ * por cima, e a vermelha e uma segunda passagem que so aparece na borda deslocada.
+ *
+ * A caixa comum vem de `.monograma-medida`, o unico elemento em fluxo. As duas camadas
+ * sao absolutas sobre ela, entao partem exatamente do mesmo ponto: e essa a diferenca
+ * entre um desregistro desenhado e um desencontro acidental de layout.
+ */
+.monograma {
+  display: flex;
+  align-items: center;
+  user-select: none;
+  font-family: var(--font-display);
+  font-size: clamp(7rem, 31vw, 26rem);
+  /*
+   * Um, e nao menos. As fatias recortam em porcentagem da caixa do elemento: com
+   * entrelinha menor que o desenho da letra, o que sobra acima de 0% e abaixo de 100%
+   * nao pertence a fatia nenhuma e some. Era isso que cortava o topo e a base do DG.
+   */
+  line-height: 1;
+  /*
+   * A Anton ja e condensada. Apertar mais que isto funde o D com o G num borrao, e o
+   * monograma deixa de ser legivel como duas letras, que e a unica coisa que ele
+   * precisa fazer.
+   */
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+
+.monograma-letra {
+  position: relative;
+  display: inline-block;
+}
+
+.monograma-letra + .monograma-letra {
+  margin-inline-start: -0.04em;
+}
+
+.monograma-medida {
+  visibility: hidden;
+}
+
+.monograma-camada {
+  position: absolute;
+  inset: 0;
+}
+
+.monograma-tinta {
+  color: var(--fg);
+}
+
+/*
+ * O eco fica proximo de proposito: dois a quatro pixels em conexao boa. Aberto demais
+ * deixa de ler como chapa fora de registro e passa a ler como duas marcas distintas.
+ */
+.monograma-eco {
+  color: var(--accent);
+  mix-blend-mode: multiply;
+  transform: translate(
+    calc(-2px - var(--carga, 0.1) * 4px),
+    calc(1px + var(--carga, 0.1) * 2px)
+  );
+}
+
+.monograma-fatia {
+  position: absolute;
+  inset: 0;
+}
+
+.monograma-recebendo .monograma-fatia {
+  animation: monograma-escorrega var(--duracao, 800ms)
+    cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--atraso, 0ms);
+}
+
+.monograma-recebendo .monograma-eco {
+  animation: monograma-registro var(--duracao, 800ms)
+    cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes monograma-escorrega {
+  0% {
+    transform: translateX(calc(var(--direcao) * var(--carga) * 150px));
+  }
+  28% {
+    transform: translateX(calc(var(--direcao) * var(--carga) * 62px));
+  }
+  52% {
+    transform: translateX(calc(var(--direcao) * var(--carga) * -24px));
+  }
+  74% {
+    transform: translateX(calc(var(--direcao) * var(--carga) * 8px));
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes monograma-registro {
+  0% {
+    transform: translate(
+      calc(var(--carga) * -62px),
+      calc(var(--carga) * 16px)
+    );
+  }
+  100% {
+    transform: translate(
+      calc(-2px - var(--carga) * 4px),
+      calc(1px + var(--carga) * 2px)
+    );
   }
 }
 

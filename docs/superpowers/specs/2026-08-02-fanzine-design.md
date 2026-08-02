@@ -1,4 +1,4 @@
-# Fanzine: fusao do site-dev no diorgenesgeorge.dev
+# Impresso: fusao do site-dev no diorgenesgeorge.dev
 
 Data: 2026-08-02
 Status: desenho aprovado, aguardando plano de implementacao
@@ -22,29 +22,33 @@ O page-dev tem 4.983 linhas de fonte, das quais 2.516 sao infraestrutura de i18n
 | Dominio canonico | `diorgenesgeorge.dev`, sem mudanca de `SITE_URL` |
 | Repositorio GitHub | Recriar `DiorgenesT/diorgenesgeorge.dev` (foi deletado; o clone local tem os 45 commits, com 17 nunca empurrados) |
 | Idiomas | Os tres ja existentes: pt-BR, pt-PT, en-US |
-| Escopo visual | Zine total, em todas as rotas, inclusive corpo de texto |
+| Escopo visual | Identidade unica em todas as rotas. Reescrita em 2026-08-02: era zine, virou "Impresso" (ver secao 3.1) |
 | Tema | Um so. O tema claro e escuro sai |
 | Tipografia | Duas customizadas com papeis distintos (Anton e Special Elite). Corpo na fonte do sistema |
-| Movimento | Direcao "papel na sua mao", sem marcador de cursor |
-| Elemento vivo da home | Carimbo de recepcao, alimentado por `/api/edge` |
+| Movimento | Um gesto assinatura: a marca chega impressa, fora de registro |
+| Elemento vivo da home | O desregistro do monograma, alimentado pela latencia do `/api/edge` |
 | Rotas | As oito atuais mais uma nova, `lab` |
 | Cases | Nomeiam os sistemas e linkam para producao e para as noticias oficiais |
 | MCP Motion | Fora do escopo do site. E gerador de video, nao biblioteca de animacao |
 
-## 3. Identidade
+## 3. Identidade: Impresso
 
-Estetica DIY, zine e punk dos anos 90 e 2000: fanzine xerocado, colagem manual, recortes de papel rasgado, fita adesiva, carimbos, letras de nota de resgate, rabiscos, textura de fotocopia com granulacao, elementos levemente rotacionados e desalinhados de proposito.
+**Reescrita em 2026-08-02**, depois de nove rodadas de prototipo. A identidade original era fanzine xerocado, com colagem, papel rasgado, fita adesiva, carimbo e nota de resgate. Ela foi abandonada, e a razao esta registrada na secao 3.1.
 
-**Regra de identidade:** o caos visual e cuidadosamente projetado. Rotacoes, jitter e desalinhamentos vem de tokens deterministas, valores fixos por elemento, nunca `Math.random` em render. O site parece feito a mao e se comporta de forma estavel.
+O site se comporta como um **objeto impresso**, nao como uma pagina que rola: papel, tinta, chapa e registro. Editorial minimo, muito ar, escala violenta entre o rotulo de 9px e a display de 300px, reguas e fios em vez de molduras fechando caixa, e uma unica cor de acento usada pouco.
 
-**Paleta:** papel `#f4f1ea`, tinta `#12100e`, vermelho punk, amarelo fita crepe. O contraste de cada acento sobre cada fundo e validado em 4.5:1 por teste automatizado, nunca presumido. Os tokens de `app/design/contrast.ts` ja fazem essa checagem e sao reaproveitados.
+**Um gesto assinatura, e so um: a marca chega impressa.** O monograma DG e recebido em chapas fora de registro, e a intensidade do desregistro vem da latencia real medida pelo `/api/edge`. Isso nao e decoracao: a tese do site e a borda, e a marca mostra a borda acontecendo. Fora dele, o site e quieto.
 
-**Tipografia:** duas familias customizadas, decidido em 2026-08-02 depois de comparar as opcoes no navegador. Um fanzine e por definicao uma colagem de tipografias, e as duas mapeiam objetos fisicos diferentes de um zine real: o recorte de cartaz e a legenda datilografada.
+**Regra de identidade:** a imperfeicao e projetada, nunca sorteada. Deslocamento, fatia e desregistro vem de tabela fixa indexada em `app/design/desregistro.ts`, nunca de `Math.random` em render. Alem de o site tremer a cada visita, valor aleatorio produziria HTML diferente no servidor e no cliente e quebraria a hidratacao. **Esta regra sobreviveu inteira a troca de identidade, e e a melhor regra do projeto.**
+
+**Paleta:** papel `#f2ede4`, tinta `#0a0a0a`, cinzas de leitura e um unico acento vermelho `#c81d25`. O contraste de cada par que carrega texto e validado em 4.5:1 por `app/design/tokens.test.ts`, nunca presumido. Uma cor de destaque so, e usada pouco, e o que separa impresso de interface.
+
+**Tipografia:** duas familias customizadas, com papeis distintos.
 
 | Familia | Papel | Onde entra | Piso de tamanho |
 |---|---|---|---|
-| **Anton** | O recorte de cartaz | Titulos, numeros grandes, capa. Token `--font-display` | sem piso |
-| **Special Elite** | A legenda datilografada | Rotulo, metadado, etiqueta, carimbo de recepcao, rodape. Ocupa o token `--font-mono`, que ficou vago quando a IBM Plex Mono saiu | **13px** |
+| **Anton** | A display | Monograma, titulos, numeros grandes. Token `--font-display` | sem piso |
+| **Special Elite** | O rotulo tecnico | Metadado, numeracao de sumario, rodape. Token `--font-mono` | **13px** |
 | Pilha do sistema | A leitura | Todo corpo de texto: paragrafo, artigo, case, CV. Token `--font-sans` | sem piso |
 
 As duas sao self-hosted em woff2 latin, nunca por CDN: a CSP declara `connect-src 'self'` e `font-src 'self'`, e o site nao faz requisicao a dominio externo. As duas usam `font-display: optional`, entao nenhuma segura o LCP em hipotese alguma: em rede ruim o visitante ve a pilha do sistema naquele carregamento, e o custo e de dados, nao de tempo de pintura.
@@ -58,7 +62,31 @@ Peso medido em 2026-08-02: Anton 18.612 bytes e Special Elite 53.296 bytes, soma
 
 A Fase 1 trava as duas regras em teste, para que nao dependam de disciplina.
 
-**Estrutura de pagina:** cada rota e uma pagina numerada do fanzine, com sumario no cabecalho.
+### 3.1 Por que o fanzine foi abandonado
+
+Registrado para que a decisao nao seja revertida por engano, e para que ninguem refaca o caminho.
+
+A identidade original era fanzine xerocado. Ao longo de nove rodadas de prototipo, cada rodada removeu um sinal de fanzine a pedido do usuario, e cada remocao melhorou o desenho: saiu a rotacao, saiu a sombra dura, saiu a fita, saiu o papel rasgado, saiu o adesivo, saiu o carimbo, saiu a marca de corte, saiu a grade visivel, saiu o numero de pagina gigante.
+
+O levantamento em 2026-08-02 mostrou o resultado no codigo, e ele foi o argumento decisivo:
+
+| Componente construido na Fase 1 | Usos no site |
+|---|---|
+| `Adesivo` | 0 |
+| `FitaAdesiva` | 0 |
+| `Carimbo` | 0 |
+| `PapelRasgado` | 3 |
+| `NotaDeResgate` | 1 |
+
+Tres dos cinco componentes eram codigo morto, e o token de cor `fita` nao pintava nada em lugar nenhum. Nove rodadas na mesma direcao nao e ruido, e tendencia: o que emergiu nao era um fanzine mal executado, era outra ideia, melhor, e mais adequada a um site com trinta documentos longos, que colagem nunca escalaria.
+
+**O que morreu:** adesivo, fita adesiva, papel rasgado, carimbo, nota de resgate, o amarelo fita, a rotacao de elemento, a sombra dura, a colagem no scroll e a palavra fanzine.
+
+**O que sobreviveu:** a regra do determinismo, a granulacao, o papel, a tinta, o alto contraste, as duas fontes, e toda a infraestrutura de tokens, contraste validado e teste de componente que a Fase 1 produziu. **A Fase 1 nao foi desperdicio:** foi ela que construiu a base sobre a qual esta identidade roda. So a camada de enfeite caiu.
+
+**O que nao foi tocado:** conteudo, i18n, SEO, rotas, testes de conteudo e orcamento.
+
+**Estrutura de pagina:** a capa carrega o monograma e o sumario da publicacao; nas outras rotas o cabecalho e a navegacao, e o corpo e editorial e quieto.
 
 ## 4. Arquitetura
 
@@ -89,21 +117,20 @@ Ficam: `react`, `react-dom`, `react-router`, `gsap`, `isbot`, `zod`. Saem: `thre
 
 ## 5. Movimento
 
-Direcao "o papel na sua mao", sem marcador de cursor. O marcador foi avaliado e descartado por tres motivos: risca por cima de texto real e derruba contraste, gasta CPU durante o scroll, e nao existe em toque.
+**Um gesto assinatura, e o resto quieto.** A pagina nao tem varios elementos animados: tem a recepcao da marca, e nada mais compete com ela.
 
 | Gesto | Implementacao | Custo |
 |---|---|---|
-| Colagem no scroll | GSAP `ScrollTrigger.batch` em chunk lazy, dois rAF encadeados apos o mount. O elemento assenta na rotacao deterministica que os tokens ja definem, nunca numa rotacao aleatoria nova | GSAP 27 KB + ScrollTrigger 17 KB, fora do critico |
-| Adesivo que descola | `transform: rotateY` mais sombra, em `:hover` e `:focus-visible` | CSS puro |
-| Fita que levanta | `transform: rotateY` com origem na ponta | CSS puro |
-| Vinco no canto da folha | Gradiente em `::after`, cresce no hover da pagina | CSS puro |
-| Recorte arrastavel | Pointer events, apenas no mural do rodape e na 404. Posicao guardada em `localStorage` | JS local, poucas linhas |
+| Recepcao da marca | Seis fatias por letra em `clip-path`, mais a chapa de acento fora de registro. A intensidade sai de `cargaDeLatencia(rttMs)`, a duracao e fixa em 900ms | CSS puro, tabela em `app/design/desregistro.ts` |
 | Transicao de pagina | View Transitions API nativa, via a prop `viewTransition` do React Router | 0 KB |
-| Carimbo de recepcao | `fetch('/api/edge')` depois do LCP, batendo cidade, colo, RTT e protocolo em tinta vermelha torta | Endpoint ja existe |
+| Sumario da capa | Deslocamento do rotulo e troca de cor no hover e no `:focus-visible` | CSS puro |
+| Colagem no scroll | **Removida** junto com o fanzine. O `Reveal` com GSAP permanece por ora e sera reavaliado na fase de movimento | GSAP em chunk lazy, fora do critico |
 
-Sob `prefers-reduced-motion: reduce`, todo o movimento desliga e o estado final e o padrao do HTML. Nada e escondido por CSS a espera de animacao: sem JavaScript a pagina ja esta correta.
+**Duracao fixa, intensidade variavel.** Ligar as duas coisas a latencia castigava duas vezes quem esta em conexao ruim: marca mais quebrada **e** espera mais longa ate a pagina assentar. So a corrupcao varia.
 
-O carimbo degrada em silencio. Se `/api/edge` falhar ou estourar o timeout, ele simplesmente nao aparece, e o layout nao se mexe (espaco reservado, sem CLS).
+**Piso de corrupcao alto de proposito.** Em rede local o RTT e de um a tres milissegundos, e com piso baixo a marca chegava praticamente limpa, o que apagava o gesto justamente para quem esta perto do datacenter, que e o caso que o site quer celebrar. O piso garante que toda visita veja a impressao acontecer.
+
+Sob `prefers-reduced-motion: reduce`, todo o movimento desliga e a marca **aparece assentada**, e nao ausente. Nada e escondido por CSS a espera de animacao: sem JavaScript a pagina ja esta correta.
 
 ## 6. Rotas e conteudo
 
@@ -111,7 +138,7 @@ Nove rotas mais a 404, em tres idiomas, com slugs localizados como ja acontece h
 
 | Rota | Origem | Situacao |
 |---|---|---|
-| `home` | page-dev | Recomposta: capa de fanzine, carimbo de recepcao, sumario, faixa de prova |
+| `home` | page-dev | Recomposta: monograma recebido, sumario da publicacao, faixa de prova |
 | `sobre` | page-dev, publicado | Pele nova |
 | `cv` | page-dev, estruturado em TS | Recebe as skills agrupadas, absorvendo a secao Stack do site-dev |
 | `servicos` | page-dev, publicado | Pele nova |
@@ -137,7 +164,7 @@ Canonical absoluta, Open Graph, hreflang reciproco com `x-default`, `sitemap.xml
 ### Falta
 
 1. **Publicar os 21 rascunhos.** Sem isso, nada mais importa.
-2. `og:image` real. Hoje o card e `summary` sem imagem. Gerar uma capa de zine por rota, em build.
+2. `og:image` real. Hoje o card e `summary` sem imagem. Gerar uma capa por rota, em build, no vocabulario de impresso.
 3. `ItemList` nas paginas indice (`trabalho`, `escritos`, `lab`).
 4. `FAQPage` onde a pergunta surgir naturalmente, sem forcar.
 5. `llms.txt` revisado para citar as nove rotas, incluindo a nova `lab`.
@@ -178,7 +205,7 @@ GSAP, o carimbo de recepcao e qualquer coisa relacionada carregam depois do firs
 
 ## 9. Acessibilidade
 
-WCAG 2.1 AA e eMAG como referencia. Navegacao completa por teclado, incluindo o recorte arrastavel, que precisa de alternativa por teclado ou de ser explicitamente marcado como enriquecimento dispensavel. Contraste minimo 4.5:1, validado em teste e nao presumido: o alto contraste do zine ajuda, mas os acentos vermelho e amarelo precisam ser verificados sobre cada fundo. Texto real em HTML, nunca texto importante dentro de imagem de colagem. Foco visivel em todo elemento interativo. `axe-core` no Playwright continua rodando.
+WCAG 2.1 AA e eMAG como referencia. Navegacao completa por teclado. O monograma e decoracao e leva aria-hidden: quem diz de quem e a pagina e o h1 com o nome completo. Contraste minimo 4.5:1, validado em teste e nao presumido: o alto contraste ajuda, mas o acento vermelho precisa ser verificado sobre cada fundo. Texto real em HTML, nunca texto importante dentro de imagem. Foco visivel em todo elemento interativo. `axe-core` no Playwright continua rodando.
 
 ## 10. Convencoes
 
@@ -196,23 +223,23 @@ Recriar `DiorgenesT/diorgenesgeorge.dev` no GitHub e empurrar os 45 commits loca
 
 Criterio de aceite: o site continua funcionando identico ao atual menos o globo, o tema e as fontes; o total baixado numa visita cai cerca de 270 KB; o JS critico fica em torno de 117,5 KB, abaixo do novo teto; todos os testes verdes. Nenhuma mudanca de identidade visual ainda.
 
-### Fase 1: sistema visual
+### Fase 1: sistema visual (entregue, PR #4)
 
-Portar os seis componentes de papel do site-dev com seus testes. Portar os tokens deterministas de rotacao. Escolher a display (opcoes comparadas no navegador). Redesenhar o layout de pagina como pagina de fanzine, com sumario e numeracao. Validar contraste por teste.
+Paleta com contraste medido, as duas fontes versionadas, granulacao, e os cinco componentes de papel com seus testes.
 
-Criterio de aceite: todas as nove rotas renderizam na identidade zine, contraste 4.5:1 verificado, acessibilidade 100, orcamento intacto.
+**Nota de 2026-08-02:** os cinco componentes de papel foram removidos quando o fanzine foi abandonado (secao 3.1). O que a fase produziu e continua valendo: os tokens, o teste de contraste, as duas fontes, a granulacao e a infraestrutura de teste de componente com jsdom.
 
-### Fase 2: home
+### Fase 2: a capa (em andamento)
 
-Capa de fanzine, sumario recortado, faixa de prova e carimbo de recepcao alimentado por `/api/edge`, batido apos o LCP, com espaco reservado para nao gerar CLS e degradacao silenciosa em caso de falha.
+O monograma DG recebido em chapas fora de registro, o sumario da publicacao ao lado, e a faixa de prova abaixo. O cabecalho esconde os proprios links na capa, porque ali o sumario ja e o indice; nas outras oito rotas ele permanece, e e a unica navegacao que existe.
 
-Criterio de aceite: LCP abaixo de 2.0s medido, CLS abaixo de 0.05, o carimbo aparece com dado real e o site nao quebra com o endpoint fora do ar.
+Criterio de aceite: LCP abaixo de 2.0s medido, CLS abaixo de 0.05 com a marca sendo recebida, o `h1` continua sendo o nome completo, o monograma continua fora da arvore de acessibilidade, e nenhum dado de telemetria aparece na tela.
 
 ### Fase 3: movimento
 
-Hook `useAnimacaoColagem` com GSAP `ScrollTrigger.batch` em chunk lazy. Adesivo que descola, fita que levanta, vinco no canto. Recorte arrastavel no rodape. Tudo desligado sob `prefers-reduced-motion`.
+Reavaliar o `Reveal` com GSAP. Com a identidade nova, entrada por scroll pode ser ruido em vez de gesto, e a fase precisa decidir se ele fica, muda ou sai. Se ficar, `ScrollTrigger.batch` em chunk lazy, desligado sob `prefers-reduced-motion`.
 
-Criterio de aceite: zero long task acima de 50ms durante scroll, medido; GSAP fora do bundle critico; a pagina esta correta com JavaScript desativado.
+Criterio de aceite: zero long task acima de 50ms durante scroll, medido; GSAP fora do bundle critico; a pagina correta com JavaScript desativado. **Se a decisao for remover o GSAP, o criterio passa a ser a queda do chunk e um site sem biblioteca de animacao nenhuma.**
 
 ### Fase 4: conteudo
 
