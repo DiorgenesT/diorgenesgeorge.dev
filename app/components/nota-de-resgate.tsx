@@ -24,7 +24,7 @@ export function NotaDeResgate({ texto }: { texto: string }) {
           <span
             key={`${letra}-${indice}`}
             aria-hidden="true"
-            className="inline-block bg-fg px-1.5 font-black text-bg"
+            className="inline-block bg-fg px-1.5 font-display text-bg"
             style={{
               transform: `rotate(${obterRotacao(indice)}deg) translate(${jitter.x}px, ${jitter.y}px)`,
             }}

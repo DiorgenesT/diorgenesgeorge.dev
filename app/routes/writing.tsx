@@ -42,7 +42,7 @@ export default function Writing() {
                   <li key={tag}>
                     <Link
                       to={tagHref(locale, tag)}
-                      className="font-mono text-xs uppercase tracking-widest text-accent"
+                      className="font-mono text-meta uppercase tracking-widest text-accent"
                     >
                       {tag}
                     </Link>
@@ -56,7 +56,7 @@ export default function Writing() {
             {articles.map(({ slug, frontmatter }) => (
               <li key={slug}>
                 <article className="group relative rounded-xl border border-hairline p-7 transition-colors hover:border-accent focus-within:border-accent sm:p-9">
-                  <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
+                  <p className="font-mono text-meta uppercase tracking-widest text-fg-subtle">
                     <time dateTime={frontmatter.published}>
                       {formatDate(locale, frontmatter.published)}
                     </time>
@@ -77,7 +77,7 @@ export default function Writing() {
                     {frontmatter.tags.map((tag) => (
                       <li
                         key={tag}
-                        className="rounded-full border border-hairline px-3 py-1 font-mono text-[0.65rem] uppercase tracking-widest text-fg-subtle"
+                        className="rounded-full border border-hairline px-3 py-1 font-mono text-meta uppercase tracking-widest text-fg-subtle"
                       >
                         {tag}
                       </li>

@@ -9,7 +9,7 @@ export function TelemetryPanel({ state }: { state: TelemetryState }) {
   const rows = describeState(state, locale, t);
 
   return (
-    <div className="font-mono text-xs">
+    <div className="font-mono text-meta">
       <dl
         aria-live="polite"
         aria-busy={state.status === "loading"}

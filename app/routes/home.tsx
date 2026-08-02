@@ -101,13 +101,13 @@ export default function Home() {
       {latest.length > 0 && (
         <Reveal>
           <section className="mt-20">
-            <h2 className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
+            <h2 className="font-mono text-meta uppercase tracking-widest text-fg-subtle">
               {t["home.latestWriting"]}
             </h2>
             <ul className="mt-6 space-y-6">
               {latest.map(({ slug, frontmatter }) => (
                 <li key={slug}>
-                  <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
+                  <p className="font-mono text-meta uppercase tracking-widest text-fg-subtle">
                     <time dateTime={frontmatter.published}>
                       {formatDate(locale, frontmatter.published)}
                     </time>

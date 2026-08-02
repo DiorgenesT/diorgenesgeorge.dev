@@ -35,7 +35,7 @@ export default function Tag() {
         {articles.map(({ slug, frontmatter }) => (
           <li key={slug}>
             <article>
-              <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
+              <p className="font-mono text-meta uppercase tracking-widest text-fg-subtle">
                 <time dateTime={frontmatter.published}>
                   {formatDate(locale, frontmatter.published)}
                 </time>

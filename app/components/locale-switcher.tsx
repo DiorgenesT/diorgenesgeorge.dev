@@ -18,7 +18,7 @@ export function LocaleSwitcher() {
         onChange={(event) =>
           navigate(switchLocalePath(pathname, event.target.value as Locale))
         }
-        className="rounded-md border border-hairline bg-bg px-2 py-1.5 font-mono text-xs text-fg-muted"
+        className="rounded-md border border-hairline bg-bg px-2 py-1.5 font-mono text-meta text-fg-muted"
       >
         {LOCALES.map((option) => (
           <option key={option} value={option}>

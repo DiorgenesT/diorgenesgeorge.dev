@@ -67,7 +67,7 @@ export default function SiteLayout() {
       </div>
 
       <footer className="border-t border-hairline">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-8 font-mono text-xs uppercase tracking-widest text-fg-subtle">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-8 font-mono text-meta uppercase tracking-widest text-fg-subtle">
           <span>{t["footer.builtWith"]}</span>
           <Link
             to={localizedHref("colophon", locale)}

@@ -49,7 +49,7 @@ export default function Work() {
                 <div className="flex items-baseline gap-4">
                   <span
                     aria-hidden
-                    className="font-mono text-xs tabular-nums text-fg-subtle"
+                    className="font-mono text-meta tabular-nums text-fg-subtle"
                   >
                     {String(index + 1).padStart(2, "0")}
                   </span>
@@ -71,14 +71,14 @@ export default function Work() {
                   {frontmatter.stack.map((tool) => (
                     <li
                       key={tool}
-                      className="rounded-full border border-hairline px-3 py-1 font-mono text-[0.65rem] uppercase tracking-widest text-fg-subtle"
+                      className="rounded-full border border-hairline px-3 py-1 font-mono text-meta uppercase tracking-widest text-fg-subtle"
                     >
                       {tool}
                     </li>
                   ))}
                 </ul>
 
-                <p className="mt-6 font-mono text-xs uppercase tracking-widest text-fg-subtle">
+                <p className="mt-6 font-mono text-meta uppercase tracking-widest text-fg-subtle">
                   {frontmatter.org} · {frontmatter.period}
                 </p>
               </article>

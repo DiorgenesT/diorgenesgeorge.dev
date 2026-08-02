@@ -29,7 +29,7 @@ function Period({
   const t = getDictionary(locale);
 
   return (
-    <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
+    <p className="font-mono text-meta uppercase tracking-widest text-fg-subtle">
       <time dateTime={position.start}>
         {formatMonth(locale, position.start)}
       </time>
@@ -55,7 +55,7 @@ export default function Cv() {
       <h1 className="font-sans text-4xl font-bold tracking-tight text-balance">
         {AUTHOR.name}
       </h1>
-      <p className="mt-4 font-mono text-xs uppercase tracking-widest text-fg-subtle">
+      <p className="mt-4 font-mono text-meta uppercase tracking-widest text-fg-subtle">
         {cv.headline}
       </p>
       <AnswerBlock>{cv.summary}</AnswerBlock>
@@ -86,7 +86,7 @@ export default function Cv() {
           <article key={entry.degree} className="mt-8">
             <h3 className="text-lg font-semibold">{entry.degree}</h3>
             <p className="mt-1 text-fg-muted">{entry.org}</p>
-            <p className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
+            <p className="font-mono text-meta uppercase tracking-widest text-fg-subtle">
               <time dateTime={entry.start}>
                 {formatMonth(locale, entry.start)}
               </time>
@@ -104,7 +104,7 @@ export default function Cv() {
         <dl className="mt-8 space-y-6">
           {cv.skills.map((group) => (
             <div key={group.group}>
-              <dt className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
+              <dt className="font-mono text-meta uppercase tracking-widest text-fg-subtle">
                 {group.group}
               </dt>
               <dd className="mt-2 text-fg-muted">{group.items.join(" · ")}</dd>
