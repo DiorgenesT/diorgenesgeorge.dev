@@ -1,8 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-test("should walk from the home to the cv", async ({ page }) => {
+test("should walk from the cover index to the cv", async ({ page }) => {
   await page.goto("/en/");
-  await page.getByRole("link", { name: "I am a recruiter" }).click();
+  // Os três cartões de caminho saíram: quem leva a algum lugar agora é o sumário
+  // da capa, e ele usa os mesmos rótulos da navegação.
+  await page.locator("main nav").getByRole("link", { name: "CV" }).click();
 
   await expect(page).toHaveURL(/\/en\/cv\/$/);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -12,7 +14,7 @@ test("should keep the reader on the same page when switching language", async ({
   page,
 }) => {
   await page.goto("/pt-br/sobre/");
-  await page.getByRole("combobox").selectOption("en-US");
+  await page.getByRole("link", { name: "English" }).click();
 
   await expect(page).toHaveURL(/\/en\/about\/$/);
 });
@@ -21,7 +23,7 @@ test("should follow the european portuguese spelling of contact", async ({
   page,
 }) => {
   await page.goto("/en/contact/");
-  await page.getByRole("combobox").selectOption("pt-PT");
+  await page.getByRole("link", { name: "Português (Portugal)" }).click();
 
   await expect(page).toHaveURL(/\/pt-pt\/contacto\/$/);
 });

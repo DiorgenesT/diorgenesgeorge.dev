@@ -1,19 +1,23 @@
 /**
- * Paleta do zine, um tema so. Preto e branco de alto contraste como base, com dois
- * acentos: o vermelho punk carrega texto, o amarelo fita crepe nunca carrega.
+ * A paleta: papel, tinta e uma unica cor de acento. Um tema so.
  *
- * Cada valor entrou aqui depois de medido, nao antes. O teste ao lado e a autoridade
- * sobre estes numeros; este comentario so registra por que o amarelo e diferente dos
- * outros: sobre o papel ele da 1,58:1, longe dos 4,5:1 exigidos, entao ele existe como
- * preenchimento e recebe tinta por cima, o que da 10,74:1.
+ * O papel escureceu em 2026-08-02. A queixa era "esta tudo muito branco", e a resposta
+ * passou por cinco tentativas de decoracao de fundo antes de alguem tentar a coisa
+ * obvia: mudar a cor da folha. Nenhuma forma, nenhuma trama, nenhum movimento.
+ *
+ * Escurecer o papel obriga a escurecer o acento junto. Com o vermelho anterior
+ * (#c81d25) o par acento sobre papel caia para 4,29:1 e reprovava; o vermelho mais
+ * fundo devolve 5,35:1, que e mais folga do que a paleta clara tinha (4,92).
+ *
+ * Cada valor entrou depois de medido, nao antes. O teste ao lado e a autoridade sobre
+ * estes numeros.
  */
 export const TOKENS: Record<string, string> = {
-  bg: "#f2ede4",
-  "bg-raised": "#faf7f1",
+  bg: "#e2d9c6",
+  "bg-raised": "#ece5d6",
   fg: "#0a0a0a",
-  "fg-muted": "#57504a",
-  "fg-subtle": "#645c55",
-  accent: "#c81d25",
+  "fg-muted": "#4e463d",
+  "fg-subtle": "#5b5248",
+  accent: "#a8161d",
   "accent-fg": "#ffffff",
-  fita: "#e8b923",
 };

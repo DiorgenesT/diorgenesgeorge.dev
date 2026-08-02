@@ -1,12 +1,11 @@
 :root {
   color-scheme: light;
-  --bg: #f2ede4;
-  --bg-raised: #faf7f1;
+  --bg: #e2d9c6;
+  --bg-raised: #ece5d6;
   --fg: #0a0a0a;
-  --fg-muted: #57504a;
-  --fg-subtle: #645c55;
-  --accent: #c81d25;
+  --fg-muted: #4e463d;
+  --fg-subtle: #5b5248;
+  --accent: #a8161d;
   --accent-fg: #ffffff;
-  --fita: #e8b923;
-  --hairline: rgb(10 10 10 / 0.14);
+  --hairline: rgb(10 10 10 / 0.16);
 }

@@ -13,42 +13,114 @@ const TELEMETRY = {
   tlsVersion: "TLSv1.3",
 };
 
-test("should fill the panel with what the edge reported", async ({ page }) => {
+test("should carry the full name as the heading, not the monogram", async ({
+  page,
+}) => {
+  await page.goto("/pt-br/");
+
+  // O monograma é gráfico. Quem diz de quem é esta página é o h1, e é dele que
+  // dependem o buscador e a desambiguação de entidade do JSON-LD.
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Diorgenes George",
+  );
+});
+
+test("should keep the monogram out of the accessibility tree", async ({
+  page,
+}) => {
+  await page.goto("/pt-br/");
+
+  await expect(page.locator("[data-monograma]")).toHaveAttribute(
+    "aria-hidden",
+    "true",
+  );
+
+  // A árvore de acessibilidade é a autoridade aqui, e não o DOM: `getByText` acha
+  // o monograma mesmo escondido, porque ele varre a marcação. Letra a letra, um
+  // leitor de tela soletraria "D G" antes do título da página.
+  const arvore = await page.locator("main").ariaSnapshot();
+
+  expect(arvore).toContain("Diorgenes George");
+  expect(arvore).not.toContain("DG");
+});
+
+test("should never show the visitor telemetry on screen", async ({ page }) => {
+  await page.route("**/api/edge", (route) => route.fulfill({ json: TELEMETRY }));
+
+  await page.goto("/pt-br/");
+  await page.waitForLoadState("networkidle");
+
+  // A latência comanda a intensidade do desregistro e nada mais: cidade,
+  // datacenter, distância e protocolo não aparecem em lugar nenhum da página.
+  const corpo = (await page.locator("body").textContent()) ?? "";
+
+  expect(corpo).not.toContain("GIG");
+  expect(corpo).not.toContain("331");
+  expect(corpo).not.toContain("HTTP/3");
+});
+
+test("should offer the whole index on the cover", async ({ page }) => {
+  await page.goto("/pt-br/");
+
+  // Seis portas: sobre, trabalho, escritos, currículo, serviços e contato.
+  await expect(page.locator("main nav a")).toHaveCount(6);
+});
+
+test("should not repeat the index in the header while on the cover", async ({
+  page,
+}) => {
+  await page.goto("/pt-br/");
+
+  // Na capa o sumário do hero já é o índice: repetir no cabeçalho seria dizer a
+  // mesma coisa duas vezes na mesma tela.
+  await expect(
+    page.getByRole("banner").getByRole("link", { name: "Trabalho" }),
+  ).toHaveCount(0);
+});
+
+test("should keep the header navigation on every other route", async ({
+  page,
+}) => {
+  await page.goto("/pt-br/sobre/");
+
+  // Fora da capa o cabeçalho é a única navegação que existe, e some-lo deixaria
+  // as outras oito rotas sem saída.
+  await expect(
+    page.getByRole("banner").getByRole("link", { name: "Trabalho" }),
+  ).toBeVisible();
+});
+
+/**
+ * A marca chega depois que o edge responde, e a recepção é uma animação de
+ * `transform`: ela não pode empurrar nada, ou o CLS estoura o orçamento de 0.05.
+ */
+test("should not shift the layout while the mark is received", async ({
+  page,
+}) => {
   await page.route("**/api/edge", (route) => route.fulfill({ json: TELEMETRY }));
 
   await page.goto("/pt-br/");
 
-  await expect(page.getByText("Betim, BR")).toBeVisible();
-  await expect(page.getByText("GIG")).toBeVisible();
-  await expect(page.getByText("331 km")).toBeVisible();
-});
-
-test("should say it could not measure instead of showing a zero", async ({
-  page,
-}) => {
-  await page.route("**/api/edge", (route) => route.fulfill({ status: 500 }));
-
-  await page.goto("/pt-br/");
-
-  await expect(page.getByText("Não foi possível medir").first()).toBeVisible();
-  await expect(page.getByText("0 km")).toHaveCount(0);
-});
-
-test("should never invent a position when the colo is unknown", async ({
-  page,
-}) => {
-  await page.route("**/api/edge", (route) =>
-    route.fulfill({ json: { ...TELEMETRY, colo: null } }),
+  const cls = await page.evaluate(
+    () =>
+      new Promise<number>((resolve) => {
+        let total = 0;
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries() as (PerformanceEntry & {
+            value: number;
+            hadRecentInput: boolean;
+          })[]) {
+            if (!entry.hadRecentInput) total += entry.value;
+          }
+        }).observe({ type: "layout-shift", buffered: true });
+        setTimeout(() => resolve(total), 3000);
+      }),
   );
 
-  await page.goto("/pt-br/");
-
-  // A cidade veio, então ela aparece; a distância não tem como existir.
-  await expect(page.getByText("Betim, BR")).toBeVisible();
-  await expect(page.getByText("331 km")).toHaveCount(0);
+  expect(cls).toBeLessThan(0.05);
 });
 
-test("should tell a visitor without javascript why the numbers are missing", async ({
+test("should print the mark for a visitor without javascript", async ({
   browser,
 }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
@@ -56,16 +128,17 @@ test("should tell a visitor without javascript why the numbers are missing", asy
 
   await page.goto("/pt-br/");
 
-  await expect(page.getByText("A medição depende de JavaScript")).toBeVisible();
-  await expect(page.getByText("Medindo")).toHaveCount(0);
+  // Sem JavaScript não há medição, então a marca aparece assentada. O que não
+  // pode acontecer é a capa ficar sem marca nenhuma.
+  await expect(page.locator("[data-monograma]")).toBeVisible();
 
   await context.close();
 });
 
 /**
  * A emulação `reducedMotion` do Playwright não chega ao `window.matchMedia` nesta
- * versão — medido: com ela ligada, `matches` continua falso e a cena monta. O sinal é
- * forçado aqui para o teste verificar o portão do site, e não a emulação do harness.
+ * versão — medido: com ela ligada, `matches` continua falso. O sinal é forçado aqui
+ * para o teste verificar o portão do site, e não a emulação do harness.
  */
 const forceReducedMotion = `
   const original = window.matchMedia.bind(window);
@@ -92,9 +165,21 @@ test.describe("movimento reduzido", () => {
       [],
     );
   });
+
+  test("should settle the mark instead of receiving it", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/pt-br/");
+
+    const animando = await page
+      .locator("[data-monograma] .monograma-fatia")
+      .first()
+      .evaluate((el) => getComputedStyle(el).animationName);
+
+    expect(animando).toBe("none");
+  });
 });
 
-test("should keep the headline as the largest paint", async ({ page }) => {
+test("should keep a text element as the largest paint", async ({ page }) => {
   await page.goto("/pt-br/");
 
   const tag = await page.evaluate(
@@ -110,7 +195,9 @@ test("should keep the headline as the largest paint", async ({ page }) => {
       }),
   );
 
-  expect(["H1", "P", "none"]).toContain(tag);
+  // O monograma é o maior elemento da capa, e ele é texto: pinta com a fonte do
+  // sistema antes de a display chegar, então nunca segura o LCP.
+  expect(["H1", "P", "SPAN", "none"]).toContain(tag);
 });
 
 test("should never send the network operator of the visitor to the browser", async ({

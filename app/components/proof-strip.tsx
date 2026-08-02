@@ -14,17 +14,18 @@ export function ProofStrip({ locale }: { locale: Locale }) {
   if (proofs.length === 0) return null;
 
   return (
-    <ul className="mt-20 grid gap-8 border-y border-hairline py-10 sm:grid-cols-3">
+    <ul className="mt-20 grid gap-px border-y border-hairline bg-hairline sm:grid-cols-3">
       {proofs.map((proof) => (
-        <li key={proof.slug}>
+        <li key={proof.slug} className="bg-bg">
           <Link
             to={documentHref("work", locale, proof.slug)}
-            className="group block"
+            viewTransition
+            className="group block py-8"
           >
-            <span className="block font-mono text-4xl font-semibold text-accent">
+            <span className="block font-display text-6xl leading-none text-accent">
               {proof.value}
             </span>
-            <span className="mt-2 block text-sm text-fg-muted group-hover:text-fg">
+            <span className="mt-3 block max-w-[24ch] text-sm text-fg-muted group-hover:text-fg">
               {proof.label}
             </span>
           </Link>

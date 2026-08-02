@@ -11,6 +11,8 @@ import {
 import type { Route } from "./+types/root";
 import { localeFromPathname } from "./i18n/use-locale";
 import "./app.css";
+import archivoBlack from "./design/fontes/archivo-black-latin-400.woff2?url";
+import spaceMono from "./design/fontes/space-mono-latin-400.woff2?url";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const locale = localeFromPathname(useLocation().pathname);
@@ -20,6 +22,33 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        {/*
+          As duas fontes usam font-display: optional, que da cerca de cem milissegundos
+          de janela: se elas nao chegarem a tempo, o navegador usa a pilha do sistema
+          naquele carregamento inteiro e nunca troca. Era isso que fazia a primeira
+          visita aparecer sem a fonte e a recarga aparecer com ela.
+
+          O preload as coloca na fila junto com o HTML, entao elas chegam dentro da
+          janela e o optional passa a ter sucesso, sem abrir mao do CLS zero que ele
+          garante. `crossOrigin` e obrigatorio mesmo em mesma origem: sem ele o browser
+          baixa o arquivo duas vezes, porque fonte e sempre requisitada em modo CORS.
+        */}
+        <link
+          rel="preload"
+          href={archivoBlack}
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href={spaceMono}
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+
         <Meta />
         <Links />
       </head>
