@@ -44,18 +44,34 @@ test("should offer a whatsapp conversation with a prefilled message", async ({
   ).toHaveAttribute("href", /wa\.me\/\d+\?text=/);
 });
 
+/**
+ * O indice vazio deixou de existir em ingles quando os trinta documentos foram
+ * publicados, mas o comportamento continua no codigo e continua valendo. O caso real
+ * que restou e o portugues europeu: os tres artigos existem em pt-BR e en-US, e nenhum
+ * em pt-PT. Apontar os testes para la vale mais do que apaga-los.
+ */
 test("should explain an empty index instead of showing an empty list", async ({
   page,
 }) => {
-  await page.goto("/en/work/");
+  await page.goto("/pt-pt/escritos/");
 
-  await expect(page.locator("main")).toContainText("being prepared");
+  await expect(page.locator("main")).toContainText("está a ser escrito");
 });
 
 test("should keep an empty index out of the navigation", async ({ page }) => {
-  await page.goto("/en/");
+  await page.goto("/pt-pt/");
 
   await expect(
-    page.getByRole("navigation").getByRole("link", { name: "Work", exact: true }),
+    page
+      .getByRole("navigation")
+      .getByRole("link", { name: "Escritos", exact: true }),
   ).toHaveCount(0);
+});
+
+test("should still list the cases in european portuguese, which does have them", async ({
+  page,
+}) => {
+  await page.goto("/pt-pt/trabalho/");
+
+  await expect(page.getByRole("link", { name: /UPA Agora/ })).toBeVisible();
 });

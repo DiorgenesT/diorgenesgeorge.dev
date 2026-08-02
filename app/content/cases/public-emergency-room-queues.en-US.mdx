@@ -1,8 +1,8 @@
 ---
-title: "Public emergency room queues, in near real time"
-answer: "To find out which emergency room was busiest, people had to go there and look at the queue. A public dashboard now shows waiting times and triage counts for the city's four units, without citizen traffic putting any load on the clinical system it reads from."
+title: "UPA Agora: public emergency room queues in near real time"
+answer: "To find out which emergency room was busiest, people had to go there and look at the queue. UPA Agora now shows waiting times and triage counts for Betim's four units, without citizen traffic putting any load on the clinical system it reads from."
 translationKey: upa-agora
-status: rascunho
+status: publicado
 updated: "2026-08-01"
 org: Fundação Beta
 role: Full stack developer
@@ -22,7 +22,7 @@ proof:
 
 ## The problem
 
-To know which emergency room was busiest, a person had to go there and look at the queue. The information existed — the city's clinical regulation system knew how many people were at each stage — but it sat behind an internal system, far from whoever had to decide where to take a child with a fever at eleven at night.
+To know which emergency room was busiest, a person had to go there and look at the queue. The information existed — Betim's clinical regulation system knew how many people were at each stage — but it sat behind an internal system, far from whoever had to decide where to take a child with a fever at eleven at night.
 
 ## The decision
 
@@ -41,5 +41,7 @@ The second choice is less glamorous and just as decisive: **the parser accepts w
 Waiting times arrive written every possible way — with colons, with the word "min", as "1h30", or as a bare number. Column matching ignores accents, casing and stray whitespace. None of it is elegant, and it is the difference between a system that works on paper and one that survives real human data entry, done by someone in the middle of a shift.
 
 ## The result
+
+The dashboard shipped as **UPA Agora**.
 
 Information that existed only inside the unit became public and checkable before leaving home. People who need care choose a unit by its queue rather than only by distance — and the people working in that unit never feel any of it as load.
