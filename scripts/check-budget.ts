@@ -4,18 +4,21 @@ import { gzipSync } from "node:zlib";
 import { CLIENT_DIR } from "./html-files";
 
 /**
- * Teto do JS que toda visita paga, gzipado. A cena 3D e as bibliotecas de movimento
- * ficam fora desta conta de propósito: carregam depois do LCP e só para quem as recebe.
- * Foi a ausência deste portão que deixou 34 KB de conteúdo desnecessário passarem na
- * Fase 1 — a home baixava o texto de todas as páginas do site.
+ * Teto do JS que toda visita paga, gzipado. Chunk que carrega depois do LCP e so para
+ * quem o recebe fica fora desta conta, por decisao: e o caso do GSAP.
  *
- * O teto existe para barrar **regressão**, não publicação. O índice de frontmatter
- * cresce cerca de 800 bytes por documento, e isso é conteúdo legítimo: com 30
- * documentos o crítico fica em ~122 KB. Um vazamento como o da Fase 1 chega de uma vez,
- * em dezenas de KB, e continua sendo pego. Ajustado de 120 para 132 KB em 2026-08-01,
- * quando publicar o quinto case deixou 280 bytes de folga.
+ * O teto existe para barrar regressao, nao publicacao. O indice de frontmatter cresce
+ * cerca de 800 bytes por documento, e isso e conteudo legitimo: com os 30 documentos da
+ * Fase 4 o critico chega perto de 122 KB. Um vazamento chega de uma vez, em dezenas de
+ * KB, e continua sendo pego.
+ *
+ * Ajustado de 132 para 125 KB em 2026-08-02, na Fase 0 do fanzine, depois que o globo
+ * 3D, a biblioteca de transicao e as duas fontes sairam. Se a Fase 4 estourar este
+ * valor, a saida nao e eleva-lo: e parar de mandar para a home o indice de todo o site.
+ * A home precisa dos tres artigos mais recentes, nao do frontmatter de trinta
+ * documentos.
  */
-const CRITICAL_BUDGET_BYTES = 132 * 1024;
+const CRITICAL_BUDGET_BYTES = 125 * 1024;
 
 const ASSET = /\/assets\/([A-Za-z0-9._-]+\.js)/g;
 
