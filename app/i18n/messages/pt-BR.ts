@@ -51,6 +51,8 @@ export const ptBR: Dictionary = {
   "hero.unavailable": "Não foi possível medir",
   "hero.privacy": "Estes dados vieram da sua própria requisição e não foram armazenados.",
   "hero.needsJs": "A medição depende de JavaScript.",
+  "hero.stamp": "Esta cópia chegou em",
+  "home.masthead": "Edição 01 · Betim, MG",
   "a11y.skipToContent": "Pular para o conteúdo",
   "locale.label": "Idioma",
   "footer.builtWith": "Construído na borda da Cloudflare",
