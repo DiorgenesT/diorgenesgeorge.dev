@@ -1,6 +1,5 @@
 import { Link, Outlet } from "react-router";
 import { LocaleSwitcher } from "../components/locale-switcher";
-import { ThemeToggle } from "../components/theme-toggle";
 import { listArticleIndex, listCaseIndex } from "../content/index";
 import { localizedHref, type RouteKey } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
@@ -58,7 +57,6 @@ export default function SiteLayout() {
 
           <div className="ms-auto flex items-center gap-3">
             <LocaleSwitcher />
-            <ThemeToggle />
           </div>
         </nav>
       </header>

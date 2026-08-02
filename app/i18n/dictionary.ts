@@ -56,9 +56,6 @@ export type Dictionary = {
   "cv.skills": string;
   "cv.current": string;
   "a11y.skipToContent": string;
-  "theme.toggle": string;
-  "theme.dark": string;
-  "theme.light": string;
   "locale.label": string;
   "footer.builtWith": string;
   "meta.home.title": string;

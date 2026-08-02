@@ -32,27 +32,15 @@ test("should render a page without any policy violation", async ({ page }) => {
   expect(violations).toEqual([]);
 });
 
-test.describe("hidratação", () => {
-  test.use({ colorScheme: "dark" });
+test("should hydrate without throwing", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(String(error)));
 
-  test("should hydrate without throwing", async ({ page }) => {
-    const errors: string[] = [];
-    page.on("pageerror", (error) => errors.push(String(error)));
-
-    await page.goto("/en/");
-    await page.getByRole("button", { name: "Toggle theme" }).click();
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-
-    expect(errors).toEqual([]);
-  });
-});
-
-test("should keep the theme applied by the inline script after hydration", async ({
-  page,
-}) => {
-  // Uma falha de hidratação regenera a árvore e apaga o atributo que o script de tema pôs.
   await page.goto("/en/");
   await page.waitForLoadState("networkidle");
+  // Navegar depois da hidratação: uma árvore regenerada por erro não navegaria.
+  await page.getByRole("link", { name: "About" }).click();
+  await expect(page).toHaveURL(/\/en\/about\/$/);
 
-  await expect(page.locator("html")).toHaveAttribute("data-theme", /dark|light/);
+  expect(errors).toEqual([]);
 });
