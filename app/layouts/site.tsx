@@ -3,7 +3,6 @@ import { LocaleSwitcher } from "../components/locale-switcher";
 import { listArticleIndex, listCaseIndex } from "../content/index";
 import { localizedHref, type RouteKey } from "../i18n/config";
 import { getDictionary } from "../i18n/dictionary";
-import { PageTransition } from "../motion/page-transition";
 import { useLocale } from "../i18n/use-locale";
 
 export default function SiteLayout() {
@@ -40,6 +39,7 @@ export default function SiteLayout() {
         >
           <Link
             to={localizedHref("home", locale)}
+            viewTransition
             className="font-mono text-sm font-semibold tracking-widest text-accent"
           >
             DG
@@ -49,6 +49,7 @@ export default function SiteLayout() {
             <Link
               key={key}
               to={localizedHref(key, locale)}
+              viewTransition
               className="text-sm text-fg-muted hover:text-fg"
             >
               {label}
@@ -62,9 +63,7 @@ export default function SiteLayout() {
       </header>
 
       <div id="conteudo" className="flex-1">
-        <PageTransition>
-          <Outlet />
-        </PageTransition>
+        <Outlet />
       </div>
 
       <footer className="border-t border-hairline">
@@ -72,6 +71,7 @@ export default function SiteLayout() {
           <span>{t["footer.builtWith"]}</span>
           <Link
             to={localizedHref("colophon", locale)}
+            viewTransition
             className="ms-auto hover:text-fg"
           >
             {t["nav.colophon"]}
