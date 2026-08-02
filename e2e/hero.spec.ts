@@ -167,3 +167,27 @@ test("should refuse to let the telemetry be cached for another visitor", async (
 
   expect(response.headers()["cache-control"]).toContain("no-store");
 });
+
+test("should stop spinning the globe once it leaves the viewport", async ({
+  page,
+}) => {
+  // Sem telemetria o globo fica girando: é o único estado em que ele pede quadros.
+  await page.route("**/api/edge", (route) => route.abort());
+
+  await page.goto("/pt-br/");
+  await page.waitForSelector("canvas");
+  await page.waitForTimeout(600);
+
+  const before = await page.evaluate(
+    () => (window as unknown as { __frames?: number }).__frames ?? 0,
+  );
+
+  await page.evaluate(() => window.scrollTo(0, 3000));
+  await page.waitForTimeout(900);
+
+  const after = await page.evaluate(
+    () => (window as unknown as { __frames?: number }).__frames ?? 0,
+  );
+
+  expect(after - before).toBeLessThan(5);
+});

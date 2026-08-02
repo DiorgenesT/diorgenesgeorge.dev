@@ -74,9 +74,11 @@ function Marker({
 function Globe({
   state,
   colors,
+  awake,
 }: {
   state: TelemetryState;
   colors: SceneColors;
+  awake: { current: boolean };
 }) {
   const group = useRef<Group>(null);
   const { invalidate, camera } = useThree();
@@ -101,9 +103,7 @@ function Globe({
       ? angularSpan({ lat: vLat, lon: vLon }, { lat: cLat, lon: cLon })
       : undefined;
 
-  const dotRadius = markerRadius(
-    span === undefined ? 4 : cameraDistance(span),
-  );
+  const dotRadius = markerRadius(span === undefined ? 4 : cameraDistance(span));
 
   const arc = useMemo(() => {
     if (
@@ -120,7 +120,9 @@ function Globe({
 
   // Enquanto não sabe onde o visitante está, o globo gira: é declaradamente procurando.
   useFrame((_, delta) => {
-    if (!group.current || visitor) return;
+    // Fora da tela ou aba em segundo plano, o giro para: quadro que ninguém vê é
+    // bateria gasta à toa.
+    if (!group.current || visitor || !awake.current) return;
     group.current.rotation.y += IDLE_SPIN * delta;
     invalidate();
   });
@@ -239,6 +241,30 @@ function FrameCounter() {
 export default function GlobeScene({ state }: { state: TelemetryState }) {
   const holder = useRef<HTMLDivElement>(null);
   const colors = useSceneColors();
+  const awake = useRef(true);
+
+  useEffect(() => {
+    const node = holder.current;
+    if (!node) return;
+
+    const onVisibility = () => {
+      awake.current = !document.hidden && awake.current;
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        awake.current = Boolean(entry?.isIntersecting) && !document.hidden;
+      },
+      { threshold: 0.05 },
+    );
+    observer.observe(node);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
 
   return (
     <div ref={holder} className="h-full w-full">
@@ -249,7 +275,7 @@ export default function GlobeScene({ state }: { state: TelemetryState }) {
         camera={{ position: [0, 0, 4], fov: 35 }}
         gl={{ antialias: true, alpha: true }}
       >
-        <Globe state={state} colors={colors} />
+        <Globe state={state} colors={colors} awake={awake} />
         <FrameCounter />
       </Canvas>
     </div>
