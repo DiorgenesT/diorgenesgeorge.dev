@@ -51,7 +51,6 @@ export const enUS: Dictionary = {
   "hero.unavailable": "Could not measure",
   "hero.privacy": "This data came from your own request and was not stored.",
   "hero.needsJs": "Measuring requires JavaScript.",
-  "hero.mapLabel": "Globe showing your position linked to the datacenter that served this page.",
   "a11y.skipToContent": "Skip to content",
   "locale.label": "Language",
   "footer.builtWith": "Built on Cloudflare's edge",

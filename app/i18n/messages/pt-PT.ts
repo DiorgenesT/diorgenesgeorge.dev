@@ -51,7 +51,6 @@ export const ptPT: Dictionary = {
   "hero.unavailable": "Não foi possível medir",
   "hero.privacy": "Estes dados vieram do seu próprio pedido e não foram armazenados.",
   "hero.needsJs": "A medição depende de JavaScript.",
-  "hero.mapLabel": "Globo a mostrar a sua posição ligada ao centro de dados que serviu esta página.",
   "a11y.skipToContent": "Saltar para o conteúdo",
   "locale.label": "Idioma",
   "footer.builtWith": "Construído na periferia da Cloudflare",

@@ -76,9 +76,7 @@ const forceReducedMotion = `
 `;
 
 test.describe("movimento reduzido", () => {
-  test("should never download the scene or the motion libraries", async ({
-    page,
-  }) => {
+  test("should never download the motion libraries", async ({ page }) => {
     await page.addInitScript(forceReducedMotion);
 
     const scripts: string[] = [];
@@ -90,49 +88,13 @@ test.describe("movimento reduzido", () => {
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(1200);
 
-    expect(
-      scripts.filter((url) =>
-        /globe-scene|gsap|ScrollTrigger|animated-outlet/i.test(url),
-      ),
-    ).toEqual([]);
-  });
-
-  test("should still draw the globe as svg", async ({ page }) => {
-    await page.addInitScript(forceReducedMotion);
-    await page.route("**/api/edge", (route) =>
-      route.fulfill({ json: TELEMETRY }),
+    expect(scripts.filter((url) => /gsap|ScrollTrigger/i.test(url))).toEqual(
+      [],
     );
-
-    await page.goto("/pt-br/");
-    await page.waitForTimeout(1200);
-
-    await expect(page.locator('svg[role="img"]')).toBeVisible();
-    await expect(page.locator("canvas")).toHaveCount(0);
   });
 });
 
-test("should fall back to svg when webgl is unavailable", async ({ page }) => {
-  await page.addInitScript(() => {
-    const original = HTMLCanvasElement.prototype.getContext;
-    HTMLCanvasElement.prototype.getContext = function (
-      this: HTMLCanvasElement,
-      type: string,
-      ...rest: unknown[]
-    ) {
-      if (type.startsWith("webgl")) return null;
-      return original.call(this, type, ...(rest as []));
-    } as typeof original;
-  });
-
-  await page.goto("/pt-br/");
-
-  await expect(page.locator('svg[role="img"]')).toBeVisible();
-  await expect(page.locator("canvas")).toHaveCount(0);
-});
-
-test("should keep the headline as the largest paint, not the scene", async ({
-  page,
-}) => {
+test("should keep the headline as the largest paint", async ({ page }) => {
   await page.goto("/pt-br/");
 
   const tag = await page.evaluate(
@@ -149,7 +111,6 @@ test("should keep the headline as the largest paint, not the scene", async ({
   );
 
   expect(["H1", "P", "none"]).toContain(tag);
-  expect(tag).not.toBe("CANVAS");
 });
 
 test("should never send the network operator of the visitor to the browser", async ({
@@ -166,28 +127,4 @@ test("should refuse to let the telemetry be cached for another visitor", async (
   const response = await request.get("/api/edge");
 
   expect(response.headers()["cache-control"]).toContain("no-store");
-});
-
-test("should stop spinning the globe once it leaves the viewport", async ({
-  page,
-}) => {
-  // Sem telemetria o globo fica girando: é o único estado em que ele pede quadros.
-  await page.route("**/api/edge", (route) => route.abort());
-
-  await page.goto("/pt-br/");
-  await page.waitForSelector("canvas");
-  await page.waitForTimeout(600);
-
-  const before = await page.evaluate(
-    () => (window as unknown as { __frames?: number }).__frames ?? 0,
-  );
-
-  await page.evaluate(() => window.scrollTo(0, 3000));
-  await page.waitForTimeout(900);
-
-  const after = await page.evaluate(
-    () => (window as unknown as { __frames?: number }).__frames ?? 0,
-  );
-
-  expect(after - before).toBeLessThan(5);
 });

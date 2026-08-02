@@ -31,7 +31,6 @@ export type Dictionary = {
   "hero.unavailable": string;
   "hero.privacy": string;
   "hero.needsJs": string;
-  "hero.mapLabel": string;
   "home.taglineLead": string;
   "home.taglineAccent": string;
   "home.answer": string;
