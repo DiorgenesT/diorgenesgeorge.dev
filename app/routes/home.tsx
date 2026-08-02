@@ -52,21 +52,44 @@ export default function Home() {
         <ProofStrip locale={locale} />
       </Reveal>
 
+      {/* Sem rótulo em maiúscula aqui: a seção se explica sozinha, e o teto saudável
+          é um rótulo a cada três seções. Assimétrico de propósito — o caminho do
+          recrutador é o objetivo número um do site, e ocupa o dobro do espaço. */}
       <Reveal>
-        <section className="mt-20">
-          <h2 className="font-mono text-xs uppercase tracking-widest text-fg-subtle">
-            {t["home.pathsHeading"]}
-          </h2>
-          <ul className="mt-6 grid gap-4 sm:grid-cols-3">
-            {paths.map(({ key, label, hint }) => (
-              <li key={key}>
+        <section className="mt-24">
+          <h2 className="sr-only">{t["home.pathsHeading"]}</h2>
+
+          <ul className="grid gap-4 md:grid-cols-[1.6fr_1fr]">
+            {paths.map(({ key, label, hint }, index) => (
+              <li key={key} className={index === 0 ? "md:row-span-2" : ""}>
                 <Link
                   to={localizedHref(key, locale)}
-                  className="block h-full rounded-lg border border-hairline p-6 hover:border-accent"
+                  className={`group flex h-full flex-col rounded-xl border border-hairline transition-colors hover:border-accent ${
+                    index === 0 ? "p-8 sm:p-10" : "p-6 sm:p-7"
+                  }`}
                 >
-                  <span className="block font-semibold">{label}</span>
-                  <span className="mt-2 block text-sm text-fg-muted">
+                  <span
+                    className={`font-semibold tracking-tight group-hover:text-accent ${
+                      index === 0 ? "text-3xl sm:text-4xl" : "text-lg"
+                    }`}
+                  >
+                    {label}
+                  </span>
+                  <span
+                    className={`text-fg-muted ${
+                      index === 0 ? "mt-4 max-w-sm text-base" : "mt-3 text-sm"
+                    }`}
+                  >
                     {hint}
+                  </span>
+
+                  {/* Empurra a seta para o rodapé do cartão: o espaço que sobra vira
+                      direção, em vez de buraco entre título e descrição. */}
+                  <span
+                    aria-hidden
+                    className="mt-auto pt-8 font-mono text-sm text-fg-subtle transition-transform group-hover:translate-x-1 group-hover:text-accent"
+                  >
+                    &rarr;
                   </span>
                 </Link>
               </li>

@@ -37,7 +37,7 @@ O risco desta direção é parecer template. Cinco regras a evitam. Violar qualq
 1. **Zero número falso.** Todo dado exibido vem de `request.cf` no Worker, de medição real no browser, ou de um fato verificável. Métrica sem origem não entra.
 2. **O globo não gira à toa.** Ele exibe dois pontos — o visitante e o datacenter que serviu a página — ligados por um arco. Cada visitante vê uma imagem diferente. É a propriedade que nenhum template consegue reproduzir.
 3. **Paleta com autoria.** Preto de subtom quente, não cinza neutro. Âmbar, não o laranja da Cloudflare. Um acento, com disciplina.
-4. **Tipografia que não é Inter.**
+4. **Tipografia que não é Inter.** *Revisto em 2026-08-01:* a versão original pedia Instrument Serif itálico para as quebras editoriais. Duas razões para sair: essa é uma das duas serifadas que mais aparecem em página gerada por máquina, e trocar de família tipográfica no meio de uma frase para dar ênfase é amadorismo. A ênfase passa a ser peso e cor da própria Instrument Sans.
 5. **Movimento com física.** Inércia e massa via GSAP, não `fade-in 0.3s`. Sempre com `prefers-reduced-motion` respeitado.
 
 ### Paleta — Ônix + Âmbar
@@ -65,12 +65,11 @@ Todo par de cores usado em texto é medido contra WCAG 2.1 AA (4.5:1 texto norma
 | Papel | Fonte |
 |---|---|
 | Títulos, corpo | **Instrument Sans** |
-| Destaque editorial (itálico em quebra de frase) | **Instrument Serif Italic** |
 | Dados, telemetria, rótulos, código | **IBM Plex Mono** |
 
 Todas com licença aberta, **auto-hospedadas** em `woff2` subsetado. Sem Google Fonts CDN — melhora performance e permite CSP estrita. `font-display: swap`, com métricas de fallback (`size-adjust`) para CLS zero.
 
-O itálico serif é usado com parcimônia e sempre numa quebra de frase escolhida — é uma decisão editorial deliberada, e é o principal antídoto contra aparência gerada.
+A ênfase dentro de uma frase é peso e cor da própria Instrument Sans. A regra vale para o site todo: nenhuma troca de família tipográfica para dar destaque.
 
 ### Movimento
 
