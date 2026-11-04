@@ -1,0 +1,217 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import type { Dicionario } from "@/i18n";
+import type { Idioma } from "@/i18n/config";
+import { gsap, menosMovimento, ScrollTrigger } from "@/lib/gsap";
+import { quadroDoPortal, soltarPalco } from "@/lib/portal";
+import { useLenis } from "./RolagemSuave";
+import Trabalhos from "./Trabalhos";
+
+/**
+ * O site é um hero fixo (sem scroll) e "telas" que abrem por cima dele, como em um jogo.
+ * Cada tela tem um hash (#work, #games, #about, #contact): links, o menu, o botão voltar do navegador
+ * e links diretos funcionam. Abrir/fechar passa pelo portal (src/lib/portal.ts).
+ * Leis: Jakob (o voltar do navegador funciona), feedback (a transição mostra de onde a tela veio),
+ * Fitts (botão voltar grande), controle do usuário (Esc fecha).
+ */
+const TELAS = ["work", "games", "about", "contact"] as const;
+type Tela = (typeof TELAS)[number];
+
+const daHash = (): Tela | null => {
+  const h = window.location.hash.slice(1);
+  return (TELAS as readonly string[]).includes(h) ? (h as Tela) : null;
+};
+
+const visualAtual = () => (document.documentElement.dataset.visual === "claro" ? "claro" : "escuro");
+
+function EmBreve({ t }: { t: Dicionario }) {
+  return (
+    <section className="grid min-h-svh place-items-center px-6 text-center text-white">
+      <div className="max-w-md">
+        <span className="mx-auto grid size-16 place-items-center rounded-2xl border border-white/10 bg-white/[0.04] text-[#7df3ff]">
+          <svg viewBox="0 0 24 24" className="size-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <rect x="5" y="11" width="14" height="10" rx="2" />
+            <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+          </svg>
+        </span>
+        <h2 className="mt-8 font-display text-[9vw] leading-[1.05] md:text-[3vw]">{t.telas.emBreve}</h2>
+        <p className="mt-4 text-[16px] leading-relaxed text-white/60">{t.telas.emBreveDesc}</p>
+      </div>
+    </section>
+  );
+}
+
+export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
+  const lenis = useLenis();
+  const tela = useRef<HTMLDivElement>(null);
+  const moldura = useRef<HTMLDivElement>(null);
+  const conteudoRef = useRef<HTMLDivElement>(null);
+  const vidro = useRef<HTMLDivElement>(null);
+  const inicial = useRef(false);
+  const [aberta, setAberta] = useState<Tela | null>(null);
+  const progresso = useRef({ p: 0 });
+  const visual = useRef<"escuro" | "claro">("escuro");
+  const animacao = useRef<gsap.core.Tween | null>(null);
+  const empurrou = useRef(false);
+
+  const desenhar = useCallback(() => {
+    if (tela.current && moldura.current)
+      quadroDoPortal(progresso.current.p, { moldura: moldura.current, tela: tela.current, conteudo: conteudoRef.current, vidro: vidro.current }, visual.current);
+  }, []);
+
+  /** Leva o portal até `alvo` (0 ou 1). */
+  const animar = useCallback(
+    (alvo: 0 | 1, depois?: () => void) => {
+      animacao.current?.kill();
+      if (menosMovimento()) {
+        progresso.current.p = alvo;
+        desenhar();
+        depois?.();
+        return;
+      }
+      animacao.current = gsap.to(progresso.current, {
+        p: alvo,
+        duration: alvo ? 1.7 : 1.25,
+        ease: "none",
+        onUpdate: desenhar,
+        onComplete: depois,
+      });
+    },
+    [desenhar],
+  );
+
+  // hash -> tela (links, menu, voltar do navegador, link direto)
+  useEffect(() => {
+    const sincronizar = () => setAberta(daHash());
+    inicial.current = daHash() !== null; // link direto: a tela já aparece aberta
+    sincronizar();
+    window.addEventListener("popstate", sincronizar);
+    window.addEventListener("hashchange", sincronizar);
+
+    // links internos (#work...) abrem a tela sem pular a página
+    const clique = (e: MouseEvent) => {
+      // o logo (link para esta mesma página) fecha a tela aberta
+      const inicio = (e.target as HTMLElement).closest?.("a[href]") as HTMLAnchorElement | null;
+      if (inicio && daHash() && inicio.pathname === window.location.pathname && !inicio.hash && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        history.pushState(null, "", window.location.pathname);
+        empurrou.current = false;
+        setAberta(null);
+        return;
+      }
+      const a = (e.target as HTMLElement).closest?.("a[href^='#']") as HTMLAnchorElement | null;
+      const id = a?.getAttribute("href")?.slice(1);
+      if (!a || !id || !(TELAS as readonly string[]).includes(id) || e.metaKey || e.ctrlKey) return;
+      e.preventDefault();
+      if (window.location.hash !== `#${id}`) {
+        history.pushState(null, "", `#${id}`);
+        empurrou.current = true;
+      }
+      setAberta(id as Tela);
+    };
+    document.addEventListener("click", clique);
+    return () => {
+      window.removeEventListener("popstate", sincronizar);
+      window.removeEventListener("hashchange", sincronizar);
+      document.removeEventListener("click", clique);
+    };
+  }, []);
+
+  const fechar = useCallback(() => {
+    if (empurrou.current) {
+      empurrou.current = false;
+      history.back(); // o popstate fecha
+    } else {
+      history.pushState(null, "", window.location.pathname);
+      setAberta(null);
+    }
+  }, []);
+
+  // Esc fecha
+  useEffect(() => {
+    if (!aberta) return;
+    const tecla = (e: KeyboardEvent) => e.key === "Escape" && fechar();
+    window.addEventListener("keydown", tecla);
+    return () => window.removeEventListener("keydown", tecla);
+  }, [aberta, fechar]);
+
+  // O que fica montado: a tela aberta, ou a que está fechando (até o portal terminar).
+  const [montada, setMontada] = useState<Tela | null>(null);
+
+  useEffect(() => {
+    if (aberta) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- a tela precisa existir antes da animação
+      setMontada(aberta);
+      return;
+    }
+    if (!montada) return;
+    // fechar: volta ao topo e o portal se fecha de volta no monitor (ou no cristal)
+    lenis?.stop();
+    lenis?.scrollTo(0, { immediate: true });
+    window.scrollTo(0, 0);
+    visual.current = visualAtual();
+    animar(0, () => {
+      setMontada(null);
+      soltarPalco();
+      lenis?.start();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aberta]);
+
+  // tela montada: abre o portal (ou já aparece aberta, se a página carregou com o hash)
+  useEffect(() => {
+    if (!montada || !aberta) return;
+    lenis?.scrollTo(0, { immediate: true });
+    window.scrollTo(0, 0);
+    visual.current = visualAtual();
+    if (inicial.current) {
+      inicial.current = false;
+      progresso.current.p = 1;
+      desenhar();
+    } else if (progresso.current.p < 1) {
+      lenis?.stop();
+      animar(1, () => {
+        lenis?.start();
+        ScrollTrigger.refresh();
+      });
+    }
+    ScrollTrigger.refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [montada, aberta]);
+
+  let conteudo: ReactNode = null;
+  if (montada === "work") conteudo = <Trabalhos t={t} lang={lang} />;
+  else if (montada) conteudo = <EmBreve t={t} />;
+
+  return (
+    <div ref={moldura} className="relative z-30 overflow-x-clip" hidden={!montada}>
+      <div ref={tela} className="relative min-h-svh bg-[#05070c]" style={{ visibility: "hidden" }}>
+        <div ref={conteudoRef}>{conteudo}</div>
+        {/* vidro da tela do PC: brilho, scanlines e o reflexo que varre o painel ao pousar (src/lib/portal.ts) */}
+        <div
+          ref={vidro}
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-50 opacity-0"
+          style={{
+            background:
+              "linear-gradient(105deg, transparent calc(var(--reflexo, -40%) - 14%), rgba(255,255,255,var(--reflexo-a, 0)) var(--reflexo, -40%), transparent calc(var(--reflexo, -40%) + 14%))," +
+              "repeating-linear-gradient(0deg, rgba(0,0,0,var(--linhas, 0)) 0 1px, transparent 1px 3px)," +
+              "radial-gradient(ellipse at center, rgba(220,252,255,var(--brilho, 0)), rgba(125,243,255,calc(var(--brilho, 0) * 0.6)))",
+          }}
+        />
+        <button
+          type="button"
+          onClick={fechar}
+          aria-label={t.telas.fechar}
+          className="fixed bottom-5 left-5 z-40 flex h-12 items-center gap-2 rounded-full border border-white/15 bg-[#0a0a0a]/60 pl-3 pr-5 text-[14px] text-white/85 backdrop-blur-xl transition-colors hover:border-white/50 hover:text-white md:bottom-8 md:left-10"
+        >
+          <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M19 12H5M11 6l-6 6 6 6" />
+          </svg>
+          {t.telas.voltar}
+        </button>
+      </div>
+    </div>
+  );
+}

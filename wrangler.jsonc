@@ -1,0 +1,16 @@
+// Publicação na Cloudflare Workers: export estático do Next (./out) + Worker mínimo para "/".
+// Deploy: npm run deploy (primeiro em *.workers.dev; diorgenesgeorge.dev só depois de aprovado).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "diorgenes-dev",
+  "account_id": "d2ba95e1ad712f466ec368a12aeaecd2",
+  "compatibility_date": "2026-10-01",
+  "main": "worker/index.js",
+  "assets": {
+    "directory": "./out",
+    "binding": "ASSETS",
+    "run_worker_first": ["/"],
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  }
+}
