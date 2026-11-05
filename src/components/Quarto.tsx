@@ -5,6 +5,7 @@ import { menosMovimento } from "@/lib/gsap";
 import {
   CAMADAS,
   CANECA,
+  CODIGO,
   JOGO,
   LUMINARIA,
   PARALLAX,
@@ -17,8 +18,8 @@ import {
 
 /**
  * O quarto à noite, vivo: as camadas (src/lib/quarto.ts) com parallax no mouse (sem mouse, uma deriva
- * lenta), chuva no vidro, vapor da caneca, o mundo do jogo em vídeo no monitor direito (o esquerdo fica com
- * a tela original da imagem, o editor vazio), a cúpula da luminária na frente do monitor e a luz respirando.
+ * lenta), chuva no vidro, vapor da caneca, o mundo do jogo em vídeo no monitor direito, código parado no
+ * editor do monitor esquerdo, a cúpula da luminária na frente do monitor e a luz respirando.
  *
  * As transições em WebGL (sucção e portal) não leem o DOM: pedem ao quarto um quadro composto num canvas
  * (QuartoApi), desenhado com o mesmo deslocamento de parallax que está na tela, para a troca não pular.
@@ -60,6 +61,49 @@ function Projetado({ q, children }: { q: Ponto[]; children: ReactNode }) {
       style={{ left: `${c.x0 * 100}%`, top: `${c.y0 * 100}%`, width: `${(c.x1 - c.x0) * 100}%`, height: `${(c.y1 - c.y0) * 100}%` }}
     >
       {children}
+    </div>
+  );
+}
+
+/**
+ * O código do monitor esquerdo: parado, transparente sobre o editor da própria imagem (a barra de abas e os
+ * números de linha são os da imagem). Em frações do retângulo da tela (CODIGO): a linha n fica em
+ * LINHA0 + (n - 1) × PASSO e o texto começa em COLUNA, logo depois do cursor desenhado.
+ */
+const LINHA0 = 0.1596;
+const PASSO = 0.0421;
+const COLUNA = 0.19;
+const LINHAS: [string, string][][] = [
+  [["cm", "// o mundo do monitor ao lado"]],
+  [["kw", "import"], ["tx", " { "], ["fn", "World"], ["tx", ", "], ["fn", "Fog"], ["tx", " } "], ["kw", "from"], ["st", ' "./engine"']],
+  [],
+  [["kw", "export function"], ["fn", " build"], ["tx", "(seed: "], ["fn", "number"], ["tx", ") {"]],
+  [["kw", "  const"], ["tx", " world = "], ["kw", "new"], ["fn", " World"], ["tx", "(seed)"]],
+  [["tx", "  world.terrain."], ["fn", "raise"], ["tx", "("], ["nm", "0.62"], ["tx", ")"]],
+  [["tx", "  world.sky = "], ["st", '"overcast"']],
+  [["tx", "  world."], ["fn", "add"], ["tx", "("], ["kw", "new"], ["fn", " Fog"], ["tx", "({ density: "], ["nm", "0.4"], ["tx", " }))"]],
+  [["kw", "  for"], ["tx", " ("], ["kw", "const"], ["tx", " ruin "], ["kw", "of"], ["tx", " world.ruins)"]],
+  [["tx", "    ruin."], ["fn", "erode"], ["tx", "("], ["nm", "1200"], ["tx", ")"]],
+  [["tx", "  world."], ["fn", "spawn"], ["tx", "("], ["st", '"player"'], ["tx", ", { hood: "], ["kw", "true"], ["tx", " })"]],
+  [["kw", "  return"], ["tx", " world"]],
+  [["tx", "}"]],
+  [],
+  [["kw", "await"], ["fn", " run"], ["tx", "("], ["fn", "build"], ["tx", "("], ["nm", "42"], ["tx", "))"]],
+];
+const COR: Record<string, string> = { kw: "#c792ea", fn: "#82aaff", st: "#c3e88d", nm: "#f78c6c", cm: "rgba(255,255,255,.38)", tx: "rgba(226,232,240,.8)" };
+
+function Codigo() {
+  return (
+    <div data-codigo className="absolute inset-0 font-mono [container-type:size]" style={{ opacity: 0.88 }}>
+      {LINHAS.map((l, i) => (
+        <div key={i} className="absolute whitespace-pre leading-none" style={{ left: `${COLUNA * 100}%`, top: `${(LINHA0 + i * PASSO) * 100}%`, fontSize: "2.55cqh", transform: "translateY(-50%)" }}>
+          {l.map(([c, t], j) => (
+            <span key={j} style={{ color: COR[c] }}>
+              {t}
+            </span>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
@@ -198,6 +242,32 @@ export default function Quarto({ onPronto }: { onPronto?: (api: QuartoApi) => vo
     // em dobro: a malha em perspectiva amostra melhor e o vídeo não fica mais mole que o da página
     telaJogo.width = Math.round((cj.x1 - cj.x0) * W * 2);
     telaJogo.height = Math.round((cj.y1 - cj.y0) * H * 2);
+    // o código do monitor esquerdo, desenhado uma vez (é parado), em dobro de resolução
+    const cc = caixaDe(CODIGO);
+    const telaCodigo = document.createElement("canvas");
+    telaCodigo.width = Math.round((cc.x1 - cc.x0) * W * 2);
+    telaCodigo.height = Math.round((cc.y1 - cc.y0) * H * 2);
+    // a mesma fonte do DOM (a Geist Mono do site): outra fonte muda a largura das letras e o texto "pula"
+    const pintarCodigo = () => {
+      const g = telaCodigo.getContext("2d")!;
+      g.clearRect(0, 0, telaCodigo.width, telaCodigo.height);
+      const fs = 0.0255 * telaCodigo.height;
+      const familia = getComputedStyle(el.querySelector<HTMLElement>("[data-codigo]") ?? el).fontFamily;
+      g.font = `${fs}px ${familia}`;
+      g.textBaseline = "middle";
+      g.globalAlpha = 0.88;
+      LINHAS.forEach((l, i) => {
+        let x = COLUNA * telaCodigo.width;
+        const y = (LINHA0 + i * PASSO) * telaCodigo.height;
+        for (const [c, t] of l) {
+          g.fillStyle = COR[c];
+          g.fillText(t, x, y);
+          x += g.measureText(t).width;
+        }
+      });
+    };
+    pintarCodigo();
+    document.fonts?.ready.then(pintarCodigo);
     const img = (id: string) => el.querySelector<HTMLImageElement>(`img[data-camada="${id}"]`)!;
 
     const deslocamento = () => {
@@ -217,6 +287,7 @@ export default function Quarto({ onPronto }: { onPronto?: (api: QuartoApi) => vo
           ctx.drawImage(i, c.x * W + dx, c.y * H + dy, w, (w * i.naturalHeight) / i.naturalWidth);
           if (c.id === "mesa") {
             // as telas e a cúpula andam com a mesa
+            desenharNoQuad(ctx, telaCodigo, telaCodigo.width, telaCodigo.height, CODIGO.map(([x, y]) => [x * W + dx, y * H + dy] as Ponto));
             const v = jogo.current;
             if (v && v.readyState >= 2) {
               // o mesmo recorte do object-cover da página: senão a tela encolhe e estica na troca
@@ -308,7 +379,9 @@ export default function Quarto({ onPronto }: { onPronto?: (api: QuartoApi) => vo
           </div>
           {c.id === "mesa" && (
             <>
-              {/* o monitor de código fica com a tela original da imagem (o editor vazio) */}
+              <Projetado q={CODIGO}>
+                <Codigo />
+              </Projetado>
               <Projetado q={JOGO}>
                 {/* o mesmo arquivo do mundo do tema claro: o navegador baixa uma vez só */}
                 <video ref={jogo} autoPlay muted loop playsInline preload="auto" className="absolute inset-0 size-full object-cover">
