@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { Dicionario } from "@/i18n";
 import { linkWhatsApp } from "@/i18n/config";
 import { gsap, menosMovimento, SplitText, useGSAP } from "@/lib/gsap";
@@ -10,13 +10,15 @@ import { criarSuccao, type Succao } from "@/lib/succao";
 import { palco } from "@/lib/portal";
 import { useTema, type Tema } from "@/lib/tema";
 import { criarVento } from "@/lib/vento";
+import Quarto, { type QuartoApi } from "./Quarto";
 import Redes from "./Redes";
 
 /** Pétalas, pólen e riscos de vento por cima do mundo (src/lib/vento.ts). */
 const VENTO_EM_CODIGO = false;
 
 /**
- * Hero ISEKAI. Escuro: o Diorgenes programando à noite, de costas (vídeo em loop). Ao trocar para o tema
+ * Hero ISEKAI. Escuro: o Diorgenes no quarto à noite, recostado, vendo o mundo que programou rodar no
+ * monitor (o quarto em camadas, src/components/Quarto.tsx, com parallax e a vida feita em código). Ao trocar para o tema
  * claro o monitor do jogo o puxa para dentro (WebGL, src/lib/succao.ts), a câmera mergulha na tela com o
  * código voando (src/lib/luz.ts) e o clarão se desfaz em blocos que constroem o mundo do jogo
  * (src/lib/pixels.ts) — ele foi parar dentro do jogo que estava criando. Voltar ao escuro faz o caminho
@@ -29,7 +31,7 @@ const VENTO_EM_CODIGO = false;
  */
 export default function Hero({ t }: { t: Dicionario }) {
   const secao = useRef<HTMLElement>(null);
-  const loop = useRef<HTMLVideoElement>(null);
+  const quarto = useRef<QuartoApi | null>(null);
   const succ = useRef<HTMLCanvasElement>(null);
   const succao = useRef<Promise<Succao | null> | null>(null);
   const mundo = useRef<HTMLDivElement>(null);
@@ -58,11 +60,11 @@ export default function Hero({ t }: { t: Dicionario }) {
     gsap.set(mundo.current, { autoAlpha: v === "claro" ? 1 : 0 });
     gsap.set([succ.current, tela.current, luz.current], { autoAlpha: 0 });
     if (v === "claro") {
-      loop.current?.pause();
+      quarto.current?.ligar(false);
       mostrarLoopDoMundo();
     } else {
       pararMundo();
-      loop.current?.play().catch(() => {});
+      quarto.current?.ligar(true);
     }
     marcarVisual(v);
   };
@@ -90,9 +92,17 @@ export default function Hero({ t }: { t: Dicionario }) {
     return l.style.visibility !== "hidden" && l.readyState >= 2 ? l : imgMundo.current!;
   };
 
+  /** O quarto entrega a API dele (compositor e liga/desliga); no mundo do jogo ele fica parado. */
+  const aoQuartoFicarPronto = useCallback((api: QuartoApi) => {
+    quarto.current = api;
+    // só em desenvolvimento: o compositor fica acessível para conferir o encaixe quadro a quadro
+    if (process.env.NODE_ENV === "development") (window as unknown as { __quarto?: QuartoApi }).__quarto = api;
+    api.ligar(visual.current !== "claro");
+  }, []);
+
   /** A sucção (WebGL) é criada uma vez só, na primeira troca. null = sem WebGL. */
   const obterSuccao = () =>
-    (succao.current ??= criarSuccao(succ.current!, loop.current!).catch(() => null));
+    (succao.current ??= criarSuccao(succ.current!, () => quarto.current!.compor()).catch(() => null));
 
   const esperar = (ms: number) => new Promise((ok) => setTimeout(ok, ms));
 
@@ -116,21 +126,6 @@ export default function Hero({ t }: { t: Dicionario }) {
       requestAnimationFrame(quadro);
     });
 
-  /** Põe o loop do quarto no 1º quadro (o da máscara) e espera ele estar pronto. */
-  const loopNoComeco = () =>
-    new Promise<void>((ok) => {
-      const l = loop.current!;
-      l.pause();
-      if (l.currentTime === 0 && l.readyState >= 2) return ok();
-      const pronto = () => {
-        clearTimeout(seguro);
-        ok();
-      };
-      const seguro = setTimeout(pronto, 800);
-      l.addEventListener("seeked", pronto, { once: true });
-      l.currentTime = 0;
-    });
-
   async function irParaOJogo() {
     const img = imgMundo.current!;
     mundoLoop.current!.preload = "auto";
@@ -140,12 +135,11 @@ export default function Hero({ t }: { t: Dicionario }) {
 
     // 1) o monitor do jogo o puxa para dentro; no fim a câmera já mergulha na tela com o código voando
     if (s) {
-      loop.current!.pause();
       s.capturar();
       s.desenhar(0);
       gsap.set(succ.current, { autoAlpha: 1 });
       // a luz começa a aparecer quando só restam fios dele (p ≈ 0,85) e termina no branco
-      await Promise.all([s.animar(0, 1, 3400), esperar(1500).then(() => animarLuz(brilho, 0.25, 3, 2300, 1.5))]);
+      await Promise.all([s.animar(0, 1, 3400, true), esperar(1500).then(() => animarLuz(brilho, 0.25, 3, 2300, 1.5))]);
     } else {
       await animarLuz(brilho, 0, 3, 3000);
     }
@@ -155,7 +149,7 @@ export default function Hero({ t }: { t: Dicionario }) {
     gsap.set(tela.current, { autoAlpha: 1 });
     gsap.set([succ.current, luz.current], { autoAlpha: 0 });
     brilho.limpar();
-    loop.current?.pause();
+    quarto.current?.ligar(false);
     marcarVisual("claro");
     await fx.animar(0, 1, 1300);
     gsap.set(mundo.current, { autoAlpha: 1 });
@@ -170,9 +164,11 @@ export default function Hero({ t }: { t: Dicionario }) {
   }
 
   async function voltarAoCodigo() {
+    // o quarto volta a viver já (vídeo do jogo, código, chuva e parallax): a sucção de volta o mostra vivo
+    quarto.current?.ligar(true);
     const fx = criarTransicao(tela.current!, quadroDoMundo());
     const brilho = criarLuz(luz.current!, camera.current!);
-    const [s] = await Promise.all([obterSuccao(), loopNoComeco()]);
+    const s = await obterSuccao();
 
     // 1) o mundo se desmonta em blocos até virar luz
     fx.desenhar(1);
@@ -192,13 +188,12 @@ export default function Hero({ t }: { t: Dicionario }) {
     gsap.set(tela.current, { autoAlpha: 0 });
     marcarVisual("escuro");
     if (s) {
-      await Promise.all([animarLuz(brilho, 3, 0.25, 2200, 1.5), esperar(500).then(() => s.animar(1, 0, 3000))]);
+      await Promise.all([animarLuz(brilho, 3, 0.25, 2200, 1.5), esperar(500).then(() => s.animar(1, 0, 3000, true))]);
     } else {
       await animarLuz(brilho, 3, 0, 2200);
     }
     brilho.limpar();
     gsap.set([luz.current, succ.current], { autoAlpha: 0 });
-    loop.current?.play().catch(() => {});
   }
 
   // Primeira montagem: o script do <head> já aplicou o tema salvo; só sincroniza a cena, sem animar.
@@ -207,7 +202,7 @@ export default function Hero({ t }: { t: Dicionario }) {
     palco.capa = capa.current;
     palco.texto = texto.current;
     palco.mundo = () => quadroDoMundo();
-    palco.quarto = () => loop.current;
+    palco.quarto = () => quarto.current?.cena() ?? null;
     aplicar(document.documentElement.dataset.tema === "claro" ? "claro" : "escuro");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -308,11 +303,8 @@ export default function Hero({ t }: { t: Dicionario }) {
           <div ref={capa} className="capa [--px:.72] md:[--px:.6]">
             {/* câmera: os vídeos do quarto (mergulha no monitor durante o Enter, src/lib/luz.ts) */}
             <div ref={camera} className="absolute inset-0 will-change-transform">
-            {/* escuro: o dev no quarto */}
-            <video ref={loop} className={video} poster="/hero/isekai/dev-poster.webp" autoPlay muted loop playsInline preload="auto">
-              <source src="/hero/isekai/dev-loop.webm" type="video/webm" />
-              <source src="/hero/isekai/dev-loop.mp4" type="video/mp4" />
-            </video>
+            {/* escuro: ele no quarto, em camadas */}
+            <Quarto onPronto={aoQuartoFicarPronto} />
 
             {/* claro: o mundo do jogo — ele de costas, admirando a paisagem */}
             <div ref={mundo} className="invisible absolute inset-0 overflow-hidden opacity-0">

@@ -68,17 +68,15 @@ const es: Dicionario = {
   },
   contato: {
     rotulo: "Contacto",
-    titulo: "Ahora te toca a ti.",
-    sub: "Yo programo el mundo. Tú escribes la próxima línea.",
-    comentario: "// Yo programo el mundo. Ahora te toca a ti.",
+    titulo: "Publica una misión.",
+    sub: "Llegaste al campamento. Dime qué quieres construir y la misión es mía.",
     prefixo: "Yo desarrollo",
-    placeholder: "un juego para mi marca",
     exemplos: ["un panel en tiempo real", "un juego en el navegador", "una experiencia en 3D", "un video hecho con código", "un agente de IA"],
     campo: "¿Qué quieres que desarrolle?",
-    enviar: "Ejecutar en WhatsApp",
+    missao: "Nueva misión",
+    enviar: "Publicar misión",
     mensagem: "Quiero que desarrolles: ",
     outros: "o háblame por",
-    rolar: "Desliza",
   },
 };
 export default es;

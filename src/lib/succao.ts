@@ -1,10 +1,10 @@
 /**
- * A sucção: o monitor do jogo puxa o Diorgenes para dentro (WebGL, por cima do loop do quarto).
+ * A sucção: o monitor do jogo puxa o Diorgenes para dentro (WebGL, por cima do quarto em camadas).
  *
- * Camadas (geradas por scripts/succao-camadas.py, no mesmo quadro 16:9 do vídeo):
- *  - o quadro atual do loop (congelado quando a sucção começa);
- *  - o quarto vazio, alinhado ao loop: o que aparece onde ele estava;
- *  - a máscara da silhueta dele (sem a cadeira).
+ * Camadas (compostas pelo quarto, src/components/Quarto.tsx, no quadro 16:9, com o parallax do momento):
+ *  - a cena inteira (congelada quando a sucção começa);
+ *  - o quarto vazio: a mesma cena sem a camada dele (a cadeira fica);
+ *  - a máscara da silhueta dele.
  *
  * Roteiro em função de p (0 = ele digitando, 1 = ele sumiu na tela):
  *  1. o monitor "respira": a luz cresce, o quarto escurece e o ar ondula perto da tela;
@@ -14,7 +14,7 @@
  * Tudo é função de p (e do relógio, só para o ruído fluir): a volta é a mesma coisa com p de 1 até 0.
  */
 
-import { MONITOR, TELA } from "./luz";
+import { caixaDe, centroDe, JOGO } from "./quarto";
 
 const VERT = `
 attribute vec2 aPos;
@@ -136,24 +136,18 @@ void main() {
   gl_FragColor = vec4(cor, 1.0);
 }`;
 
+/** O que a sucção pede ao quarto: a cena, a cena sem ele e a silhueta dele. */
+export type FontesDaSuccao = () => { quadro: TexImageSource; vazio: TexImageSource; mascara: TexImageSource };
+
 export type Succao = {
-  /** Copia o quadro atual do vídeo (o que vai ser sugado). */
+  /** Copia a cena de agora (o que vai ser sugado). */
   capturar: () => void;
   desenhar: (p: number) => void;
   /** Anima de `de` até `ate` em `ms`; resolve ao terminar. */
-  animar: (de: number, ate: number, ms: number) => Promise<void>;
+  /** Com `vivo`, a cena é recapturada a cada quadro: os monitores seguem animados durante a sucção. */
+  animar: (de: number, ate: number, ms: number, vivo?: boolean) => Promise<void>;
   liberar: () => void;
 };
-
-function carregar(src: string) {
-  return new Promise<HTMLImageElement>((ok, erro) => {
-    const i = new Image();
-    i.decoding = "async";
-    i.onload = () => ok(i);
-    i.onerror = erro;
-    i.src = src;
-  });
-}
 
 const ease = (k: number) => k * k * (3 - 2 * k); // suave nas pontas, quase linear no meio
 
@@ -161,14 +155,10 @@ const ease = (k: number) => k * k * (3 - 2 * k); // suave nas pontas, quase line
  * Cria a sucção sobre `canvas` (dentro da .capa, então o quadro 16:9 bate com o do vídeo).
  * Devolve null se não houver WebGL; quem chama cai num corte simples.
  */
-export async function criarSuccao(canvas: HTMLCanvasElement, video: HTMLVideoElement): Promise<Succao | null> {
+export async function criarSuccao(canvas: HTMLCanvasElement, fontes: FontesDaSuccao): Promise<Succao | null> {
   const ctx = canvas.getContext("webgl", { premultipliedAlpha: false, antialias: false, preserveDrawingBuffer: false });
   if (!ctx) return null;
   const gl: WebGLRenderingContext = ctx;
-  const [vazio, mascara] = await Promise.all([
-    carregar("/hero/isekai/quarto-vazio.webp"),
-    carregar("/hero/isekai/quarto-mascara.webp"),
-  ]);
 
   const shader = (tipo: number, fonte: string) => {
     const s = gl.createShader(tipo)!;
@@ -204,23 +194,19 @@ export async function criarSuccao(canvas: HTMLCanvasElement, video: HTMLVideoEle
     return t;
   };
   const tQuadro = textura(0, "uQuadro");
-  textura(1, "uVazio", vazio);
-  textura(2, "uMascara", mascara);
+  const tVazio = textura(1, "uVazio");
+  const tMascara = textura(2, "uMascara");
 
   const uP = gl.getUniformLocation(prog, "uP");
   const uT = gl.getUniformLocation(prog, "uT");
-  gl.uniform2f(gl.getUniformLocation(prog, "uC"), MONITOR.x, MONITOR.y);
-  gl.uniform4f(
-    gl.getUniformLocation(prog, "uTela"),
-    Math.min(TELA.se.x, TELA.ie.x),
-    Math.min(TELA.se.y, TELA.sd.y),
-    Math.max(TELA.sd.x, TELA.id.x),
-    Math.max(TELA.ie.y, TELA.id.y),
-  );
+  const [cx, cy] = centroDe(JOGO);
+  const caixa = caixaDe(JOGO);
+  gl.uniform2f(gl.getUniformLocation(prog, "uC"), cx, cy);
+  gl.uniform4f(gl.getUniformLocation(prog, "uTela"), caixa.x0, caixa.y0, caixa.x1, caixa.y1);
 
   const ajustar = () => {
     const b = canvas.getBoundingClientRect();
-    // o vídeo tem 1280 px de largura: mais que isso não ganha nitidez, só custa
+    // a cena é composta em 1280 px de largura: mais que isso não ganha nitidez, só custa
     const esc = Math.min(window.devicePixelRatio || 1, 1.5, 1280 / Math.max(1, b.width));
     const w = Math.max(1, Math.round(b.width * esc));
     const h = Math.max(1, Math.round(b.height * esc));
@@ -240,16 +226,20 @@ export async function criarSuccao(canvas: HTMLCanvasElement, video: HTMLVideoEle
   }
 
   function capturar() {
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, tQuadro);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, video.readyState >= 2 ? video : vazio);
+    const f = fontes();
+    ([[tQuadro, f.quadro], [tVazio, f.vazio], [tMascara, f.mascara]] as const).forEach(([t, fonte], i) => {
+      gl.activeTexture(gl.TEXTURE0 + i);
+      gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, fonte);
+    });
   }
 
-  function animar(de: number, ate: number, ms: number) {
+  function animar(de: number, ate: number, ms: number, vivo = false) {
     return new Promise<void>((fim) => {
       const ini = performance.now();
       const quadro = () => {
         const k = Math.min(1, (performance.now() - ini) / ms);
+        if (vivo) capturar();
         desenhar(de + (ate - de) * ease(k));
         if (k < 1) requestAnimationFrame(quadro);
         else fim();

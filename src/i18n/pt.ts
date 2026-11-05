@@ -68,17 +68,15 @@ const pt: Dicionario = {
   },
   contato: {
     rotulo: "Contato",
-    titulo: "Agora é com você.",
-    sub: "Eu programo o mundo. Você escreve a próxima linha.",
-    comentario: "// Eu programo o mundo. Agora é a sua vez.",
+    titulo: "Publique uma missão.",
+    sub: "Você chegou ao acampamento. Diga o que quer construir e a missão é minha.",
     prefixo: "Eu desenvolvo",
-    placeholder: "um jogo para a minha marca",
     exemplos: ["um painel em tempo real", "um jogo no navegador", "uma experiência em 3D", "um vídeo feito em código", "um agente de IA"],
     campo: "O que você quer que eu desenvolva?",
-    enviar: "Rodar no WhatsApp",
+    missao: "Nova missão",
+    enviar: "Publicar missão",
     mensagem: "Quero que você desenvolva: ",
-    outros: "ou fale comigo por",
-    rolar: "Role",
+    outros: "ou chame por",
   },
 };
 export default pt;

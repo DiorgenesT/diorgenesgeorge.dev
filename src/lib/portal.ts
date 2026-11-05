@@ -1,4 +1,5 @@
 import { criarCompila, type Compila } from "./compila";
+import { CODIGO } from "./quarto";
 import { criarNevoa, type Nevoa } from "./nevoa";
 
 /**
@@ -14,13 +15,8 @@ import { criarNevoa, type Nevoa } from "./nevoa";
 type Ponto = readonly [number, number];
 type Quad = readonly [Ponto, Ponto, Ponto, Ponto]; // sup. esq., sup. dir., inf. dir., inf. esq.
 
-/** A tela do monitor de código no quadro 16:9 dos vídeos (frações), medida no loop do Veo. */
-const MONITOR_CODIGO: Quad = [
-  [0.193, 0.261],
-  [0.404, 0.273],
-  [0.404, 0.598],
-  [0.193, 0.607],
-];
+/** A tela do monitor de código no quadro 16:9 (frações), a do quarto em camadas. */
+const MONITOR_CODIGO = CODIGO as unknown as Quad;
 
 /** Elementos do hero que o portal move (o Hero registra ao montar). */
 export const palco: {

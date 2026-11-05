@@ -165,12 +165,13 @@ body {
 @keyframes cursor-pisca { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .cursor-pisca { animation: none; } }
 
-/* TESTE DESCARTÁVEL (hero em parallax, src/components/teste/HeroParallax.tsx) */
-.teste-rola { animation: teste-rola 26s linear infinite; }
-@keyframes teste-rola { to { transform: translateY(-50%); } }
-.teste-vapor { animation: teste-vapor 4s ease-out infinite; opacity: 0; transform-origin: 50% 100%; }
-@keyframes teste-vapor {
+/* Quarto do hero (src/components/Quarto.tsx): o vapor da caneca */
+.quarto-vapor { animation: quarto-vapor 4s ease-out infinite; opacity: 0; transform-origin: 50% 100%; }
+@keyframes quarto-vapor {
   0% { opacity: 0; transform: translate(-50%, 10%) scaleY(0.4) skewX(0deg); }
   25% { opacity: 1; }
   100% { opacity: 0; transform: translate(-30%, -55%) scaleY(1.1) skewX(-14deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quarto-vapor { animation: none; }
 }

@@ -66,17 +66,15 @@ const en = {
   },
   contato: {
     rotulo: "Contact",
-    titulo: "Now it's your turn.",
-    sub: "I program the world. You write the next line.",
-    comentario: "// I program the world. Now it's your turn.",
+    titulo: "Post a quest.",
+    sub: "You reached the camp. Tell me what you want to build and the quest is mine.",
     prefixo: "I build",
-    placeholder: "a game for my brand",
     exemplos: ["a real-time dashboard", "a browser game", "a 3D experience", "a video made with code", "an AI agent"],
     campo: "What do you want me to build?",
-    enviar: "Run on WhatsApp",
+    missao: "New quest",
+    enviar: "Post the quest",
     mensagem: "I want you to build: ",
     outros: "or reach me at",
-    rolar: "Scroll",
   },
 };
 export default en;

@@ -1,3 +1,5 @@
+import { centroDe, JOGO } from "./quarto";
+
 /**
  * A luz que sai do PC no "Enter" (camada por cima do vídeo, sincronizada com ele).
  *
@@ -10,17 +12,17 @@
  * Além disso, mexe na câmera (o elemento `camera`): mergulha no centro da tela e estoura de brilho.
  */
 
-/** Tela do jogo dentro do quadro 16:9 do vídeo (frações da largura/altura), medida no loop do Veo. */
+/** Tela do jogo dentro do quadro 16:9 (frações), a do quarto em camadas (src/lib/quarto.ts). */
 export const TELA = {
-  se: { x: 0.414, y: 0.293 },
-  sd: { x: 0.693, y: 0.309 },
-  id: { x: 0.693, y: 0.587 },
-  ie: { x: 0.414, y: 0.599 },
+  se: { x: JOGO[0][0], y: JOGO[0][1] },
+  sd: { x: JOGO[1][0], y: JOGO[1][1] },
+  id: { x: JOGO[2][0], y: JOGO[2][1] },
+  ie: { x: JOGO[3][0], y: JOGO[3][1] },
 };
 /** Momento do flash de impacto (s do clipe); a troca de vídeo acontece dentro dele. */
 export const IMPACTO = 1.0;
 /** Centro da tela do jogo. */
-export const MONITOR = { x: 0.553, y: 0.447 };
+export const MONITOR = { x: centroDe(JOGO)[0], y: centroDe(JOGO)[1] };
 
 const SIMBOLOS = "{}<>/;=()[]01$#*+:".split("");
 const TRECHOS = ["new World()", "spawn(player)", "render()", "</>", "build()", "isekai.run()", "=>", "const", "await", "{ }", "loop()", "60fps"];
