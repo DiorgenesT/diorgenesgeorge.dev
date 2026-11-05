@@ -2,11 +2,12 @@
 
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
 
 // Registro único dos plugins (este módulo só é avaliado uma vez no cliente).
-gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP);
+gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin, useGSAP);
 gsap.defaults({ ease: "power3.out", duration: 0.9 });
 
 export { gsap, ScrollTrigger, SplitText, useGSAP };

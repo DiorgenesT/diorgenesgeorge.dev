@@ -57,120 +57,6 @@ export const trabalhos: Trabalho[] = [
     },
   },
   {
-    id: "miracar",
-    nome: "Miracar Brasil",
-    aba: "sites",
-    url: "https://www.miracarbrasil.com.br",
-    midia: { tipo: "pagina", src: "/trabalhos/miracar.webp" },
-    stack: ["React Router 8", "React 19", "Tailwind 4", "Motion", "Zod", "Cloudflare Workers"],
-    ano: "2026",
-    texto: {
-      pt: {
-        resumo: "Site institucional de proteção veicular, estático e servido na borda.",
-        feitos: [
-          "SPA React pré-renderizada em HTML por rota: buscadores e IAs leem a página inteira sem executar JavaScript.",
-          "Pipeline próprio de imagens com Sharp (AVIF, WebP e PNG responsivos).",
-          "Regras de negócio validadas com Zod no build: erro de configuração não chega ao ar.",
-          "Animações de scroll só em transform e opacity, sem travar a rolagem.",
-        ],
-      },
-      en: {
-        resumo: "Corporate site for a vehicle protection company, static and served from the edge.",
-        feitos: [
-          "React SPA prerendered to HTML per route: search engines and AI crawlers read the whole page without running JavaScript.",
-          "Custom image pipeline with Sharp (responsive AVIF, WebP and PNG).",
-          "Business rules validated with Zod at build time: a config mistake never ships.",
-          "Scroll animations on transform and opacity only, no scroll jank.",
-        ],
-      },
-      es: {
-        resumo: "Sitio institucional de protección vehicular, estático y servido en el borde.",
-        feitos: [
-          "SPA React prerenderizada en HTML por ruta: buscadores e IAs leen la página completa sin ejecutar JavaScript.",
-          "Pipeline propio de imágenes con Sharp (AVIF, WebP y PNG responsivos).",
-          "Reglas de negocio validadas con Zod en el build: un error de configuración no llega a producción.",
-          "Animaciones de scroll solo en transform y opacity, sin trabar el desplazamiento.",
-        ],
-      },
-    },
-  },
-  {
-    id: "mali",
-    nome: "Mali Rastreadores",
-    aba: "sites",
-    url: "https://www.malirastreadores.com.br",
-    midia: { tipo: "pagina", src: "/trabalhos/mali.webp" },
-    stack: ["TypeScript", "Tailwind", "SEO técnico", "WCAG 2.1 AA", "Cloudflare Workers"],
-    ano: "2026",
-    texto: {
-      pt: {
-        resumo: "Landing de lançamento de um rastreador com bloqueio pelo celular, já no ar e convertendo.",
-        feitos: [
-          "Página completa de lançamento, pronta para o site maior crescer por cima sem retrabalho.",
-          "SEO técnico com JSON-LD, sitemap e llms.txt para buscadores e IAs.",
-          "Cabeçalhos de segurança (CSP, HSTS) e DNSSEC ativos.",
-          "Acessibilidade WCAG 2.1 AA, respeitando quem pede menos movimento.",
-        ],
-      },
-      en: {
-        resumo: "Launch landing page for a phone-controlled vehicle tracker, live and converting.",
-        feitos: [
-          "Complete launch page, ready for the larger site to grow on top of it with no rework.",
-          "Technical SEO with JSON-LD, sitemap and llms.txt for search engines and AI.",
-          "Security headers (CSP, HSTS) and DNSSEC enabled.",
-          "WCAG 2.1 AA accessibility, honoring reduced-motion preferences.",
-        ],
-      },
-      es: {
-        resumo: "Landing de lanzamiento de un rastreador con bloqueo desde el celular, en línea y convirtiendo.",
-        feitos: [
-          "Página completa de lanzamiento, lista para que el sitio mayor crezca encima sin retrabajo.",
-          "SEO técnico con JSON-LD, sitemap y llms.txt para buscadores e IAs.",
-          "Cabeceras de seguridad (CSP, HSTS) y DNSSEC activos.",
-          "Accesibilidad WCAG 2.1 AA, respetando a quien pide menos movimiento.",
-        ],
-      },
-    },
-  },
-  {
-    id: "monumental",
-    nome: "Monumental Assistência",
-    aba: "sites",
-    url: "https://monumentalassistencia.com.br/",
-    midia: { tipo: "pagina", src: "/trabalhos/monumental.webp" },
-    stack: ["Vite", "Tailwind", "GSAP", "EJS", "PHP 8", "Vitest"],
-    ano: "2025",
-    texto: {
-      pt: {
-        resumo: "Site multipágina de assistência veicular 24h, 100% estático, com formulários que chegam por e-mail.",
-        feitos: [
-          "Build multipágina com Vite e partials EJS compartilhados entre as páginas.",
-          "Design system próprio em Tailwind (cores, tipografia e componentes).",
-          "Animações GSAP de entrada com suporte a movimento reduzido.",
-          "Formulários enviados por SMTP autenticado em PHP 8, com a lógica de UI coberta por testes no Vitest.",
-        ],
-      },
-      en: {
-        resumo: "Multi-page site for a 24/7 roadside assistance company. Fully static, with forms delivered by email.",
-        feitos: [
-          "Multi-page build with Vite and EJS partials shared across pages.",
-          "Custom Tailwind design system (colors, type and components).",
-          "GSAP reveal animations with reduced-motion support.",
-          "Forms sent via authenticated SMTP in PHP 8, with UI logic covered by Vitest tests.",
-        ],
-      },
-      es: {
-        resumo: "Sitio multipágina de asistencia vehicular 24h, 100% estático, con formularios que llegan por correo.",
-        feitos: [
-          "Build multipágina con Vite y partials EJS compartidos entre páginas.",
-          "Design system propio en Tailwind (colores, tipografía y componentes).",
-          "Animaciones GSAP de entrada con soporte a movimiento reducido.",
-          "Formularios enviados por SMTP autenticado en PHP 8, con la lógica de UI cubierta por tests en Vitest.",
-        ],
-      },
-    },
-  },
-  {
     id: "ponto",
     nome: "Controle de Ponto",
     aba: "sistemas",
@@ -241,6 +127,43 @@ export const trabalhos: Trabalho[] = [
           "Narración, banda sonora y efectos generados con ElevenLabs.",
           "Versiones con distintas bandas sonoras generadas desde el mismo código, sin reeditar.",
           "Márgenes seguros de Instagram garantizados por regla, no a ojo.",
+        ],
+      },
+    },
+  },
+  {
+    id: "eventos-betim",
+    nome: "Portal de Eventos de Betim",
+    aba: "motion",
+    midia: { tipo: "video", src: "/trabalhos/eventos-betim-motion.mp4", poster: "/trabalhos/eventos-betim-motion.webp" },
+    stack: ["Remotion", "React", "TypeScript", "ElevenLabs"],
+    ano: "2026",
+    texto: {
+      pt: {
+        resumo: "Reel narrado de 67 s que apresenta o Portal de Eventos de Betim, feito em código para os stories.",
+        feitos: [
+          "Formato vertical 1080×1920, com as margens seguras do Instagram garantidas por regra.",
+          "Telas do portal redesenhadas a partir do sistema real: formulário, classificação de impacto e acompanhamento.",
+          "Narração gerada com a ElevenLabs, com legendas sincronizadas à fala.",
+          "Logo do SEI reconstruído em vetor para ficar nítido em tela cheia.",
+        ],
+      },
+      en: {
+        resumo: "A 67-second narrated Reel presenting Betim's Events Portal, made with code for stories.",
+        feitos: [
+          "Vertical 1080×1920 format, with Instagram safe areas enforced by rule.",
+          "Portal screens redrawn from the real system: form, impact classification and tracking.",
+          "Narration generated with ElevenLabs, with captions synced to the voice.",
+          "SEI logo rebuilt as vector to stay sharp full screen.",
+        ],
+      },
+      es: {
+        resumo: "Reel narrado de 67 s que presenta el Portal de Eventos de Betim, hecho con código para stories.",
+        feitos: [
+          "Formato vertical 1080×1920, con los márgenes seguros de Instagram garantizados por regla.",
+          "Pantallas del portal rediseñadas a partir del sistema real: formulario, clasificación de impacto y seguimiento.",
+          "Narración generada con ElevenLabs, con subtítulos sincronizados con la voz.",
+          "Logo del SEI reconstruido en vector para verse nítido a pantalla completa.",
         ],
       },
     },

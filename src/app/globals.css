@@ -35,6 +35,14 @@ html,
 body {
   overflow-x: clip;
 }
+/* Sem barra de rolagem nativa: o hero não rola e as telas rolam, então a barra aparecia e sumia a cada
+   portal e a página pulava ~15 px para o lado. A rolagem (roda, touch, teclado) segue com o Lenis. */
+html {
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
 body {
   background: var(--color-tinta);
   color: var(--color-papel);
@@ -125,4 +133,44 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .conquista { animation-duration: 4.6s; animation-timing-function: steps(1); }
+}
+
+/* Névoa do Sobre: faixas largas e suaves que derivam devagar entre as camadas do parallax */
+.sob-nevoa {
+  background:
+    radial-gradient(45% 55% at 25% 50%, rgb(200 210 220 / 0.55), transparent 70%),
+    radial-gradient(40% 50% at 70% 55%, rgb(190 200 212 / 0.45), transparent 70%),
+    radial-gradient(35% 45% at 110% 45%, rgb(200 210 220 / 0.5), transparent 70%);
+  filter: blur(18px);
+  animation: sob-nevoa 38s ease-in-out infinite alternate;
+}
+@keyframes sob-nevoa {
+  from { transform: translate3d(-6%, 0, 0); }
+  to { transform: translate3d(6%, -3%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sob-nevoa { animation: none; }
+}
+/* banco de névoa onde as camadas terminam: mais denso e mais largo, cobrindo a base das ruínas e da estátua */
+.sob-nevoa-densa {
+  background:
+    linear-gradient(to bottom, transparent 0%, rgb(150 160 172 / 0.55) 45%, rgb(110 120 132 / 0.6) 70%, transparent 100%),
+    radial-gradient(50% 60% at 20% 55%, rgb(205 214 224 / 0.6), transparent 72%),
+    radial-gradient(45% 55% at 75% 50%, rgb(195 205 216 / 0.55), transparent 72%);
+  filter: blur(14px);
+}
+
+/* cursor do editor do Contato */
+.cursor-pisca { animation: cursor-pisca 1.05s steps(1) infinite; }
+@keyframes cursor-pisca { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cursor-pisca { animation: none; } }
+
+/* TESTE DESCARTÁVEL (hero em parallax, src/components/teste/HeroParallax.tsx) */
+.teste-rola { animation: teste-rola 26s linear infinite; }
+@keyframes teste-rola { to { transform: translateY(-50%); } }
+.teste-vapor { animation: teste-vapor 4s ease-out infinite; opacity: 0; transform-origin: 50% 100%; }
+@keyframes teste-vapor {
+  0% { opacity: 0; transform: translate(-50%, 10%) scaleY(0.4) skewX(0deg); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-30%, -55%) scaleY(1.1) skewX(-14deg); }
 }

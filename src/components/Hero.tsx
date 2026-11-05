@@ -12,6 +12,9 @@ import { useTema, type Tema } from "@/lib/tema";
 import { criarVento } from "@/lib/vento";
 import Redes from "./Redes";
 
+/** Pétalas, pólen e riscos de vento por cima do mundo (src/lib/vento.ts). */
+const VENTO_EM_CODIGO = false;
+
 /**
  * Hero ISEKAI. Escuro: o Diorgenes programando à noite, de costas (vídeo em loop). Ao trocar para o tema
  * claro o monitor do jogo o puxa para dentro (WebGL, src/lib/succao.ts), a câmera mergulha na tela com o
@@ -66,8 +69,8 @@ export default function Hero({ t }: { t: Dicionario }) {
 
   /** O mundo em loop (começa no 1º quadro, o mesmo da <img> que os blocos montam). */
   const mostrarLoopDoMundo = () => {
-    // vento em código (o vídeo mexe pouco); fica parado para quem pediu menos movimento
-    if (!menosMovimento()) (vento.current ??= criarVento(ventoCanvas.current!)).ligar();
+    // vento em código (pétalas e pólen): desligado desde o mundo adulto (v3), cujo vídeo já tem vento de verdade
+    if (VENTO_EM_CODIGO && !menosMovimento()) (vento.current ??= criarVento(ventoCanvas.current!)).ligar();
     const l = mundoLoop.current!;
     l.preload = "auto";
     l.currentTime = 0;
@@ -204,6 +207,7 @@ export default function Hero({ t }: { t: Dicionario }) {
     palco.capa = capa.current;
     palco.texto = texto.current;
     palco.mundo = () => quadroDoMundo();
+    palco.quarto = () => loop.current;
     aplicar(document.documentElement.dataset.tema === "claro" ? "claro" : "escuro");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -240,7 +244,51 @@ export default function Hero({ t }: { t: Dicionario }) {
         .from(linhas.words, { yPercent: 110, duration: 1.1, stagger: 0.06, ease: "expo.out" }, 0.35)
         .from(".hero-entra", { autoAlpha: 0, y: 16, duration: 0.9, stagger: 0.08, ease: "expo.out" }, 0.7);
 
+      // Portal (src/lib/portal.ts): ao abrir uma tela o texto afunda nas máscaras e se apaga; ao fechar,
+      // as palavras sobem de novo, a linha de status se "decodifica" de símbolos de código e o resto entra
+      // em sequência. Quem pediu menos movimento vê só a troca.
+      const entra = gsap.utils.toArray<HTMLElement>(".hero-entra");
+      const codigos = gsap.utils.toArray<HTMLElement>(".hero-codigo");
+      const originais = codigos.map((el) => el.textContent ?? "");
+      let cena: gsap.core.Timeline | null = null;
+      palco.textoSai = () => {
+        intro.progress(1);
+        cena?.kill();
+        if (menosMovimento()) {
+          gsap.set(entra, { autoAlpha: 0 });
+          gsap.set(linhas.words, { yPercent: 110 });
+          return;
+        }
+        cena = gsap
+          .timeline()
+          .to(linhas.words, { yPercent: 110, duration: 0.45, stagger: 0.025, ease: "power3.in" }, 0)
+          .to(entra, { autoAlpha: 0, y: -10, filter: "blur(6px)", duration: 0.4, stagger: 0.03, ease: "power2.in" }, 0);
+      };
+      palco.textoVolta = () => {
+        cena?.kill();
+        if (menosMovimento()) {
+          gsap.set(entra, { autoAlpha: 1, y: 0, clearProps: "filter" });
+          gsap.set(linhas.words, { yPercent: 0 });
+          return;
+        }
+        cena = gsap
+          .timeline()
+          .fromTo(linhas.words, { yPercent: 110 }, { yPercent: 0, duration: 1, stagger: 0.06, ease: "expo.out" }, 0)
+          .fromTo(
+            entra,
+            { autoAlpha: 0, y: 16, filter: "blur(6px)" },
+            { autoAlpha: 1, y: 0, filter: "blur(0px)", duration: 0.8, stagger: 0.07, ease: "expo.out", clearProps: "filter" },
+            0.15,
+          );
+        codigos.forEach((el, i) =>
+          cena!.to(el, { duration: 0.9, ease: "none", scrambleText: { text: originais[i], chars: "{}<>/;=01$#", speed: 0.6 } }, 0.2),
+        );
+      };
+
       return () => {
+        cena?.kill();
+        palco.textoSai = null;
+        palco.textoVolta = null;
         linhas.revert();
       };
     },
@@ -257,7 +305,7 @@ export default function Hero({ t }: { t: Dicionario }) {
           className="palco absolute inset-x-0 top-0 h-[58svh] overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)] md:inset-0 md:h-full md:[mask-image:none]"
           aria-hidden
         >
-          <div ref={capa} className="capa [--px:.62] md:[--px:.15]">
+          <div ref={capa} className="capa [--px:.72] md:[--px:.6]">
             {/* câmera: os vídeos do quarto (mergulha no monitor durante o Enter, src/lib/luz.ts) */}
             <div ref={camera} className="absolute inset-0 will-change-transform">
             {/* escuro: o dev no quarto */}
@@ -285,8 +333,9 @@ export default function Hero({ t }: { t: Dicionario }) {
           </div>
         </div>
 
-        {/* leitura do texto: escurece (ou clareia, no mundo do jogo) a esquerda e a base */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 transition-opacity duration-700 jogo:opacity-0 bg-[linear-gradient(90deg,#05070cf2_0%,#05070cc7_26%,#05070c66_44%,transparent_62%)]" />
+        {/* leitura do texto: escurece (ou clareia, no mundo do jogo) a esquerda e a base.
+            No desktop, a esquerda só escurece da metade para baixo: em cima fica o monitor de código. */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 transition-opacity duration-700 jogo:opacity-0 bg-[linear-gradient(90deg,#05070cf2_0%,#05070cc7_26%,#05070c66_44%,transparent_62%)] md:[mask-image:linear-gradient(to_bottom,transparent_40%,black_66%)]" />
         <div aria-hidden className="pointer-events-none absolute inset-0 transition-opacity duration-700 jogo:opacity-0 bg-[linear-gradient(0deg,#05070c_0%,#05070ccc_38%,transparent_70%)] md:bg-[linear-gradient(0deg,#05070c_0%,transparent_30%)]" />
         {/* mundo do jogo: um pouco mais escuro no todo e azul-noite atrás do texto (o texto é claro nos dois temas) */}
         <div aria-hidden className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-700 jogo:opacity-100 bg-[#0a1a33]/20" />
@@ -295,7 +344,10 @@ export default function Hero({ t }: { t: Dicionario }) {
         <div aria-hidden className="grao pointer-events-none absolute inset-0" />
 
         {/* redes em coluna, à direita, centralizadas na altura */}
-        <Redes mensagem={t.hero.conversar} className="hero-entra hero-texto absolute right-6 top-1/2 z-10 hidden -translate-y-1/2 flex-col gap-1 rounded-full border border-white/10 bg-[#05070c]/55 p-1 shadow-[0_10px_40px_-10px_rgba(0,0,0,.6)] backdrop-blur-md md:flex lg:right-10 jogo:bg-[#071a33]/55" />
+        {/* o centro fica no contêiner: o transform da coluna é do GSAP e do portal, que o sobrescrevem */}
+        <div className="absolute inset-y-0 right-6 z-10 hidden items-center md:flex lg:right-10">
+          <Redes mensagem={t.hero.conversar} className="hero-entra hero-texto flex flex-col gap-1 [filter:drop-shadow(0_1px_8px_rgba(0,0,0,.55))]" />
+        </div>
 
         <div ref={texto} className="hero-texto relative mx-auto flex h-full max-w-[1600px] flex-col justify-end px-5 pb-[8vh] md:px-14 md:pb-[9vh]">
           <p className="hero-entra mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-white/70">
@@ -303,9 +355,9 @@ export default function Hero({ t }: { t: Dicionario }) {
               <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400/60 motion-reduce:animate-none" />
               <span className="relative size-2 rounded-full bg-emerald-400" />
             </span>
-            {t.hero.status}
+            <span className="hero-codigo">{t.hero.status}</span>
             <span className="hidden opacity-40 sm:inline">/</span>
-            <span className="hidden sm:inline">{t.hero.papel}</span>
+            <span className="hero-codigo hidden sm:inline">{t.hero.papel}</span>
           </p>
           {/* a frase acompanha a cena: no escuro brilha o "código", no mundo do jogo brilha o "produto" */}
           <h1 className="font-display text-[10.5vw] leading-[1.04] md:text-[3.9vw]">

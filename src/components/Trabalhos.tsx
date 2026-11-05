@@ -126,7 +126,7 @@ export default function Trabalhos({ t, lang }: { t: Dicionario; lang: Idioma }) 
           </div>
 
           <div ref={abasRef} role="tablist" aria-label={t.trabalhos.rotulo} className="trab-cabeca relative flex self-start rounded-full border border-white/10 bg-white/[0.03] p-1 md:self-auto">
-            <span aria-hidden className="absolute inset-y-1 rounded-full bg-white transition-all duration-500 ease-corte" style={{ left: ind.x, width: ind.w }} />
+            <span aria-hidden className="absolute inset-y-1 rounded-full bg-white transition-[left,width] duration-500 ease-corte" style={{ left: ind.x, width: ind.w }} />
             {ABAS.map((a) => {
               const n = trabalhos.filter((p) => p.aba === a).length;
               return (

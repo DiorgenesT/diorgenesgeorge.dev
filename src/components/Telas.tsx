@@ -4,8 +4,11 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import type { Dicionario } from "@/i18n";
 import type { Idioma } from "@/i18n/config";
 import { gsap, menosMovimento, ScrollTrigger } from "@/lib/gsap";
-import { quadroDoPortal, soltarPalco } from "@/lib/portal";
+import { palco, quadroDoPortal, soltarPalco } from "@/lib/portal";
 import { useLenis } from "./RolagemSuave";
+import Contato from "./Contato";
+import Jogos from "./Jogos";
+import Sobre from "./Sobre";
 import Trabalhos from "./Trabalhos";
 
 /**
@@ -49,7 +52,7 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
   const moldura = useRef<HTMLDivElement>(null);
   const conteudoRef = useRef<HTMLDivElement>(null);
   const vidro = useRef<HTMLDivElement>(null);
-  const grade = useRef<HTMLDivElement>(null);
+  const compila = useRef<HTMLCanvasElement>(null);
   const nevoa = useRef<HTMLCanvasElement>(null);
   /** Quanto a tela estava rolada ao fechar: a volta mostra esse mesmo trecho, sem saltar para o topo. */
   const deslocamento = useRef(0);
@@ -60,14 +63,41 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
   const animacao = useRef<gsap.core.Tween | null>(null);
   const empurrou = useRef(false);
 
+  // o texto do hero sai antes de o portal abrir e volta quando o fechamento passa de 60%
+  const textoFora = useRef(false);
+  const textoDoHero = useCallback((alvo: 0 | 1) => {
+    const p = progresso.current.p;
+    if (alvo === 1 && p < 1 && !textoFora.current) {
+      textoFora.current = true;
+      palco.textoSai?.();
+    } else if (alvo === 0 && p < 0.4 && textoFora.current) {
+      textoFora.current = false;
+      palco.textoVolta?.();
+    }
+  }, []);
+
   const desenhar = useCallback(() => {
     if (tela.current && moldura.current)
       quadroDoPortal(
         progresso.current.p,
-        { moldura: moldura.current, tela: tela.current, conteudo: conteudoRef.current, vidro: vidro.current, grade: grade.current, nevoa: nevoa.current, deslocamento: deslocamento.current },
+        { moldura: moldura.current, tela: tela.current, conteudo: conteudoRef.current, vidro: vidro.current, compila: compila.current, nevoa: nevoa.current, deslocamento: deslocamento.current },
         visual.current,
       );
   }, []);
+
+  // só em desenvolvimento: desenha o portal num instante p (para prints quadro a quadro)
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development") return;
+    const w = window as unknown as { __portal?: (p: number) => void };
+    w.__portal = (p) => {
+      animacao.current?.kill();
+      progresso.current.p = p;
+      desenhar();
+    };
+    return () => {
+      delete w.__portal;
+    };
+  }, [desenhar]);
 
   /** Leva o portal até `alvo` (0 ou 1). */
   const animar = useCallback(
@@ -76,19 +106,27 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
       if (menosMovimento()) {
         progresso.current.p = alvo;
         desenhar();
+        textoDoHero(alvo);
         depois?.();
         return;
       }
+      // na ida o texto do hero sai primeiro (a camada do portal cobriria a saída) e o portal vem logo atrás
+      const comeca = alvo === 1 && !textoFora.current && progresso.current.p === 0;
+      textoDoHero(alvo);
       animacao.current = gsap.to(progresso.current, {
         p: alvo,
+        delay: comeca ? 0.35 : 0,
         // no mundo do jogo são dois tempos (escurece, depois a transição); a entrada no monitor é um movimento só
-        duration: visual.current === "claro" ? (alvo ? 1.7 : 1.3) : alvo ? 1.35 : 1.05,
+        duration: visual.current === "claro" ? (alvo ? 1.7 : 1.3) : alvo ? 2.6 : 2.1,
         ease: "none",
-        onUpdate: desenhar,
+        onUpdate: () => {
+          desenhar();
+          textoDoHero(alvo);
+        },
         onComplete: depois,
       });
     },
-    [desenhar],
+    [desenhar, textoDoHero],
   );
 
   // hash -> tela (links, menu, voltar do navegador, link direto)
@@ -181,6 +219,7 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
       inicial.current = false;
       progresso.current.p = 1;
       desenhar();
+      textoDoHero(1);
     } else if (progresso.current.p < 1) {
       lenis?.stop();
       animar(1, () => {
@@ -194,24 +233,15 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
 
   let conteudo: ReactNode = null;
   if (montada === "work") conteudo = <Trabalhos t={t} lang={lang} />;
+  else if (montada === "games") conteudo = <Jogos t={t} lang={lang} />;
+  else if (montada === "about") conteudo = <Sobre t={t} />;
+  else if (montada === "contact") conteudo = <Contato t={t} />;
   else if (montada) conteudo = <EmBreve t={t} />;
 
   return (
     <>
-    {/* subpixels do LCD: fora da moldura para o multiply agir também sobre o vídeo do quarto (src/lib/portal.ts) */}
-    <div
-      ref={grade}
-      aria-hidden
-      className="pointer-events-none fixed inset-0 z-[31] opacity-0 mix-blend-multiply"
-      hidden={!montada}
-      style={{
-        backgroundImage:
-          "linear-gradient(to bottom, transparent 0 80%, #000 80% 100%)," +
-          "linear-gradient(to right, #ff3030 0 27%, #000 27% 33.34%, #30ff50 33.34% 60.6%, #000 60.6% 66.67%, #3a60ff 66.67% 94%, #000 94%)",
-        backgroundSize: "var(--c, 4px) var(--c, 4px)",
-        backgroundPosition: "var(--gx, 0) var(--gy, 0)",
-      }}
-    />
+    {/* compilação do quarto (src/lib/compila.ts): por cima da tela, que já está no lugar */}
+    <canvas ref={compila} aria-hidden className="pointer-events-none fixed inset-0 z-[31] size-full" style={{ visibility: "hidden" }} hidden={!montada} />
     {/* transição do mundo do jogo (src/lib/nevoa.ts): por cima da tela, que já está no lugar */}
     <canvas ref={nevoa} aria-hidden className="pointer-events-none fixed inset-0 z-[32] size-full" style={{ visibility: "hidden" }} hidden={!montada} />
     <div ref={moldura} className="relative z-30 overflow-x-clip" hidden={!montada}>

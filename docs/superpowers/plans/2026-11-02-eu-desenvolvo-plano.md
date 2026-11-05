@@ -74,9 +74,9 @@ Cada fase termina com build, lint, prints em desktop (1440) e celular (390) e um
 5. Tela Trabalhos no tema claro: continua escura (decidir se fica assim).
 
 ## Fase 3: telas que faltam
-- [ ] **Jogos:** jogos no navegador (bancada R3F ou vitrine), com import dinâmico e fallback em imagem.
-- [ ] **Sobre:** curto, com foto e materiais.
-- [ ] **Contato:** frase editável que vira mensagem no WhatsApp.
+- [x] **Jogos (05/11/2026):** vitrine na linguagem de Trabalhos (Xeque Bárbaro e Cubo da Velha, Open Digital Games), com "Jogar aqui" em iframe de tela cheia. O Cubo da Velha manda `X-Frame-Options: SAMEORIGIN`; enquanto o `_headers` dele não liberar o domínio do site, abre em nova aba (`embutir: false` em `src/data/jogos.ts`). Falta: vídeo de gameplay no lugar das capas.
+- [x] **Sobre (05/11/2026):** parallax em 5 camadas do mundo de ruínas (`public/sobre`, recortadas do verde por `scripts/camadas-parallax.py`), com mouse e rolagem; texto, frase, fatos e materiais por área.
+- [x] **Contato (05/11/2026):** o quarto em 5 camadas (`public/contato`, `scripts/camadas-parallax.py contato`) com parallax no mouse; o monitor de código digita exemplos sozinho; ao rolar, a câmera entra no monitor e a tela vira o editor `contato.ts`, onde o visitante completa "Eu desenvolvo ___" e roda no WhatsApp. Os outros contatos são os imports.
 - [ ] XP do HUD por telas visitadas (hoje vem do scroll da tela aberta).
 - [ ] Easter egg: Konami code.
 

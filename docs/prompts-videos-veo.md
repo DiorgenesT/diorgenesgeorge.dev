@@ -1,95 +1,148 @@
-# Prompts dos vídeos do hero (Veo)
+# Prompts das imagens e dos vídeos do hero
 
-Prompts trabalhados em 04/11/2026 para refazer os vídeos do hero ISEKAI com o personagem de costas.
-Gerar no Veo (Flow ou Argon), em **Frames to Video**. Para loop perfeito: **a mesma imagem como quadro
-inicial e final**. Escrever os prompts em inglês; o Veo responde mal a "não faça X" no texto, por isso o
-que não queremos vai no campo de prompt negativo (quando existir).
+**Versão 3 (05/11/2026): direção de arte adulta.** A versão anterior (ilhas flutuantes, cristal ciano, céu
+saturado, bonequinhos na estante, RGB roxo) ficou infantil. Agora:
+
+- **Mundo do jogo:** fantasia sombria e adulta. Ruínas antigas, escala colossal, névoa, paleta contida,
+  luz natural de dia nublado. Continua sendo o tema **claro**: é dia, mas um dia frio e dramático, sem céu azul de desenho.
+- **Personagem:** sempre de costas, **de capuz levantado também no mundo**. Mesmo moletom preto.
+- **Efeitos:** nada de brilhos, faíscas, partículas mágicas, fitas de luz, arco-íris ou pose de herói.
+  O movimento vem de coisas físicas: vento, névoa, nuvens, luz.
+- **Estilo comum (vale para tudo):** anime 2D adulto de longa-metragem, fundos pintados à mão,
+  proporções realistas, grão de filme. É o que mantém o quarto e o mundo com a mesma cara.
+
+Prompts em inglês. O Veo e o Kling respondem mal a "não faça X" no texto, por isso o que não queremos vai no
+campo de prompt negativo. Não falar do rosto (o Veo bloqueia "keep his face consistent").
 
 ## O que o código espera
 
 | Arquivo em `media/raw/` | Uso no site | Observação |
 |---|---|---|
 | `veo-1-quarto.mp4` | loop do tema escuro | usado inteiro (10 s), crossfade de 1 s no fim |
-| `veo-2-succao.mp4` | **só o último quadro**: o quarto vazio | a sucção em si é código (`src/lib/succao.ts`) |
+| `v3-C-vazio.png` | o quarto vazio, fundo da sucção | a sucção em si é código (`src/lib/succao.ts`); não há vídeo de sucção |
 | `veo-3-mundo.mp4` | loop do tema claro | a deriva de câmera é tirada em `scripts/estabilizar.py` |
 
 Depois de trocar os vídeos: `bash scripts/midia-isekai.sh` e **remedir**, se o enquadramento mudar:
 - tela do monitor do jogo: `TELA` e `MONITOR` em `src/lib/luz.ts`;
 - tela do monitor de código: `MONITOR_CODIGO` em `src/lib/portal.ts`;
-- polígono da cadeira: `CADEIRA` em `scripts/succao-camadas.py`.
+- polígonos da cadeira e região do personagem: `CADEIRA` e `PERSONAGEM` em `scripts/succao-camadas.py`;
+- ponto focal no celular: `--px` da `.capa` em `src/components/Hero.tsx`.
 
-Enquadramento: o monitor de código perto do centro do quadro (no celular só o terço central aparece) e o
-personagem de costas, à esquerda dos monitores.
+Enquadramento da v3 (gerada em 05/11/2026): monitores à esquerda e no centro, personagem de costas à
+**direita** deles. No celular o ponto focal (`--px: .72`) mostra o monitor do jogo e o capuz. No mundo, ele no
+terço central.
 
-## Imagens-chave
+**Arquivos da v3 em uso:** `v3-A-quarto.png`, `v3-B-mundo.png`, `v3-C-vazio.png`, `veo-1-quarto.mp4`
+(gerado a partir da A) e `veo-3-mundo.mp4` (gerado a partir da B). O vento em código (pétalas e pólen,
+`src/lib/vento.ts`) foi desligado: o vídeo já tem vento de verdade.
 
-| Imagem | O que é | Como gerar |
-|---|---|---|
-| **A** | quarto à noite, ele de costas com capuz, digitando, os dois monitores no centro | `media/raw/v2-A-quarto.png` |
-| **B** | mundo do jogo, ele de costas e parado olhando o horizonte, cristal à direita dele | `media/raw/v2-B-mundo.png` |
-| **C** | A sem ele: cadeira vazia, um pouco afastada, monitor do jogo bem aceso | editar a A: *"remove the man, the chair is empty and pushed slightly back from the desk, the right monitor glows intensely white-blue, everything else identical"* |
-| **D** | B sem ele: a beira do penhasco vazia | editar a B: *"remove the man, empty grassy cliff edge, everything else identical"* |
+## Ordem de trabalho
 
-Prompt de imagem do mundo (B), se precisar refazer:
+1. **B (mundo)** primeiro: é ela que define a direção de arte.
+2. **A (quarto)** depois, anexando a B como referência: o monitor da direita do quarto tem de mostrar
+   **esse** mundo. Na versão anterior o monitor mostrava as ilhas flutuantes; se ficar assim, a história quebra.
+3. **C** e **D** são edições da A e da B.
+4. Vídeos: só os dois loops são obrigatórios. A sucção e a chegada já são feitas em código.
+
+---
+
+## Imagens
+
+### B: mundo do jogo (principal)
 ```
-2D anime illustration, bright fantasy landscape. A young man in a black hoodie, hood down, short dark hair, seen completely from behind, standing still on a grassy cliff edge in the lower center of the frame, looking at the horizon. A large glowing cyan crystal cluster stands just to his right, near the center of the frame. In the distance, floating islands with waterfalls, a white castle on the largest island, a stone aqueduct bridge, blue sky with big soft clouds, sunlight from the right. Cel shading, vivid colors, sense of wonder. 16:9.
+Mature 2D anime film still, hand-painted background, cinematic and grounded, restrained desaturated palette of slate grey, moss green, weathered stone and pale gold, fine film grain, 16:9.
+
+A lone man seen completely from behind, wearing a plain black hoodie with the hood up and black pants, stands still on a cracked stone ledge in the lower center of the frame, arms relaxed at his sides, looking out over a vast ancient valley. Realistic adult proportions.
+
+Below and beyond him: the ruins of a colossal forgotten kingdom. A giant weathered stone statue of a hooded knight, half-collapsed and overgrown with moss, rises from the mist on the right. Broken gothic arches and a long ruined stone bridge cross the valley. A tall dark spire stands on a distant mountain. Low clouds and thick mist fill the valley floor.
+
+Cold overcast daylight; a few pale sunbeams break through heavy clouds and fall across the ruins. Tall dry grass and wild heather at his feet. Quiet, solemn, epic scale, the feeling of standing at the beginning of a long journey.
 ```
 
-## 1. Loop do quarto
+**Variante B2 (mais nórdica, se a B ficar pesada demais):**
+```
+Mature 2D anime film still, hand-painted background, cinematic and grounded, cold muted palette of steel blue, bone white and dark pine green, fine film grain, 16:9.
+
+A lone man seen completely from behind, wearing a plain black hoodie with the hood up and black pants, stands still on a rocky outcrop in the lower center of the frame, looking out over a vast northern landscape. Realistic adult proportions.
+
+A deep fjord between snow-capped mountains. On the far shore, an ancient stone fortress built into the cliff, its towers partly ruined. Huge weathered standing stones carved with faint runes line the path in front of him. Dark pine forests climb the slopes, low clouds cling to the peaks, mist drifts over the water.
+
+Pale winter daylight through thin clouds. Silent, vast, austere, the feeling of the first step of a long journey.
+```
+
+### A: quarto à noite
+Anexar a B como referência de imagem (para o monitor da direita).
+```
+Mature 2D anime film still, hand-painted, cinematic, grounded, fine film grain, 16:9. A dark bedroom office at night.
+
+A man in a plain black hoodie with the hood up sits at his desk, seen from behind and slightly from the left, typing on a dark mechanical keyboard. Headphones rest around his neck. Realistic adult proportions.
+
+Two monitors near the center of the frame. The left monitor shows a code editor with lines of code. The right monitor shows the attached fantasy landscape as a video game.
+
+The room is lit only by the cold blue light of the screens and a small warm desk lamp turned low. Dark wood desk, a black game controller, a ceramic coffee mug, a small plant. Behind him, a shelf with books and a few old game cases. A window with blinds shows distant city lights in the rain.
+
+Quiet, focused, late-night mood. Muted colors, deep shadows, no neon.
+```
+
+### C: quarto vazio (editar a A)
+```
+Remove the man. The chair is empty and pushed slightly back from the desk. The right monitor glows brighter, a cold white-blue light that spills over the desk. Everything else identical: same framing, same objects, same lighting.
+```
+
+### D: mundo vazio (editar a B, só se for gerar a chegada em vídeo)
+```
+Remove the man. The empty stone ledge, everything else identical: same framing, same lighting.
+```
+
+---
+
+## Vídeos
+
+### 1. Loop do quarto (obrigatório)
 **Anexar:** A no quadro inicial e A no quadro final.
 ```
-Cinematic 2D anime, feature-film quality, muted night palette, subtle film grain. Locked-off static camera, no camera movement.
+Mature 2D anime film, hand-painted, muted night palette, subtle film grain. Locked-off static camera, no camera movement.
 
-A man in a black hoodie sits at his desk, seen from behind, hood up. He types with slow, steady, natural rhythm; only his hands and forearms move, his head and shoulders stay still. On the left monitor, lines of code scroll gently upward. On the right monitor, a fantasy game world is gently alive: clouds drifting, a waterfall flowing. The cool blue light of the screens flickers softly across the edges of his hood and the desk. Steam rises slowly from the coffee mug. The city lights behind the window twinkle faintly.
+A man in a black hoodie with the hood up sits at his desk, seen from behind. He types with a slow, steady, natural rhythm; only his hands and forearms move, his head and shoulders stay still. On the left monitor, lines of code scroll gently upward. On the right monitor, the game world is softly alive: mist drifting through the ruins, clouds moving slowly. The screen light shifts subtly across his hood and the desk. Thin steam rises from the coffee mug. Rain runs down the window.
 
-Calm, quiet, introspective mood. Continuous motion with no sudden events.
+Calm, quiet, introspective. Continuous, understated motion with no sudden events.
 ```
 
-## 2. Sucção (só o último quadro é usado)
-**Anexar:** A no quadro inicial e C no quadro final. O que importa é terminar no quarto vazio com o mesmo
-enquadramento do loop; a imagem C sozinha, se alinhada à A, também serve.
+### 2. Sucção: dispensável
+O site usa a imagem C como quarto vazio (`scripts/midia-isekai.sh` já lê a `v3-C-vazio.png`). Não gere vídeo.
+
+### 3. Chegada no mundo: dispensável
+A chegada já é feita em código (o mundo se monta em pixels). Se um dia quiser em vídeo, sem filamentos de luz:
+**anexar** D no quadro inicial e B no final.
 ```
-Cinematic 2D anime, feature-film quality, grounded and dramatic visual effects, inspired by high-end anime film VFX. Static camera with a very slow push-in toward the right monitor. The man is always seen from behind; he never turns around.
+Mature 2D anime film, hand-painted, overcast daylight, restrained palette. Locked-off static camera.
 
-The man in the black hoodie is typing. He stops. The right monitor slowly brightens, and its light begins to pull the room toward it: the air ripples like heat haze, loose papers slide across the desk toward the screen, the plant leaves bend toward it, and the drawstrings and fabric of his hoodie stretch toward the light.
+Thick mist rolls slowly across the empty stone ledge. As the mist thins, a man in a black hoodie with the hood up is revealed standing still at the edge, seen from behind, looking at the ruined valley. The wind moves the mist, the tall grass and the fabric of his hoodie.
 
-The pull grows stronger. He is lifted gently out of the chair, still seen from behind, his silhouette drawn toward the center of the screen. As he approaches the screen, his body thins into fine filaments of cyan and white light, like threads being unspooled, and they spiral smoothly into the center of the monitor. The empty chair rolls back slowly and comes to rest.
-
-The light from the screen settles into a steady, intense glow over the empty room. Elegant, controlled, cinematic. Motion is smooth and physically believable.
-```
-
-## 3. Chegada no mundo (opcional; hoje o mundo se monta em pixels, em código)
-**Anexar:** D no quadro inicial e B no quadro final.
-```
-Cinematic 2D anime, feature-film quality, bright natural daylight, rich painterly backgrounds. Locked-off static camera, no camera movement.
-
-A fantasy landscape: floating islands with waterfalls, a white castle in the distance, soft clouds, and a large cyan crystal glowing on a grassy cliff. A steady breeze moves the grass, the wildflowers and the leaves of the plants.
-
-A thin column of cyan and white light threads descends onto the cliff edge and weaves together, filament by filament, forming the silhouette of a man seen from behind. The light fades into his solid form: a man in a black hoodie, hood down, standing still, gazing at the horizon. The breeze immediately catches his hair and the fabric of his hoodie. The crystal pulses once as he arrives.
-
-Graceful, serene, awe-inspiring. Smooth and elegant motion.
+Solemn, quiet, natural motion.
 ```
 
-## 4. Loop do mundo
+### 4. Loop do mundo (obrigatório)
 **Anexar:** B no quadro inicial e B no quadro final.
 ```
-Cinematic 2D anime, feature-film quality, bright natural daylight, rich painterly backgrounds. Locked-off static camera, no camera movement.
+Mature 2D anime film, hand-painted backgrounds, overcast daylight, restrained desaturated palette, subtle film grain. Locked-off static camera, no camera movement.
 
-A man in a black hoodie stands completely still on a grassy cliff edge, seen from behind, gazing at floating islands and a distant white castle. His body does not move. A constant gentle breeze flows from left to right: it ripples the fabric of his hoodie, lifts and sways strands of his dark hair, moves the hood resting on his shoulders and the hanging drawstrings.
+A man in a black hoodie with the hood up stands completely still on a stone ledge, seen from behind, looking out over the ruins of an ancient kingdom. His body does not move. A steady cold wind blows from left to right: it ripples the fabric of his hoodie, moves the edge of the hood and the hanging drawstrings.
 
-The same breeze moves the whole world in waves: the tall grass and wildflowers sway, the leaves of the nearby plants and bushes flutter, the trees on the floating islands rustle. Clouds drift slowly across the sky, waterfalls pour continuously into the mist below, and the large cyan crystal beside him glows with a slow, soft pulse.
+The same wind moves the world: the tall dry grass and heather sway in slow waves, mist drifts through the valley and around the giant statue, low clouds move slowly across the sky, and the pale sunbeams shift gently as the clouds pass.
 
-Peaceful, contemplative, seamless continuous motion.
+Solemn, contemplative, seamless continuous motion.
 ```
 
-## Prompt negativo (os quatro vídeos)
+## Prompt negativo (todos)
 ```
-face, turning head, looking back, looking at camera, profile view, headphones on head, cartoonish, childish, chibi, exaggerated motion, superhero pose, flying pose, colorful ribbons, confetti, square pixel particles, lens flare overload, camera shake, zoom, color change, extra people, text, watermark
+face, turning head, looking back, looking at camera, profile view, hood down, cartoonish, childish, chibi, cute, toy-like, saturated colors, neon, rainbow, sparkles, glitter, magic particles, glowing orbs, fireflies, light ribbons, colorful trails, confetti, pixel particles, lens flare, bloom overload, floating islands, superhero pose, exaggerated motion, bouncy motion, camera shake, zoom, color change, extra people, text, watermark
 ```
-Mostrar um pouco do rosto não é problema (liberado em 04/11/2026); o negativo só evita que ele vire para a câmera.
 
 ## O que aprendemos
 - O Veo bloqueia frases sobre manter o rosto igual ("keep his face consistent"): não falar do rosto.
 - A primeira sucção gerada pelo Veo saiu "tosca" (fitas coloridas, pose de super-herói, rosto aparecendo):
   por isso a sucção virou código e do vídeo só se usa o quarto vazio.
 - Mesmo pedindo câmera fixa, o Veo deriva alguns pixels; `scripts/estabilizar.py` corrige.
+- 05/11/2026: céu azul saturado, ilhas flutuantes, cristal brilhante e bonecos na estante deram cara de
+  jogo infantil. Paleta contida, escala colossal e névoa dão o tom adulto.

@@ -12,15 +12,15 @@
 
 /** Tela do jogo dentro do quadro 16:9 do vídeo (frações da largura/altura), medida no loop do Veo. */
 export const TELA = {
-  se: { x: 0.700, y: 0.318 },
-  sd: { x: 0.936, y: 0.292 },
-  id: { x: 0.936, y: 0.602 },
-  ie: { x: 0.700, y: 0.600 },
+  se: { x: 0.414, y: 0.293 },
+  sd: { x: 0.693, y: 0.309 },
+  id: { x: 0.693, y: 0.587 },
+  ie: { x: 0.414, y: 0.599 },
 };
 /** Momento do flash de impacto (s do clipe); a troca de vídeo acontece dentro dele. */
 export const IMPACTO = 1.0;
 /** Centro da tela do jogo. */
-export const MONITOR = { x: 0.818, y: 0.452 };
+export const MONITOR = { x: 0.553, y: 0.447 };
 
 const SIMBOLOS = "{}<>/;=()[]01$#*+:".split("");
 const TRECHOS = ["new World()", "spawn(player)", "render()", "</>", "build()", "isekai.run()", "=>", "const", "await", "{ }", "loop()", "60fps"];
