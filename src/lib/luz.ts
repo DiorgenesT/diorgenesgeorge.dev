@@ -10,17 +10,17 @@
  * Além disso, mexe na câmera (o elemento `camera`): mergulha no centro da tela e estoura de brilho.
  */
 
-/** Tela do jogo dentro do quadro 16:9 do vídeo (frações da largura/altura), medida no vídeo do Kling. */
+/** Tela do jogo dentro do quadro 16:9 do vídeo (frações da largura/altura), medida no loop do Veo. */
 export const TELA = {
-  se: { x: 0.691, y: 0.284 },
-  sd: { x: 0.934, y: 0.232 },
-  id: { x: 0.934, y: 0.585 },
-  ie: { x: 0.691, y: 0.585 },
+  se: { x: 0.700, y: 0.318 },
+  sd: { x: 0.936, y: 0.292 },
+  id: { x: 0.936, y: 0.602 },
+  ie: { x: 0.700, y: 0.600 },
 };
 /** Momento do flash de impacto (s do clipe); a troca de vídeo acontece dentro dele. */
 export const IMPACTO = 1.0;
 /** Centro da tela do jogo. */
-export const MONITOR = { x: 0.812, y: 0.42 };
+export const MONITOR = { x: 0.818, y: 0.452 };
 
 const SIMBOLOS = "{}<>/;=()[]01$#*+:".split("");
 const TRECHOS = ["new World()", "spawn(player)", "render()", "</>", "build()", "isekai.run()", "=>", "const", "await", "{ }", "loop()", "60fps"];

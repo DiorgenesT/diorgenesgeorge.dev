@@ -1,14 +1,14 @@
 const en = {
   meta: {
-    titulo: "Diorgenes George — I build systems, games, 3D worlds, videos and AI agents",
+    titulo: "Diorgenes George | Full stack developer of systems, games, 3D, videos and AI agents",
     descricao: "Full stack developer. Real-time dashboards, browser games, 3D, videos made with code and AI agents that work alongside me.",
   },
   nav: { secoes: [["#work", "Work"], ["#games", "Games"], ["#about", "About"], ["#contact", "Contact"]] as [string, string][], contato: "Let's build", idioma: "Language", pular: "Skip to content" },
   hero: {
     status: "Available for projects",
     papel: "Full stack developer",
-    titulo: ["Code in the dark.", "Products in the light."],
-    sub: "I build web systems, browser games, 3D, videos made with code and AI agents — from the first line to the deploy.",
+    titulo: ["I code the world.", "You step into it."],
+    sub: "I build web systems, games that run in the browser, 3D experiences, videos made with code and AI agents. I take each project from the first commit until it's live.",
     cta: "See my work",
     conversar: "Let's talk",
   },
@@ -21,8 +21,18 @@ const en = {
     titulo: "Products already live.",
     sub: "Real projects, in production. Hover a project to scroll through it.",
     abas: { sites: "Sites", sistemas: "Systems", motion: "Motion" },
-    feito: "What I did",
+    feito: "Highlights",
     ver: "Visit live",
+    ficha: {
+      tipo: "Type",
+      ano: "Year",
+      papel: "Role",
+      status: "Status",
+      noAr: "Live",
+      video: "Video",
+      tipos: { sites: "Website", sistemas: "System", motion: "Motion" },
+      papeis: { sites: "Design and development", sistemas: "Full stack development", motion: "Code-driven animation" },
+    },
   },
 };
 export default en;

@@ -11,7 +11,8 @@ import Trabalhos from "./Trabalhos";
 /**
  * O site é um hero fixo (sem scroll) e "telas" que abrem por cima dele, como em um jogo.
  * Cada tela tem um hash (#work, #games, #about, #contact): links, o menu, o botão voltar do navegador
- * e links diretos funcionam. Abrir/fechar passa pelo portal (src/lib/portal.ts).
+ * e links diretos funcionam. Abrir/fechar passa pelo portal (src/lib/portal.ts): mergulho no monitor de
+ * código no quarto; no mundo do jogo, o mundo escurece e a tela aparece.
  * Leis: Jakob (o voltar do navegador funciona), feedback (a transição mostra de onde a tela veio),
  * Fitts (botão voltar grande), controle do usuário (Esc fecha).
  */
@@ -48,6 +49,10 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
   const moldura = useRef<HTMLDivElement>(null);
   const conteudoRef = useRef<HTMLDivElement>(null);
   const vidro = useRef<HTMLDivElement>(null);
+  const grade = useRef<HTMLDivElement>(null);
+  const nevoa = useRef<HTMLCanvasElement>(null);
+  /** Quanto a tela estava rolada ao fechar: a volta mostra esse mesmo trecho, sem saltar para o topo. */
+  const deslocamento = useRef(0);
   const inicial = useRef(false);
   const [aberta, setAberta] = useState<Tela | null>(null);
   const progresso = useRef({ p: 0 });
@@ -57,7 +62,11 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
 
   const desenhar = useCallback(() => {
     if (tela.current && moldura.current)
-      quadroDoPortal(progresso.current.p, { moldura: moldura.current, tela: tela.current, conteudo: conteudoRef.current, vidro: vidro.current }, visual.current);
+      quadroDoPortal(
+        progresso.current.p,
+        { moldura: moldura.current, tela: tela.current, conteudo: conteudoRef.current, vidro: vidro.current, grade: grade.current, nevoa: nevoa.current, deslocamento: deslocamento.current },
+        visual.current,
+      );
   }, []);
 
   /** Leva o portal até `alvo` (0 ou 1). */
@@ -72,7 +81,8 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
       }
       animacao.current = gsap.to(progresso.current, {
         p: alvo,
-        duration: alvo ? 1.7 : 1.25,
+        // no mundo do jogo são dois tempos (escurece, depois a transição); a entrada no monitor é um movimento só
+        duration: visual.current === "claro" ? (alvo ? 1.7 : 1.3) : alvo ? 1.35 : 1.05,
         ease: "none",
         onUpdate: desenhar,
         onComplete: depois,
@@ -147,11 +157,13 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
     }
     if (!montada) return;
     // fechar: volta ao topo e o portal se fecha de volta no monitor (ou no cristal)
+    deslocamento.current = window.scrollY;
     lenis?.stop();
     lenis?.scrollTo(0, { immediate: true });
     window.scrollTo(0, 0);
     visual.current = visualAtual();
     animar(0, () => {
+      deslocamento.current = 0;
       setMontada(null);
       soltarPalco();
       lenis?.start();
@@ -185,10 +197,27 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
   else if (montada) conteudo = <EmBreve t={t} />;
 
   return (
+    <>
+    {/* subpixels do LCD: fora da moldura para o multiply agir também sobre o vídeo do quarto (src/lib/portal.ts) */}
+    <div
+      ref={grade}
+      aria-hidden
+      className="pointer-events-none fixed inset-0 z-[31] opacity-0 mix-blend-multiply"
+      hidden={!montada}
+      style={{
+        backgroundImage:
+          "linear-gradient(to bottom, transparent 0 80%, #000 80% 100%)," +
+          "linear-gradient(to right, #ff3030 0 27%, #000 27% 33.34%, #30ff50 33.34% 60.6%, #000 60.6% 66.67%, #3a60ff 66.67% 94%, #000 94%)",
+        backgroundSize: "var(--c, 4px) var(--c, 4px)",
+        backgroundPosition: "var(--gx, 0) var(--gy, 0)",
+      }}
+    />
+    {/* transição do mundo do jogo (src/lib/nevoa.ts): por cima da tela, que já está no lugar */}
+    <canvas ref={nevoa} aria-hidden className="pointer-events-none fixed inset-0 z-[32] size-full" style={{ visibility: "hidden" }} hidden={!montada} />
     <div ref={moldura} className="relative z-30 overflow-x-clip" hidden={!montada}>
       <div ref={tela} className="relative min-h-svh bg-[#05070c]" style={{ visibility: "hidden" }}>
         <div ref={conteudoRef}>{conteudo}</div>
-        {/* vidro da tela do PC: brilho, scanlines e o reflexo que varre o painel ao pousar (src/lib/portal.ts) */}
+        {/* vidro: camada de brilho sobre a tela (hoje sem uso nas transições; src/lib/portal.ts) */}
         <div
           ref={vidro}
           aria-hidden
@@ -213,5 +242,6 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
         </button>
       </div>
     </div>
+    </>
   );
 }

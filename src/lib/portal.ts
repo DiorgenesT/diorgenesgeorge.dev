@@ -1,182 +1,210 @@
+import { criarNevoa, type Nevoa } from "./nevoa";
+
 /**
  * Portal entre o hero e as telas (Trabalhos, Jogos...).
  *
- * A tela nova é projetada em perspectiva de verdade (homografia em matrix3d) dentro do monitor de código
- * (tema escuro) ou do cristal (mundo do jogo). Roteiro, em função do progresso p (0 = hero, 1 = tela aberta):
- *  1. o monitor "liga" como um CRT: uma linha de luz se abre e a página aparece dentro da tela do PC;
- *  2. a câmera mergulha e o quarto desfoca e escurece;
- *  3. o painel se solta do monitor e voa até a janela (passa um pouco e assenta), com a borda brilhando;
- *  4. ao pousar, um reflexo varre o painel e as scanlines somem.
+ * No quarto (tema escuro), a câmera entra na tela do monitor de código. Roteiro, em função do progresso
+ * p (0 = hero, 1 = tela aberta):
+ *  1. a câmera acelera rumo ao monitor (zoom exponencial) e leva o centro da tela ao centro da janela;
+ *     a tela continua mostrando o código do vídeo, e a luz dela cresce;
+ *  2. de perto, aparece a grade de subpixels do LCD (vermelho, verde e azul), presa à tela e crescendo
+ *     com o zoom (camada em multiply: onde a imagem é branca, as três barras acendem);
+ *  3. no pico, quando o que se vê são os subpixels, o código vira a página por baixo da grade;
+ *  4. a grade se abre e some, e a página assenta nítida.
+ * No mundo do jogo (tema claro), o mundo escurece e depois "buga" (ou se abre em nuvens) revelando a tela
+ * (menuDePausa).
  * Abrir e fechar são o mesmo desenho ao contrário.
  */
 
 type Ponto = readonly [number, number];
 type Quad = readonly [Ponto, Ponto, Ponto, Ponto]; // sup. esq., sup. dir., inf. dir., inf. esq.
 
-interface Forma {
-  /** Quadrilátero de origem no quadro 16:9 dos vídeos (frações). */
-  quad: Quad;
-  /** Recorte (em % do painel) enquanto ele está na origem; abre até o retângulo. 5 pontos. */
-  recorte?: readonly Ponto[];
-}
-
-export const FORMAS: Record<"escuro" | "claro", Forma> = {
-  // a tela do monitor de código, medida no vídeo do Kling
-  escuro: {
-    quad: [
-      [0.491, 0.317],
-      [0.67, 0.294],
-      [0.67, 0.566],
-      [0.491, 0.566],
-    ],
-  },
-  // o cristal: o painel nasce na caixa dele, recortado no formato do cristal
-  claro: {
-    quad: [
-      [0.184, 0.308],
-      [0.299, 0.308],
-      [0.299, 0.894],
-      [0.184, 0.894],
-    ],
-    recorte: [
-      [17, 17],
-      [71, 0],
-      [100, 27],
-      [98, 100],
-      [0, 100],
-    ],
-  },
-};
-const RETANGULO: readonly Ponto[] = [
-  [0, 0],
-  [50, 0],
-  [100, 0],
-  [100, 100],
-  [0, 100],
+/** A tela do monitor de código no quadro 16:9 dos vídeos (frações), medida no loop do Veo. */
+const MONITOR_CODIGO: Quad = [
+  [0.482, 0.345],
+  [0.673, 0.333],
+  [0.673, 0.586],
+  [0.482, 0.584],
 ];
 
 /** Elementos do hero que o portal move (o Hero registra ao montar). */
-export const palco: { capa: HTMLElement | null; texto: HTMLElement | null } = { capa: null, texto: null };
+export const palco: {
+  capa: HTMLElement | null;
+  texto: HTMLElement | null;
+  /** O que mostra o mundo do jogo agora (vídeo ou a imagem do 1º quadro), para a transição em WebGL. */
+  mundo: (() => TexImageSource | null) | null;
+} = { capa: null, texto: null, mundo: null };
+
+/** Transição do mundo do jogo para uma tela, depois que ele escurece. */
+export const MODO_MUNDO: "nuvens" | "glitch" = "glitch";
 
 const limitar = (a: number, b: number, t: number) => Math.min(1, Math.max(0, (t - a) / (b - a)));
-const entrarSair = (k: number) => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
-const entrar = (k: number) => k * k * k;
-const sair = (k: number) => 1 - (1 - k) ** 3;
-/** Passa um pouco do alvo e volta (o painel "pousa"). */
-const pousar = (k: number) => {
-  const c = 1.2;
-  return 1 + (c + 1) * (k - 1) ** 3 + c * (k - 1) ** 2;
-};
-
-/** matrix3d que leva o retângulo w×h (origem 0 0) ao quadrilátero q (homografia). */
-function homografia(w: number, h: number, q: readonly Ponto[]) {
-  const [[x0, y0], [x1, y1], [x2, y2], [x3, y3]] = q;
-  const dx1 = x1 - x2, dx2 = x3 - x2, dx3 = x0 - x1 + x2 - x3;
-  const dy1 = y1 - y2, dy2 = y3 - y2, dy3 = y0 - y1 + y2 - y3;
-  const den = dx1 * dy2 - dx2 * dy1 || 1e-9;
-  const g = (dx3 * dy2 - dx2 * dy3) / den;
-  const hh = (dx1 * dy3 - dx3 * dy1) / den;
-  const a = x1 - x0 + g * x1, b = x3 - x0 + hh * x3;
-  const d = y1 - y0 + g * y1, e = y3 - y0 + hh * y3;
-  const m = [a / w, d / w, 0, g / w, b / h, e / h, 0, hh / h, 0, 0, 1, 0, x0, y0, 0, 1];
-  return `matrix3d(${m.map((n) => +n.toFixed(8)).join(",")})`;
-}
 
 export interface PartesDoPortal {
   /** Envolve o painel: o drop-shadow dele segue o formato projetado (borda que brilha). */
   moldura: HTMLElement;
-  /** O painel (a tela nova): recebe a homografia e o recorte. */
+  /** O painel (a tela nova). */
   tela: HTMLElement;
   /** O conteúdo dentro do painel: "liga" como um CRT. */
   conteudo: HTMLElement | null;
-  /** Vidro por cima do conteúdo: scanlines, brilho de tela e o reflexo que varre ao pousar. */
+  /** Vidro por cima do conteúdo: brilho de tela (no menu de pausa, a linha de luz). */
   vidro: HTMLElement | null;
+  /** Grade de subpixels do LCD, fixa sobre a janela (variáveis CSS --c, --gx, --gy). */
+  grade: HTMLElement | null;
+  /** Canvas da transição do mundo do jogo (src/lib/nevoa.ts), fixo sobre a janela. */
+  nevoa: HTMLCanvasElement | null;
+  /** Rolagem da tela no momento de fechar: durante a volta o conteúdo fica nesse mesmo trecho. */
+  deslocamento?: number;
+}
+
+/** Mantém o trecho que estava na tela enquanto o portal anima (a página já voltou ao topo). */
+const manterTrecho = (p: number, partes: PartesDoPortal) => {
+  if (!partes.conteudo) return;
+  const y = p > 0 && p < 1 ? (partes.deslocamento ?? 0) : 0;
+  partes.conteudo.style.transform = y ? `translateY(${-y}px)` : "";
+};
+
+let camadaMundo: Nevoa | null | undefined;
+const obterNevoa = (canvas: HTMLCanvasElement | null) => {
+  if (camadaMundo === undefined && canvas) {
+    try {
+      camadaMundo = criarNevoa(canvas, () => palco.mundo?.() ?? null, () => palco.capa?.getBoundingClientRect() ?? null);
+    } catch {
+      camadaMundo = null;
+    }
+  }
+  return camadaMundo ?? null;
+};
+
+const suave = (k: number) => k * k * (3 - 2 * k);
+const textosDoHero = () => document.querySelectorAll<HTMLElement>("#topo .hero-texto");
+
+/**
+ * Mundo do jogo, em dois tempos. Primeiro o mundo escurece e perde cor (a câmera chega um pouco mais perto
+ * do personagem). Depois vem a transição em WebGL (src/lib/nevoa.ts, MODO_MUNDO): o mundo escurecido
+ * "buga" e se desfaz em pedaços, ou se abre em nuvens, e revela a tela que já está por trás.
+ * Fechar faz o caminho inverso: o mundo se recompõe e só então recupera as cores.
+ */
+const ESCURO = { brilho: 0.38, saturacao: 0.45 };
+function menuDePausa(p: number, partes: PartesDoPortal) {
+  const { moldura, tela, conteudo, vidro } = partes;
+  const capa = palco.capa;
+  const fase1 = suave(limitar(0, 0.42, p));
+  const fase2 = limitar(0.45, 1, p);
+  const brilho = 1 - (1 - ESCURO.brilho) * fase1;
+  const saturacao = 1 - (1 - ESCURO.saturacao) * fase1;
+  if (capa) {
+    capa.style.transformOrigin = "45% 55%";
+    capa.style.transform = p > 0 ? `scale(${(1 + 0.05 * fase1).toFixed(4)})` : "";
+    capa.style.filter = fase1 > 0 ? `brightness(${brilho.toFixed(3)}) saturate(${saturacao.toFixed(3)})` : "";
+  }
+  const t = limitar(0, 0.2, p);
+  for (const el of textosDoHero()) {
+    el.style.opacity = String(1 - t);
+    el.style.transform = "";
+  }
+  moldura.style.filter = "";
+  if (vidro) vidro.style.opacity = "0";
+  if (conteudo) conteudo.style.opacity = "";
+  manterTrecho(p, partes);
+
+  const nevoa = obterNevoa(partes.nevoa);
+  const animando = p > 0 && p < 1;
+  const segunda = animando && fase2 > 0;
+  // a tela fica por trás da camada desde o início da 2ª fase (sem WebGL, ela só aparece em fade)
+  tela.style.visibility = p <= 0 || (!segunda && p < 1) ? "hidden" : "visible";
+  tela.style.clipPath = "";
+  tela.style.filter = "";
+  tela.style.height = animando ? `${window.innerHeight}px` : "";
+  tela.style.overflow = animando ? "hidden" : "";
+  tela.style.opacity = animando && !nevoa ? suave(fase2).toFixed(3) : "";
+  tela.style.transformOrigin = `50% ${window.innerHeight / 2}px`;
+  tela.style.transform = segunda ? `scale(${(1 + 0.03 * (1 - suave(fase2))).toFixed(4)})` : "";
+
+  if (nevoa) {
+    nevoa.mostrar(segunda);
+    if (segunda) nevoa.desenhar(fase2, ESCURO.brilho, ESCURO.saturacao, MODO_MUNDO);
+  }
 }
 
 /** Desenha o instante p do portal. */
 export function quadroDoPortal(p: number, partes: PartesDoPortal, visual: "escuro" | "claro") {
-  const { moldura, tela, conteudo, vidro } = partes;
+  if (partes.grade) partes.grade.style.opacity = "0";
+  if (partes.nevoa) partes.nevoa.style.visibility = "hidden";
+  if (visual === "claro") return menuDePausa(p, partes);
+  const { moldura, tela, conteudo, vidro, grade } = partes;
   const capa = palco.capa;
-  const forma = FORMAS[visual];
-  const centro = forma.quad.reduce((a, [x, y]) => [a[0] + x / 4, a[1] + y / 4], [0, 0]);
   const W = window.innerWidth;
   const H = window.innerHeight;
+  moldura.style.filter = "";
+  if (vidro) vidro.style.opacity = "0";
 
-  // 2) câmera: mergulha no ponto e o quarto escurece por trás do painel
-  const zoom = 1 + 0.9 * entrar(limitar(0.05, 0.8, p));
-  const fundo = limitar(0.2, 0.8, p);
+  // o monitor na janela com a câmera parada (a caixa da .capa sem transform)
+  const pai = capa?.offsetParent?.getBoundingClientRect();
+  const cx0 = (pai?.left ?? 0) + (capa?.offsetLeft ?? 0);
+  const cy0 = (pai?.top ?? 0) + (capa?.offsetTop ?? 0);
+  const cw = capa?.offsetWidth ?? W;
+  const ch = capa?.offsetHeight ?? H;
+  const naJanela = ([fx, fy]: Ponto): Ponto => [cx0 + fx * cw, cy0 + fy * ch];
+  const quad0 = MONITOR_CODIGO.map(naJanela);
+  const centro = MONITOR_CODIGO.reduce<[number, number]>((a, [x, y]) => [a[0] + x / 4, a[1] + y / 4], [0, 0]);
+  const O = naJanela(centro);
+  const qw = Math.hypot(quad0[1][0] - quad0[0][0], quad0[1][1] - quad0[0][1]);
+  const qh = Math.hypot(quad0[3][0] - quad0[0][0], quad0[3][1] - quad0[0][1]);
+
+  // força da grade de subpixels (ela escurece tudo; o que está por baixo ganha brilho na mesma medida)
+  const forca = suave(limitar(0.3, 0.58, p)) * (1 - suave(limitar(0.66, 0.97, p)));
+
+  // 1) câmera: acelera rumo à tela (até 0,62) e chega com a tela cobrindo a janela
+  const chega = limitar(0, 0.62, p);
+  const k = chega * chega * (2.2 - 1.2 * chega); // começa devagar e chega rápido, sem parar seco
+  const zMax = Math.max(W / qw, H / qh) * 1.06;
+  const z = zMax ** k;
+  const tx = (W / 2 - O[0]) * suave(Math.min(1, k * 1.15));
+  const ty = (H / 2 - O[1]) * suave(Math.min(1, k * 1.15));
   if (capa) {
     capa.style.transformOrigin = `${centro[0] * 100}% ${centro[1] * 100}%`;
-    capa.style.transform = p > 0 ? `scale(${zoom})` : "";
-    // só brilho (blur em vídeo de tela cheia derruba o FPS)
-    capa.style.filter = fundo > 0 ? `brightness(${(1 - 0.6 * fundo).toFixed(3)})` : "";
+    capa.style.transform = p > 0 ? `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) scale(${z.toFixed(4)})` : "";
+    // a luz da tela domina o quarto à medida que a câmera chega
+    const luz = suave(limitar(0.15, 0.62, p));
+    capa.style.filter = luz > 0 ? `brightness(${(1 + 0.35 * luz + 1.3 * forca).toFixed(3)}) contrast(${(1 - 0.15 * luz).toFixed(3)})` : "";
   }
-  if (palco.texto) {
-    const k = limitar(0, 0.3, p);
-    palco.texto.style.opacity = String(1 - k);
-    palco.texto.style.transform = k ? `translateY(${-24 * k}px)` : "";
-  }
-
-  // posição da forma na janela (o rect da capa já vem com o zoom; a origem do zoom não se move)
-  const r = capa?.getBoundingClientRect();
-  const naJanela = ([fx, fy]: Ponto): Ponto =>
-    r ? [r.left + r.width * centro[0] + (fx - centro[0]) * r.width, r.top + r.height * centro[1] + (fy - centro[1]) * r.height] : [W * fx, H * fy];
-  const origem = forma.quad.map(naJanela);
-  const janela: Ponto[] = [
-    [0, 0],
-    [W, 0],
-    [W, H],
-    [0, H],
-  ];
-
-  // 3) o painel se solta e voa até a janela (passa um pouco e assenta)
-  const voo = limitar(0.32, 1, p);
-  const v = pousar(voo);
-  const quad = origem.map(([x, y], i) => [x + (janela[i][0] - x) * v, y + (janela[i][1] - y) * v] as Ponto);
-
-  if (p >= 1 || p <= 0) {
-    tela.style.transform = "";
-    tela.style.transformOrigin = "";
-    tela.style.clipPath = "";
-    tela.style.height = "";
-    tela.style.overflow = "";
-  } else {
-    // durante o voo o painel tem a altura da janela (a homografia vale para um retângulo W×H)
-    tela.style.height = `${H}px`;
-    tela.style.overflow = "hidden";
-    tela.style.transformOrigin = "0 0";
-    tela.style.transform = homografia(W, H, quad);
-    if (forma.recorte) {
-      const k = sair(limitar(0.32, 0.8, p));
-      const pts = forma.recorte.map(([x, y], i) => `${x + (RETANGULO[i][0] - x) * k}% ${y + (RETANGULO[i][1] - y) * k}%`);
-      tela.style.clipPath = `polygon(${pts.join(",")})`;
-    } else tela.style.clipPath = "";
-  }
-  tela.style.visibility = p <= 0 ? "hidden" : "visible";
-
-  // 1) o monitor liga como um CRT: uma linha de luz se abre na vertical
-  const liga = limitar(0.02, 0.22, p);
-  if (conteudo) {
-    const sy = 0.012 + 0.988 * sair(liga);
-    conteudo.style.transform = p >= 1 || p <= 0 ? "" : `scaleY(${sy.toFixed(4)})`;
-    conteudo.style.transformOrigin = `50% ${H / 2}px`;
+  const sai = limitar(0, 0.2, p);
+  for (const el of textosDoHero()) {
+    el.style.opacity = String(1 - sai);
+    el.style.transform = sai ? `translateY(${-14 * sai}px)` : "";
   }
 
-  // 4) vidro: brilho de tela ligada, scanlines que somem ao pousar e o reflexo que varre o painel
-  if (vidro) {
-    const tela0 = 1 - limitar(0.55, 1, p);
-    vidro.style.setProperty("--brilho", (0.9 * (1 - liga) + 0.22 * tela0).toFixed(3));
-    vidro.style.setProperty("--linhas", (0.35 * tela0).toFixed(3));
-    const varre = limitar(0.68, 1, p);
-    vidro.style.setProperty("--reflexo", `${(-40 + 180 * entrarSair(varre)).toFixed(1)}%`);
-    vidro.style.setProperty("--reflexo-a", (Math.sin(Math.PI * varre) * 0.5).toFixed(3));
-    vidro.style.opacity = p >= 1 || p <= 0 ? "0" : "1";
+  // 2) subpixels: presos à tela (o tamanho cresce com o zoom) e, depois da troca, continuam crescendo
+  //    enquanto somem, como o foco saindo da grade para a imagem
+  const naCamera = ([x, y]: Ponto): Ponto => [O[0] + (x - O[0]) * z + tx, O[1] + (y - O[1]) * z + ty];
+  const quad = quad0.map(naCamera);
+  const depois = limitar(0.6, 1, p);
+  const celula = 2.6 * z * (1 + 2.2 * depois ** 1.5); // px por pixel do LCD (3 subpixels)
+  if (grade) {
+    const [gx, gy] = naCamera(O);
+    grade.style.setProperty("--c", `${celula.toFixed(2)}px`);
+    grade.style.setProperty("--gx", `${gx.toFixed(1)}px`);
+    grade.style.setProperty("--gy", `${gy.toFixed(1)}px`);
+    grade.style.opacity = forca > 0.001 && p < 1 ? forca.toFixed(3) : "0";
+    // antes de cobrir a janela, a grade fica só dentro da tela do monitor
+    grade.style.clipPath = p < 0.62 ? `polygon(${quad.map(([x, y]) => `${x.toFixed(1)}px ${y.toFixed(1)}px`).join(",")})` : "";
   }
 
-  // borda: acende quando a tela liga, fica forte no voo e some ao assentar
-  const b = Math.min(1, p * 10) * (1 - limitar(0.8, 1, p));
-  moldura.style.filter =
-    b > 0.01 ? `drop-shadow(0 0 ${(10 + 18 * b).toFixed(1)}px rgba(125,243,255,${b.toFixed(2)}))` : "";
+  // 3) a troca: no pico da grade, a página aparece por baixo dela; 4) e assenta (1,06 -> 1)
+  const pagina = suave(limitar(0.58, 0.7, p));
+  tela.style.visibility = pagina <= 0 ? "hidden" : "visible";
+  tela.style.clipPath = "";
+  const animando = p > 0 && p < 1;
+  tela.style.height = animando ? `${H}px` : "";
+  tela.style.overflow = animando ? "hidden" : "";
+  tela.style.opacity = animando ? pagina.toFixed(3) : "";
+  const escala = 1 + 0.06 * (1 - suave(limitar(0.6, 1, p)));
+  tela.style.transformOrigin = `50% ${H / 2}px`;
+  tela.style.transform = animando ? `scale(${escala.toFixed(4)})` : "";
+  tela.style.filter = animando && forca > 0.01 ? `brightness(${(1 + 1.4 * forca).toFixed(3)})` : "";
+  if (conteudo) conteudo.style.opacity = "";
+  manterTrecho(p, partes);
 }
 
 /** Limpa tudo que o portal mexeu no hero. */
@@ -185,8 +213,8 @@ export function soltarPalco() {
     palco.capa.style.transform = "";
     palco.capa.style.filter = "";
   }
-  if (palco.texto) {
-    palco.texto.style.opacity = "";
-    palco.texto.style.transform = "";
+  for (const el of textosDoHero()) {
+    el.style.opacity = "";
+    el.style.transform = "";
   }
 }

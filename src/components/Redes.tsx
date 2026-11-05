@@ -43,7 +43,7 @@ export default function Redes({ mensagem, className = "" }: { mensagem: string; 
             target={href.startsWith("mailto") ? undefined : "_blank"}
             rel="noopener"
             aria-label={nome}
-            className="group relative grid size-11 place-items-center rounded-full text-white/70 transition-colors duration-300 hover:bg-white/10 hover:text-white jogo:text-[#0d1b33]/70 jogo:hover:bg-[#0d1b33]/10 jogo:hover:text-[#0d1b33]"
+            className="group relative grid size-11 place-items-center rounded-full text-white/85 transition-colors duration-300 hover:bg-white/15 hover:text-white"
           >
             <svg viewBox="0 0 24 24" className="size-[22px] transition-transform duration-300 ease-corte group-hover:scale-110" aria-hidden>
               {ICONES[nome]}

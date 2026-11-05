@@ -7,8 +7,9 @@ import { trabalhos, type Aba, type Trabalho } from "@/data/trabalhos";
 import { gsap, SplitText, useGSAP } from "@/lib/gsap";
 
 /**
- * Trabalhos como produtos no ar. Abas por tipo; cada projeto tem uma janela de navegador com o
- * site de verdade (o print da página inteira rola no hover) ou um vídeo, e ao lado o que foi feito.
+ * Trabalhos como produtos no ar. Abas por tipo; cada projeto tem uma janela de navegador com o site de
+ * verdade (o print da página inteira rola no hover) ou um vídeo e, ao lado, a ficha técnica: tipo, ano, papel
+ * e status em grade, nome, resumo, destaques, stack e link.
  * Leis: Hick (3 abas), Jakob (janela de navegador reconhecível), proximidade (mídia + texto do mesmo projeto),
  * Fitts (a janela inteira é link), estético-usabilidade.
  */
@@ -104,10 +105,8 @@ export default function Trabalhos({ t, lang }: { t: Dicionario; lang: Idioma }) 
         });
         gsap.from(item.querySelectorAll(".trab-txt"), {
           autoAlpha: 0,
-          y: 24,
-          stagger: 0.07,
-          duration: 0.9,
-          ease: "expo.out",
+          duration: 0.8,
+          ease: "power2.out",
           scrollTrigger: { trigger: item, start: "top 80%" },
         });
       });
@@ -120,10 +119,6 @@ export default function Trabalhos({ t, lang }: { t: Dicionario; lang: Idioma }) 
       <div className="mx-auto max-w-[1600px] px-5 md:px-14">
         <div className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
-            <p className="trab-cabeca mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-white/55">
-              <span className="size-1.5 rounded-full bg-[#6ff0ff]" />
-              {t.trabalhos.rotulo} <span className="text-white/25">/</span> {String(trabalhos.length).padStart(2, "0")}
-            </p>
             <h2 id="trab-titulo" className="trab-titulo font-display text-[10vw] leading-[1.04] md:text-[3.9vw]">
               {t.trabalhos.titulo}
             </h2>
@@ -145,7 +140,7 @@ export default function Trabalhos({ t, lang }: { t: Dicionario; lang: Idioma }) 
                   className={`relative z-10 flex h-10 items-center gap-2 rounded-full px-4 text-[14px] transition-colors duration-300 ${aba === a ? "text-black" : "text-white/65 hover:text-white"}`}
                 >
                   {t.trabalhos.abas[a]}
-                  <span className={`font-mono text-[10px] ${aba === a ? "text-black/50" : "text-white/35"}`}>{String(n).padStart(2, "0")}</span>
+                  <span className={`text-[12px] tabular-nums ${aba === a ? "text-black/45" : "text-white/35"}`}>{n}</span>
                 </button>
               );
             })}
@@ -153,47 +148,61 @@ export default function Trabalhos({ t, lang }: { t: Dicionario; lang: Idioma }) 
         </div>
 
         <div className="mt-20 md:mt-28" role="tabpanel">
-          {lista.map((p, i) => {
+          {lista.map((p) => {
             const tx = p.texto[lang];
             return (
-              <article key={p.id} className="trab-item grid gap-10 border-t border-white/10 py-14 first:border-t-0 first:pt-0 md:grid-cols-12 md:gap-14 md:py-20">
+              <article key={p.id} className="trab-item grid gap-10 border-t border-white/10 py-16 first:border-t-0 first:pt-0 md:grid-cols-12 md:gap-14 md:py-24">
                 <div className="md:col-span-7">
                   <Janela trabalho={p} />
                 </div>
-                <div className="flex flex-col md:col-span-5 md:pt-2">
-                  <p className="trab-txt flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.22em] text-white/40">
-                    <span>{String(i + 1).padStart(2, "0")}</span>
-                    <span>{p.ano}</span>
-                  </p>
-                  <h3 className="trab-txt mt-4 font-display text-[8vw] leading-[1.05] md:text-[2.4vw]">{p.nome}</h3>
-                  <p className="trab-txt mt-4 text-[16px] leading-relaxed text-white/65">{tx.resumo}</p>
 
-                  <p className="trab-txt mt-8 font-mono text-[11px] uppercase tracking-[0.22em] text-white/40">{t.trabalhos.feito}</p>
-                  <ul className="mt-4 space-y-3">
+                {/* ficha técnica: dados em grade, nome, resumo, destaques, stack e link */}
+                <div className="flex flex-col md:col-span-5">
+                  <dl className="trab-txt grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10">
+                    {[
+                      [t.trabalhos.ficha.tipo, t.trabalhos.ficha.tipos[p.aba]],
+                      [t.trabalhos.ficha.ano, p.ano],
+                      [t.trabalhos.ficha.papel, t.trabalhos.ficha.papeis[p.aba]],
+                      [t.trabalhos.ficha.status, p.url ? t.trabalhos.ficha.noAr : t.trabalhos.ficha.video],
+                    ].map(([rotulo, valor], n) => (
+                      <div key={rotulo} className="bg-[#080b12] px-4 py-3">
+                        <dt className="text-[12px] text-white/40">{rotulo}</dt>
+                        <dd className="mt-1 flex items-center gap-2 text-[14px] text-white/85">
+                          {n === 3 && p.url && (
+                            <span className="relative flex size-1.5" aria-hidden>
+                              <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400/60 motion-reduce:animate-none" />
+                              <span className="relative size-1.5 rounded-full bg-emerald-400" />
+                            </span>
+                          )}
+                          {valor}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+
+                  <h3 className="trab-txt mt-8 font-display text-[9vw] leading-[1.02] tracking-[-0.02em] md:text-[2.5vw]">{p.nome}</h3>
+                  <p className="trab-txt mt-4 max-w-[40ch] text-[17px] leading-[1.6] text-white/65">{tx.resumo}</p>
+
+                  <h4 className="trab-txt mt-8 text-[13px] text-white/40">{t.trabalhos.feito}</h4>
+                  <ul className="mt-3 space-y-2.5">
                     {tx.feitos.map((f) => (
-                      <li key={f} className="trab-txt flex gap-3 text-[15px] leading-relaxed text-white/75">
-                        <span aria-hidden className="mt-[0.7em] h-px w-3 shrink-0 bg-[#6ff0ff]" />
+                      <li key={f} className="trab-txt relative pl-5 text-[15px] leading-[1.6] text-white/80 before:absolute before:left-0 before:top-[0.68em] before:size-1.5 before:bg-[#7df3ff]">
                         {f}
                       </li>
                     ))}
                   </ul>
 
-                  <ul className="trab-txt mt-8 flex flex-wrap gap-2" aria-label="Stack">
-                    {p.stack.map((s) => (
-                      <li key={s} className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[11px] text-white/60">
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-
-                  {p.url && (
-                    <a href={p.url} target="_blank" rel="noopener" className="trab-txt group mt-9 inline-flex h-11 items-center gap-2 self-start rounded-full border border-white/20 px-5 text-[14px] text-white/85 transition-colors hover:border-white hover:bg-white hover:text-black">
-                      {t.trabalhos.ver}
-                      <svg viewBox="0 0 24 24" className="size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                        <path d="M7 17 17 7M9 7h8v8" />
-                      </svg>
-                    </a>
-                  )}
+                  <div className="trab-txt mt-8 flex flex-col gap-5 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-[13px] leading-relaxed text-white/50">{p.stack.join(" · ")}</p>
+                    {p.url && (
+                      <a href={p.url} target="_blank" rel="noopener" className="group inline-flex h-10 shrink-0 items-center gap-2 self-start rounded-full bg-white px-4 text-[14px] font-medium text-black transition-colors hover:bg-[#7df3ff] sm:self-auto">
+                        {t.trabalhos.ver}
+                        <svg viewBox="0 0 24 24" className="size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                          <path d="M7 17 17 7M9 7h8v8" />
+                        </svg>
+                      </a>
+                    )}
+                  </div>
                 </div>
               </article>
             );

@@ -39,7 +39,7 @@ export const trabalhos: Trabalho[] = [
       en: {
         resumo: "A video editor's portfolio built like a film: the scroll is the timeline's playhead.",
         feitos: [
-          "Scroll-scrubbed hero with 113 frames drawn on canvas — smoother than <video>, even on iOS.",
+          "Scroll-scrubbed hero with 113 frames drawn on canvas, smoother than <video> even on iOS.",
           "WebGL chroma key that tracks a filmed phone screen and places a clickable interface inside it.",
           "Three languages, SEO/GEO with JSON-LD, a video sitemap and llms.txt.",
           "Edge deploy on Cloudflare Workers, serving videos with Range (206) for Safari.",
@@ -75,7 +75,7 @@ export const trabalhos: Trabalho[] = [
         ],
       },
       en: {
-        resumo: "Corporate site for a vehicle protection company — static and served from the edge.",
+        resumo: "Corporate site for a vehicle protection company, static and served from the edge.",
         feitos: [
           "React SPA prerendered to HTML per route: search engines and AI crawlers read the whole page without running JavaScript.",
           "Custom image pipeline with Sharp (responsive AVIF, WebP and PNG).",
@@ -113,7 +113,7 @@ export const trabalhos: Trabalho[] = [
         ],
       },
       en: {
-        resumo: "Launch landing page for a phone-controlled vehicle tracker — live and converting.",
+        resumo: "Launch landing page for a phone-controlled vehicle tracker, live and converting.",
         feitos: [
           "Complete launch page, ready for the larger site to grow on top of it with no rework.",
           "Technical SEO with JSON-LD, sitemap and llms.txt for search engines and AI.",
@@ -151,7 +151,7 @@ export const trabalhos: Trabalho[] = [
         ],
       },
       en: {
-        resumo: "Multi-page site for a 24/7 roadside assistance company — fully static, with forms delivered by email.",
+        resumo: "Multi-page site for a 24/7 roadside assistance company. Fully static, with forms delivered by email.",
         feitos: [
           "Multi-page build with Vite and EJS partials shared across pages.",
           "Custom Tailwind design system (colors, type and components).",
@@ -189,7 +189,7 @@ export const trabalhos: Trabalho[] = [
         ],
       },
       en: {
-        resumo: "Custom time-tracking system that took a workshop off spreadsheets — automatic math and a timesheet ready to sign.",
+        resumo: "Custom time-tracking system that took a workshop off spreadsheets, with automatic math and a timesheet ready to sign.",
         feitos: [
           "Automatic hours, overtime and absence math with per-employee configurable tolerance.",
           "Monthly and running hour bank, handling holidays, vacations, sick notes and closed days.",

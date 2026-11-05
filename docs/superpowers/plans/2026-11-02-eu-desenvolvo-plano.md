@@ -37,12 +37,41 @@ Cada fase termina com build, lint, prints em desktop (1440) e celular (390) e um
 - [x] Tela Trabalhos (abas Sites/Sistemas/Motion, janelas de navegador com o site real).
 - [x] Jogos, Sobre e Contato: placeholder "Fase bloqueada".
 
+### Fase 2b: vídeos "de costas" + sucção em código (04/11/2026, noite)
+- [x] Personagem sem rosto em destaque: quarto de costas com capuz, mundo de costas admirando a paisagem
+      (Veo: `media/raw/veo-{1-quarto,2-succao,3-mundo}.mp4`, imagens-chave `media/raw/v2-*.png`).
+- [x] `scripts/midia-isekai.sh` refeito: loop do quarto com os 10 s (crossfade 1 s), mundo estabilizado
+      (`scripts/estabilizar.py`, tira a deriva de câmera do Veo) com crossfade 1,5 s.
+- [x] Sucção em WebGL (`src/lib/succao.ts`): o monitor do jogo puxa o personagem; cada ponto do corpo vai com
+      atraso pela distância até a tela (mãos primeiro), se estica em fios de luz, vira pixel perto da tela.
+      Camadas de `scripts/succao-camadas.py`: quarto vazio (último quadro do vídeo de sucção do Veo, alinhado
+      por SIFT) e máscara da silhueta (rembg isnet-anime sobre o quadro clareado; cadeira tirada por polígono).
+- [x] Vídeos de Enter/volta removidos; a luz do `luz.ts` só faz o mergulho final. Volta = mesma cena ao contrário.
+- [x] Vento em código no mundo (`src/lib/vento.ts`): pétalas, folhas, pólen e riscos de vento.
+- [x] Coordenadas novas: tela do jogo (`luz.ts`), monitor de código e cristal (`portal.ts`).
+- [ ] Novos vídeos do Veo com os prompts trabalhados (`docs/prompts-videos-veo.md`): ao trocar, rodar o script
+      e remedir as coordenadas e o polígono da cadeira.
+
+### Fase 2c: portal, ficha dos projetos e textos (05/11/2026)
+- [x] Portal no quarto: zoom no monitor de código com a grade de subpixels do LCD (camada em multiply);
+      a troca código -> página acontece no pico da grade, que depois se dissolve (`src/lib/portal.ts`).
+- [x] Portal no mundo do jogo, em dois tempos: o mundo escurece e perde cor; depois o jogo "buga" (glitch em
+      WebGL, `src/lib/nevoa.ts`, modo "glitch"; o modo "nuvens" fica disponível) e revela a tela.
+- [x] A volta mantém o trecho que estava na tela (antes saltava para o topo antes da transição).
+- [x] Ficha técnica nos projetos: tipo, ano, papel e status em grade; nome, resumo, destaques, stack e link.
+- [x] Hero: "Eu programo o mundo. / Você entra nele."; subtítulo novo; nada de travessão nos textos.
+- [x] Legibilidade: degradê escuro à esquerda nos dois temas, mundo menos claro, texto claro nos dois temas,
+      redes sociais numa cápsula de vidro escuro.
+- [x] Vídeo do Deyller regravado quadro a quadro (`scripts/gravar-site.mjs`: relógio congelado, foto por CDP,
+      sem WebGL por software, que deixava cada foto em 10 a 25 s).
+
 ## Próximo (retomar aqui)
 
-1. **Considerações do Diorgenes sobre o estado atual** (ele tem várias; ouvir antes de seguir).
-2. Conferir no navegador real a fluidez do portal e da transição Enter (o headless roda a ~7 fps, não serve para medir).
-3. Celular: no tema claro o cristal fica quase fora do enquadramento; o portal nasce na borda esquerda.
-4. Tela Trabalhos no tema claro: hoje continua escura (só hero e HUD mudam com o tema).
+1. Gerar os vídeos novos no Veo (`docs/prompts-videos-veo.md`), rodar `scripts/midia-isekai.sh` e remedir.
+2. Conferir no navegador real: sucção (ida e volta), portal com subpixels, glitch do mundo e a volta suave.
+3. Celular: Trabalhos, ficha técnica e as transições (o portal do quarto nunca foi conferido em 390 px).
+4. Papel por projeto na ficha (hoje vem por categoria: sites, sistemas, motion).
+5. Tela Trabalhos no tema claro: continua escura (decidir se fica assim).
 
 ## Fase 3: telas que faltam
 - [ ] **Jogos:** jogos no navegador (bancada R3F ou vitrine), com import dinâmico e fallback em imagem.
