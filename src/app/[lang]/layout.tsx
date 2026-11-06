@@ -37,6 +37,15 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
       canonical: `/${lang}/`,
       languages: { ...Object.fromEntries(idiomas.map((l) => [htmlLang[l], `/${l}/`])), "x-default": "/en/" },
     },
+    // gerados da logo por scripts/gerar-favicon.py
+    icons: {
+      icon: [
+        { url: "/favicon.ico", sizes: "48x48" },
+        { url: "/icon.svg", type: "image/svg+xml" },
+        { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      ],
+      apple: { url: "/apple-icon.png", sizes: "180x180" },
+    },
     openGraph: { title: t.meta.titulo, description: t.meta.descricao, locale: htmlLang[lang], type: "website", siteName: "Diorgenes George" },
   };
 }
