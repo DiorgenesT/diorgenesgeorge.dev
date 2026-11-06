@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import type { Dicionario } from "@/i18n";
 import { idiomas, linkWhatsApp, type Idioma } from "@/i18n/config";
+import { LOGO_CHEVRON, LOGO_CORPO, LOGO_VIEWBOX } from "@/lib/logo-path";
 import BotaoTema from "./BotaoTema";
 
 /**
@@ -12,8 +14,22 @@ import BotaoTema from "./BotaoTema";
  * Leis: Jakob (padrão conhecido), Fitts (alvos ≥ 40px), Hick (4 seções), proximidade (grupos separados).
  */
 export default function Cabecalho({ t, lang }: { t: Dicionario; lang: Idioma }) {
+  const router = useRouter();
   const lista = useRef<HTMLUListElement>(null);
   const [ind, setInd] = useState<{ x: number; w: number; on: boolean }>({ x: 0, w: 0, on: false });
+  // a tela aberta (Telas avisa com o evento "tela"; o hash cobre o link direto e o voltar do navegador)
+  const [ativa, setAtiva] = useState<string | null>(null);
+  useEffect(() => {
+    const doHash = () => setAtiva(window.location.hash.slice(1) || null);
+    const daTela = (e: Event) => setAtiva((e as CustomEvent<string | null>).detail);
+    doHash();
+    window.addEventListener("tela", daTela);
+    window.addEventListener("popstate", doHash);
+    return () => {
+      window.removeEventListener("tela", daTela);
+      window.removeEventListener("popstate", doHash);
+    };
+  }, []);
 
   const sobre = (el: HTMLElement) => {
     const ul = lista.current;
@@ -29,8 +45,17 @@ export default function Cabecalho({ t, lang }: { t: Dicionario; lang: Idioma }) 
         aria-label="Menu"
         className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/10 bg-[#0a0a0a]/45 p-1.5 shadow-[0_10px_40px_-12px_rgba(0,0,0,.6)] backdrop-blur-xl backdrop-saturate-150"
       >
-        <Link href={`/${lang}/`} aria-label="Diorgenes George" className="grid size-10 place-items-center rounded-full bg-white font-mono text-[12px] font-medium tracking-tight text-black transition-transform duration-300 hover:scale-105">
-          DG
+        <Link
+          href={`/${lang}/`}
+          aria-label="Diorgenes George"
+          aria-current={ativa ? undefined : "page"}
+          className={`logo-menu group grid h-10 w-12 place-items-center rounded-full transition-[transform,background-color,color] duration-300 hover:scale-105 ${ativa ? "bg-white/10 text-white" : "bg-white text-black"}`}
+        >
+          {/* a logo DG (scripts/vetorizar-logo.py); no hover o ">" pisca como cursor */}
+          <svg viewBox={LOGO_VIEWBOX} className="w-[30px]" aria-hidden>
+            <path fill="currentColor" fillRule="evenodd" d={LOGO_CORPO} />
+            <path className="logo-cursor" fill="currentColor" d={LOGO_CHEVRON} />
+          </svg>
         </Link>
 
         <ul ref={lista} className="relative hidden items-center md:flex" onPointerLeave={() => setInd((s) => ({ ...s, on: false }))}>
@@ -41,7 +66,13 @@ export default function Cabecalho({ t, lang }: { t: Dicionario; lang: Idioma }) 
           />
           {t.nav.secoes.map(([href, rotulo]) => (
             <li key={href} className="relative">
-              <a href={href} onPointerEnter={(e) => sobre(e.currentTarget)} onFocus={(e) => sobre(e.currentTarget)} className="block rounded-full px-4 py-2.5 text-[14px] text-white/75 transition-colors hover:text-white">
+              <a
+                href={href}
+                aria-current={ativa === href.slice(1) ? "page" : undefined}
+                onPointerEnter={(e) => sobre(e.currentTarget)}
+                onFocus={(e) => sobre(e.currentTarget)}
+                className={`block rounded-full px-4 py-2.5 text-[14px] transition-colors duration-300 ${ativa === href.slice(1) ? "bg-white text-black" : "text-white/75 hover:text-white"}`}
+              >
                 {rotulo}
               </a>
             </li>
@@ -58,6 +89,14 @@ export default function Cabecalho({ t, lang }: { t: Dicionario; lang: Idioma }) 
               <Link
                 href={`/${l}/`}
                 hrefLang={l}
+                // troca o idioma sem sair de onde está: a tela aberta (#work...) vai junto, e o tema fica salvo
+                onClick={(e) => {
+                  if (e.metaKey || e.ctrlKey || l === lang) return;
+                  e.preventDefault();
+                  // o hero some e reaparece inteiro com a cena pronta (o mesmo portão da primeira pintura)
+                  document.documentElement.dataset.carregando = "1";
+                  router.push(`/${l}/${window.location.hash}`, { scroll: false });
+                }}
                 aria-current={l === lang ? "page" : undefined}
                 className={`grid h-10 min-w-9 place-items-center rounded-full px-2 font-mono text-[11px] uppercase tracking-widest transition-colors ${l === lang ? "text-white" : "text-white/40 hover:text-white/80"}`}
               >

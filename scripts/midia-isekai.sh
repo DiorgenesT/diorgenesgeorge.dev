@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Prepara a mídia do hero ISEKAI para o site: só o mundo do jogo (tema claro), que segue em vídeo.
 # O quarto (tema escuro) é feito em camadas (src/components/Quarto.tsx, public/contato) desde 05/11/2026.
-# Entrada: media/raw/veo-3-mundo.mp4  ->  saída: public/hero/isekai/
+# Entrada: media/raw/veo-4-mundo-vazio.mp4 (o mundo sem ele: ele e a grama da frente são camadas em
+# parallax, src/components/Mundo.tsx)  ->  saída: public/hero/isekai/
 #
-#  - mundo-loop: ele de costas olhando o mundo. Sem a deriva de câmera (scripts/estabilizar.py) e com
+#  - mundo-loop: o mundo vazio (nuvens, névoa, cachoeiras, grama). Sem a deriva de câmera (scripts/estabilizar.py) e com
 #    crossfade de 1,5 s no fim, o loop fecha sem emenda.
 # Precisa de ffmpeg e uv (OpenCV via `uv run`, sem instalar nada no sistema).
 set -euo pipefail
@@ -20,7 +21,7 @@ mkdir -p $O
 rm -f $O/enter.* $O/enter-volta.*
 
 # mundo: estabiliza e fecha o loop
-py python scripts/estabilizar.py $R/veo-3-mundo.mp4 $T/mundo.mp4
+py python scripts/estabilizar.py $R/veo-4-mundo-vazio.mp4 $T/mundo.mp4
 ff -i $T/mundo.mp4 -filter_complex "[0:v]split[a][b];[a]trim=start=1.5,setpts=PTS-STARTPTS[m];[b]trim=end=1.5,setpts=PTS-STARTPTS[t];[m][t]xfade=transition=fade:duration=1.5:offset=7.0[v]" -map "[v]" "${X[@]}" $O/mundo-loop.mp4
 
 for f in mundo-loop; do

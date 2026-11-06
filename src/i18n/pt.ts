@@ -73,10 +73,13 @@ const pt: Dicionario = {
     prefixo: "Eu desenvolvo",
     exemplos: ["um painel em tempo real", "um jogo no navegador", "uma experiência em 3D", "um vídeo feito em código", "um agente de IA"],
     campo: "O que você quer que eu desenvolva?",
+    cartaz: { titulo: "PROCURA-SE", texto: "quem queira um mundo construído", recompensa: "Recompensa: o projeto no ar", assinatura: "— D.G.", avisos: ["Painel em tempo real", "Jogo no navegador", "Agente de IA", "Vídeo em código"] as string[] },
     missao: "Nova missão",
     enviar: "Publicar missão",
     mensagem: "Quero que você desenvolva: ",
     outros: "ou chame por",
   },
+  carregador: { comando: "npm run build:world", quarto: "carregando o quarto", mundo: "carregando o mundo", shaders: "compilando shaders", rodar: "Build & Run" },
+  casos: { desafio: "O desafio", construi: "O que construí", resultado: "Resultado", papel: "Papel", status: "Status", feito: "Feito com", comoFoi: "Como foi feito", ocultar: "Ocultar detalhes" },
 };
 export default pt;

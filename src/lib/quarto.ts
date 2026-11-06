@@ -106,3 +106,4 @@ export function desenharNoQuad(ctx: CanvasRenderingContext2D, img: CanvasImageSo
       tri([s[0], s[2], s[3]], [d[0], d[2], d[3]]);
     }
 }
+

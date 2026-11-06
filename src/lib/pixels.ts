@@ -3,7 +3,7 @@
  * jogo, que entra pixelado e vai ganhando resolução, como um jogo carregando. p = 0 é tudo branco;
  * p = 1 é o mundo nítido. A volta é a mesma função com p de 1 até 0.
  *
- * Canvas 2D, sem WebGL: barato, roda em qualquer celular e aceita imagem ou <video> como fonte.
+ * Canvas 2D, sem WebGL: barato, roda em qualquer celular e aceita imagem, <video> ou canvas como fonte.
  */
 
 import { MONITOR } from "./luz";
@@ -13,7 +13,7 @@ const LINS = 18;
 /** Resoluções (em colunas) pelas quais o mundo passa até ficar nítido. 0 = resolução cheia. */
 const RESOLUCOES = [10, 20, 40, 80, 160, 0];
 
-export type Fonte = HTMLImageElement | HTMLVideoElement;
+export type Fonte = HTMLImageElement | HTMLVideoElement | HTMLCanvasElement;
 
 export function criarTransicao(canvas: HTMLCanvasElement, fonte: Fonte) {
   const ctx = canvas.getContext("2d")!;

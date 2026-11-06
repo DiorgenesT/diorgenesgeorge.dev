@@ -30,6 +30,8 @@ export type QuartoApi = {
   compor: () => { quadro: HTMLCanvasElement; vazio: HTMLCanvasElement; mascara: HTMLCanvasElement };
   /** Só a cena inteira (barato o bastante para cada quadro do portal). */
   cena: () => HTMLCanvasElement;
+  /** Congela o parallax (durante as transições: a cena composta não precisa ser refeita a cada quadro). */
+  congelar: (sim: boolean) => void;
   /** Para o loop de efeitos e o vídeo do jogo (tema claro) ou retoma. */
   ligar: (sim: boolean) => void;
 };
@@ -183,6 +185,7 @@ export default function Quarto({ onPronto }: { onPronto?: (api: QuartoApi) => vo
   const jogo = useRef<HTMLVideoElement>(null);
   const luz = useRef<HTMLDivElement>(null);
   const ligado = useRef(true);
+  const congelado = useRef(false);
   const atual = useRef({ x: 0, y: 0 });
 
   // parallax e a luz das telas
@@ -203,7 +206,7 @@ export default function Quarto({ onPronto }: { onPronto?: (api: QuartoApi) => vo
     };
     const quadro = (agora: number) => {
       raf = requestAnimationFrame(quadro);
-      if (!ligado.current) return;
+      if (!ligado.current || congelado.current) return;
       const t = (agora - t0) / 1000;
       if (!mouse) {
         alvo.x = Math.sin(t * 0.25) * 0.35;
@@ -239,9 +242,9 @@ export default function Quarto({ onPronto }: { onPronto?: (api: QuartoApi) => vo
     // a caixa da tela do jogo (a mesma do Projetado), em px do quadro composto
     const cj = caixaDe(JOGO);
     const telaJogo = document.createElement("canvas");
-    // em dobro: a malha em perspectiva amostra melhor e o vídeo não fica mais mole que o da página
-    telaJogo.width = Math.round((cj.x1 - cj.x0) * W * 2);
-    telaJogo.height = Math.round((cj.y1 - cj.y0) * H * 2);
+    // no tamanho da tela no quadro: reprojetada a cada quadro do vídeo, então leve
+    telaJogo.width = Math.round((cj.x1 - cj.x0) * W);
+    telaJogo.height = Math.round((cj.y1 - cj.y0) * H);
     // o código do monitor esquerdo, desenhado uma vez (é parado), em dobro de resolução
     const cc = caixaDe(CODIGO);
     const telaCodigo = document.createElement("canvas");
@@ -270,43 +273,81 @@ export default function Quarto({ onPronto }: { onPronto?: (api: QuartoApi) => vo
     document.fonts?.ready.then(pintarCodigo);
     const img = (id: string) => el.querySelector<HTMLImageElement>(`img[data-camada="${id}"]`)!;
 
+    // Cache: cada camada já no tamanho final (a cópia por quadro é 1:1, sem redimensionar 2400 px) e,
+    // presa à mesa, uma camada "mesa+" com o código e a cúpula já projetados (são parados).
+    const prontas = new Map<string, { c: HTMLCanvasElement; x: number; y: number }>();
+    const camada = (id: string, x: number, y: number, w: number) => {
+      const i = img(id);
+      if (!i?.naturalWidth) return null;
+      let p = prontas.get(id);
+      if (!p) {
+        const c = document.createElement("canvas");
+        c.width = Math.round(w * W);
+        c.height = Math.round((w * W * i.naturalHeight) / i.naturalWidth);
+        c.getContext("2d")!.drawImage(i, 0, 0, c.width, c.height);
+        p = { c, x: x * W, y: y * H };
+        prontas.set(id, p);
+      }
+      return p;
+    };
+    let extras: HTMLCanvasElement | null = null;
+    const mesaExtras = () => {
+      if (extras) return extras;
+      const c = novo();
+      const g = c.getContext("2d")!;
+      desenharNoQuad(g, telaCodigo, telaCodigo.width, telaCodigo.height, CODIGO.map(([x, y]) => [x * W, y * H] as Ponto));
+      const l = img("luminaria");
+      if (l?.naturalWidth) {
+        const lw = LUMINARIA.w * W;
+        g.drawImage(l, LUMINARIA.x * W, LUMINARIA.y * H, lw, (lw * l.naturalHeight) / l.naturalWidth);
+      } else return c; // a cúpula ainda não carregou: não guarda
+      extras = c;
+      return c;
+    };
+    document.fonts?.ready.then(() => (extras = null));
+    // o vídeo projetado na tela do jogo, refeito só quando o vídeo troca de quadro
+    const videoProj = novo();
+    let ultimoProj: HTMLCanvasElement | null = null;
+    let tempoProj = -1;
+    const projetarVideo = () => {
+      const v = jogo.current;
+      if (!v || v.readyState < 2) return null;
+      if (v.currentTime === tempoProj && ultimoProj) return ultimoProj;
+      tempoProj = v.currentTime;
+      const g = telaJogo.getContext("2d")!;
+      // o mesmo recorte do object-cover da página: senão a tela encolhe e estica na troca
+      const ev = Math.max(telaJogo.width / v.videoWidth, telaJogo.height / v.videoHeight);
+      const sw = telaJogo.width / ev;
+      const sh = telaJogo.height / ev;
+      g.drawImage(v, (v.videoWidth - sw) / 2, (v.videoHeight - sh) / 2, sw, sh, 0, 0, telaJogo.width, telaJogo.height);
+      const p = videoProj.getContext("2d")!;
+      p.clearRect(0, 0, W, H);
+      desenharNoQuad(p, telaJogo, telaJogo.width, telaJogo.height, JOGO.map(([x, y]) => [x * W, y * H] as Ponto), 3);
+      return (ultimoProj = videoProj);
+    };
+
     const deslocamento = () => {
       const largura = el.offsetWidth || W;
       const a = atual.current;
       return (d: number): Ponto => [((-a.x * d * PARALLAX.x) / largura) * W, ((-a.y * d * PARALLAX.y) / largura) * W];
     };
-    const pintar = (ctx: CanvasRenderingContext2D, comEle: boolean, desloc: (d: number) => Ponto) => {
-        ctx.fillStyle = "#05070c";
-        ctx.fillRect(0, 0, W, H);
-        for (const c of CAMADAS) {
-          if (c.id === "ele" && !comEle) continue;
-          const i = img(c.id);
-          if (!i?.naturalWidth) continue;
-          const [dx, dy] = desloc(c.d);
-          const w = c.w * W;
-          ctx.drawImage(i, c.x * W + dx, c.y * H + dy, w, (w * i.naturalHeight) / i.naturalWidth);
-          if (c.id === "mesa") {
-            // as telas e a cúpula andam com a mesa
-            desenharNoQuad(ctx, telaCodigo, telaCodigo.width, telaCodigo.height, CODIGO.map(([x, y]) => [x * W + dx, y * H + dy] as Ponto));
-            const v = jogo.current;
-            if (v && v.readyState >= 2) {
-              // o mesmo recorte do object-cover da página: senão a tela encolhe e estica na troca
-              const g = telaJogo.getContext("2d")!;
-              const ev = Math.max(telaJogo.width / v.videoWidth, telaJogo.height / v.videoHeight);
-              const sw = telaJogo.width / ev;
-              const sh = telaJogo.height / ev;
-              g.drawImage(v, (v.videoWidth - sw) / 2, (v.videoHeight - sh) / 2, sw, sh, 0, 0, telaJogo.width, telaJogo.height);
-              desenharNoQuad(ctx, telaJogo, telaJogo.width, telaJogo.height, JOGO.map(([x, y]) => [x * W + dx, y * H + dy] as Ponto));
-            }
-            const l = img("luminaria");
-            if (l?.naturalWidth) {
-              const lw = LUMINARIA.w * W;
-              ctx.drawImage(l, LUMINARIA.x * W + dx, LUMINARIA.y * H + dy, lw, (lw * l.naturalHeight) / l.naturalWidth);
-            }
-          }
+    const pintar = (ctx: CanvasRenderingContext2D, comEle: boolean, desloc: (d: number) => Ponto, video: HTMLCanvasElement | null) => {
+      ctx.fillStyle = "#05070c";
+      ctx.fillRect(0, 0, W, H);
+      for (const c of CAMADAS) {
+        if (c.id === "ele" && !comEle) continue;
+        const p = camada(c.id, c.x, c.y, c.w);
+        if (!p) continue;
+        const [dx, dy] = desloc(c.d);
+        ctx.drawImage(p.c, Math.round(p.x + dx), Math.round(p.y + dy));
+        if (c.id === "mesa") {
+          // as telas e a cúpula andam com a mesa
+          if (video) ctx.drawImage(video, dx, dy);
+          ctx.drawImage(mesaExtras(), dx, dy);
         }
-        pintarLuz(ctx);
-      };
+      }
+      pintarLuz(ctx);
+    };
     /** A luz fria das telas (o mesmo radial em "screen" da página, na opacidade do momento). */
     const pintarLuz = (ctx: CanvasRenderingContext2D) => {
       const op = Number(luz.current?.style.opacity || 0.55);
@@ -325,31 +366,37 @@ export default function Quarto({ onPronto }: { onPronto?: (api: QuartoApi) => vo
     };
 
     const cena = () => {
-      pintar(quadro.getContext("2d")!, true, deslocamento());
+      pintar(quadro.getContext("2d")!, true, deslocamento(), projetarVideo());
       return quadro;
     };
 
+    const silhueta = novo();
+    let chaveMascara = "";
     const compor = () => {
       const desloc = deslocamento();
-      pintar(quadro.getContext("2d")!, true, desloc);
-      pintar(vazio.getContext("2d")!, false, desloc);
-      // a silhueta dele: a própria camada, pintada de branco sobre o preto
+      const video = projetarVideo();
+      pintar(quadro.getContext("2d")!, true, desloc, video);
+      pintar(vazio.getContext("2d")!, false, desloc, video);
+      // a silhueta dele: a própria camada, pintada de branco sobre o preto (só refeita se o parallax mudou)
+      const a = atual.current;
+      const chave = `${a.x.toFixed(4)},${a.y.toFixed(4)}`;
+      if (chave === chaveMascara) return { quadro, vazio, mascara };
+      chaveMascara = chave;
       const m = mascara.getContext("2d")!;
-      m.globalCompositeOperation = "source-over";
       m.fillStyle = "#000";
       m.fillRect(0, 0, W, H);
       const ele = CAMADAS.find((c) => c.id === "ele")!;
-      const ie = img("ele");
-      if (ie?.naturalWidth) {
+      const p = camada(ele.id, ele.x, ele.y, ele.w);
+      if (p) {
         const [dx, dy] = desloc(ele.d);
-        const w = ele.w * W;
-        const tmp = novo();
-        const t = tmp.getContext("2d")!;
-        t.drawImage(ie, ele.x * W + dx, ele.y * H + dy, w, (w * ie.naturalHeight) / ie.naturalWidth);
+        const t = silhueta.getContext("2d")!;
+        t.globalCompositeOperation = "source-over";
+        t.clearRect(0, 0, W, H);
+        t.drawImage(p.c, Math.round(p.x + dx), Math.round(p.y + dy));
         t.globalCompositeOperation = "source-in";
         t.fillStyle = "#fff";
         t.fillRect(0, 0, W, H);
-        m.drawImage(tmp, 0, 0);
+        m.drawImage(silhueta, 0, 0);
       }
       return { quadro, vazio, mascara };
     };
@@ -361,11 +408,14 @@ export default function Quarto({ onPronto }: { onPronto?: (api: QuartoApi) => vo
       if (sim) v.play().catch(() => {});
       else v.pause();
     };
-    onPronto?.({ compor, cena, ligar });
+    const congelar = (sim: boolean) => {
+      congelado.current = sim;
+    };
+    onPronto?.({ compor, cena, ligar, congelar });
   }, [onPronto]);
 
   return (
-    <div ref={raiz} className="absolute inset-0">
+    <div ref={raiz} className="cena-quarto absolute inset-0">
       {CAMADAS.map((c) => (
         <div key={c.id} data-d={c.d} className="absolute inset-0 will-change-transform">
           <div className="absolute" style={caixaCss(c.x, c.y, c.w)}>

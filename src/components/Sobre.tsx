@@ -74,7 +74,8 @@ export default function Sobre({ t }: { t: Dicionario }) {
       const split = SplitText.create(".sob-titulo", { type: "words", mask: "words", wordsClass: "sp-palavra" });
       gsap.from(split.words, { yPercent: 110, stagger: 0.06, duration: 1.2, ease: "expo.out", delay: 0.2 });
       gsap.from(".sob-entra", { autoAlpha: 0, y: 18, stagger: 0.1, duration: 1, ease: "expo.out", delay: 0.45 });
-      gsap.from(".sob-camada", { autoAlpha: 0, scale: 1.06, stagger: 0.08, duration: 1.6, ease: "expo.out" });
+      // todas as camadas juntas (já estão decodificadas quando o portal abre): só um leve recuo de câmera
+      gsap.from(".sob-camada", { scale: 1.06, duration: 2.2, ease: "expo.out" });
 
       if (!menosMovimento()) {
         // a câmera avança para dentro da cena enquanto o palco está preso

@@ -175,3 +175,75 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .quarto-vapor { animation: none; }
 }
+
+/* Primeira pintura: o hero fica oculto até a cena ativa estar pronta (script do <head> em [lang]/layout.tsx).
+   Cada cena só aparece no seu visual: uma cena carregando nunca deixa a outra aparecer por baixo. */
+[data-carregando] #topo { opacity: 0; }
+[data-visual="claro"] .cena-quarto { visibility: hidden; }
+[data-visual="claro"] #topo .cena-mundo { visibility: visible; opacity: 1; }
+
+/* Entrada do hero (dispara com [data-intro]): a cena surge com um leve recuo, o título sobe linha a linha e o
+   resto entra em sequência. fill-mode "backwards": depois da entrada o GSAP do portal manda nos estilos. */
+@keyframes intro-palco { from { opacity: 0; transform: scale(1.06); } }
+@keyframes intro-sobe { from { opacity: 0; transform: translateY(0.6em); } }
+@keyframes intro-entra { from { opacity: 0; transform: translateY(16px); } }
+[data-intro] #topo .palco { animation: intro-palco 1.8s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+[data-intro] #topo .hero-linha { animation: intro-sobe 1.1s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: calc(0.35s + var(--i, 0) * 0.12s); }
+[data-intro] #topo .hero-entra { animation: intro-entra 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: calc(0.7s + var(--i, 0) * 0.08s); }
+@media (prefers-reduced-motion: reduce) {
+  [data-intro] #topo .palco, [data-intro] #topo .hero-linha, [data-intro] #topo .hero-entra { animation-duration: 0.01s; animation-delay: 0s; }
+}
+
+/* ── Carregador da primeira abertura (src/lib/carregador-script.ts) ─────────────────────────────────────
+   Só existe com [data-carregador] no <html> (posto pelo script do <head>); sem JS ou depois de sair, some. */
+#carregador { display: none; }
+[data-carregador] #carregador {
+  position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3.2rem;
+  background: #05070c; color: rgba(255, 255, 255, 0.82);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  transition: clip-path 0.7s cubic-bezier(0.7, 0, 0.2, 1), opacity 0.7s ease;
+  clip-path: inset(0 0 0 0);
+}
+[data-carregador-sai] #carregador { clip-path: inset(0 0 100% 0); }
+.cg-caixa { width: min(30rem, calc(100vw - 3rem)); font-size: 13px; line-height: 1.9; }
+.cg-cmd { color: rgba(255, 255, 255, 0.5); margin-bottom: 1.2em; }
+.cg-cmd span { color: #7df3ff; }
+#carregador li { display: flex; align-items: baseline; gap: 0.7em; color: rgba(255, 255, 255, 0.28); transition: color 0.3s; }
+#carregador li[data-estado="rodando"] { color: rgba(255, 255, 255, 0.82); }
+#carregador li[data-estado="ok"] { color: rgba(255, 255, 255, 0.6); }
+.cg-ico { width: 1ch; text-align: center; }
+.cg-ico::before { content: "·"; }
+#carregador li[data-estado="rodando"] .cg-ico::before { content: "▸"; color: #7df3ff; animation: cg-pisca 0.9s steps(1) infinite; }
+#carregador li[data-estado="ok"] .cg-ico::before { content: "✓"; color: #4ade80; }
+.cg-pontos { flex: 1; border-bottom: 1px dotted rgba(255, 255, 255, 0.18); transform: translateY(-0.35em); }
+.cg-n { font-variant-numeric: tabular-nums; }
+.cg-progresso { display: flex; align-items: center; gap: 1em; margin-top: 1.6em; }
+.cg-barra { position: relative; flex: 1; height: 2px; overflow: hidden; background: rgba(255, 255, 255, 0.1); }
+.cg-barra i { position: absolute; inset: 0; transform-origin: left; transform: scaleX(0); background: linear-gradient(90deg, #0a7ea3, #7df3ff); transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
+.cg-pct { width: 4ch; text-align: right; font-variant-numeric: tabular-nums; color: rgba(255, 255, 255, 0.6); }
+.cg-run { margin-top: 1.4em; color: #7df3ff; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0; transform: translateY(6px); transition: opacity 0.35s, transform 0.35s; }
+#carregador[data-fase="rodar"] .cg-run { opacity: 1; transform: none; }
+#carregador[data-fase="rodar"] .cg-barra i { background: #7df3ff; box-shadow: 0 0 14px #7df3ff; }
+/* a logo: traçada com o progresso; no "Build & Run" se preenche, a luz varre e o chevron pisca */
+.cg-logo { width: min(13rem, 42vw); height: auto; overflow: visible; }
+.cg-tracado { fill: none; stroke: rgba(255, 255, 255, 0.85); stroke-width: 1.4; vector-effect: non-scaling-stroke; stroke-dasharray: 1; stroke-dashoffset: 1; stroke-linejoin: round; transition: stroke-dashoffset 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s; }
+.cg-cheio { fill: #fff; clip-path: inset(100% 0 0 0); transition: clip-path 0.6s cubic-bezier(0.7, 0, 0.2, 1); }
+.cg-chevron { fill: #7df3ff; opacity: 0; }
+.cg-luz { transform: translateX(0); }
+#carregador[data-fase="rodar"] .cg-tracado { stroke-dashoffset: 0; opacity: 0; transition-delay: 0s, 0.35s; }
+#carregador[data-fase="rodar"] .cg-cheio { clip-path: inset(0 0 0 0); }
+#carregador[data-fase="rodar"] .cg-chevron { animation: cg-cursor 0.9s 0.45s steps(1) both; }
+#carregador[data-fase="rodar"] .cg-luz { animation: cg-varre 0.9s 0.4s cubic-bezier(0.45, 0, 0.2, 1) both; }
+@keyframes cg-cursor { 0% { opacity: 1; } 22% { opacity: 0; } 44% { opacity: 1; } 66% { opacity: 0; } 88%, 100% { opacity: 1; } }
+@keyframes cg-varre { from { transform: translateX(0); } to { transform: translateX(160%); } }
+@keyframes cg-pisca { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  [data-carregador] #carregador { transition: opacity 0.3s; }
+  .cg-tracado, .cg-cheio { transition: none; }
+  #carregador[data-fase="rodar"] .cg-chevron, #carregador[data-fase="rodar"] .cg-luz { animation: none; opacity: 1; }
+  [data-carregador-sai] #carregador { clip-path: none; opacity: 0; }
+}
+
+/* Logo do menu: no hover (ou foco) o ">" pisca como o cursor de um terminal */
+.logo-menu:hover .logo-cursor, .logo-menu:focus-visible .logo-cursor { animation: cg-pisca 0.9s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) { .logo-menu .logo-cursor { animation: none !important; } }

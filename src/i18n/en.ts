@@ -71,11 +71,14 @@ const en = {
     prefixo: "I build",
     exemplos: ["a real-time dashboard", "a browser game", "a 3D experience", "a video made with code", "an AI agent"],
     campo: "What do you want me to build?",
+    cartaz: { titulo: "WANTED", texto: "someone who wants a world built", recompensa: "Reward: the project, live", assinatura: "— D.G.", avisos: ["Real-time dashboard", "Browser game", "AI agent", "Video made with code"] as string[] },
     missao: "New quest",
     enviar: "Post the quest",
     mensagem: "I want you to build: ",
     outros: "or reach me at",
   },
+  carregador: { comando: "npm run build:world", quarto: "loading the room", mundo: "loading the world", shaders: "compiling shaders", rodar: "Build & Run" },
+  casos: { desafio: "The challenge", construi: "What I built", resultado: "Result", papel: "Role", status: "Status", feito: "Built with", comoFoi: "How it was made", ocultar: "Hide details" },
 };
 export default en;
 export type Dicionario = typeof en;

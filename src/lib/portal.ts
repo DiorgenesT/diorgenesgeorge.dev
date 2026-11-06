@@ -29,7 +29,9 @@ export const palco: {
   /** O texto do hero sai (ao abrir uma tela) e volta (ao fechar): animações do próprio Hero. */
   textoSai: (() => void) | null;
   textoVolta: (() => void) | null;
-} = { capa: null, texto: null, mundo: null, quarto: null, textoSai: null, textoVolta: null };
+  /** Pausa a cena do hero enquanto uma tela a cobre inteira (e retoma ao começar a fechar). */
+  pausar: ((sim: boolean) => void) | null;
+} = { capa: null, texto: null, mundo: null, quarto: null, textoSai: null, textoVolta: null, pausar: null };
 
 /** Transição do mundo do jogo para uma tela, depois que ele escurece. */
 export const MODO_MUNDO: "nuvens" | "glitch" = "glitch";
@@ -60,8 +62,15 @@ const manterTrecho = (p: number, partes: PartesDoPortal) => {
   partes.conteudo.style.transform = y ? `translateY(${-y}px)` : "";
 };
 
+// Um contexto por canvas: numa troca de idioma o React recria a página e os canvases mudam; o contexto do
+// canvas antigo desenharia fora da tela.
 let camadaMundo: Nevoa | null | undefined;
+let canvasMundo: HTMLCanvasElement | null = null;
 const obterNevoa = (canvas: HTMLCanvasElement | null) => {
+  if (canvas && canvas !== canvasMundo) {
+    canvasMundo = canvas;
+    camadaMundo = undefined;
+  }
   if (camadaMundo === undefined && canvas) {
     try {
       camadaMundo = criarNevoa(canvas, () => palco.mundo?.() ?? null, () => palco.capa?.getBoundingClientRect() ?? null);
@@ -118,7 +127,12 @@ function menuDePausa(p: number, partes: PartesDoPortal) {
 }
 
 let camadaQuarto: Compila | null | undefined;
+let canvasQuarto: HTMLCanvasElement | null = null;
 const obterCompila = (canvas: HTMLCanvasElement | null) => {
+  if (canvas && canvas !== canvasQuarto) {
+    canvasQuarto = canvas;
+    camadaQuarto = undefined;
+  }
   if (camadaQuarto === undefined && canvas) {
     try {
       camadaQuarto = criarCompila(canvas, MONITOR_CODIGO);
@@ -170,6 +184,17 @@ export function quadroDoPortal(p: number, partes: PartesDoPortal, visual: "escur
   tela.style.filter = animando ? `brightness(${(1 + 0.3 * (1 - assenta)).toFixed(3)})` : "";
   if (conteudo) conteudo.style.opacity = "";
   manterTrecho(p, partes);
+}
+
+/**
+ * Compila os shaders da compilação (quarto) e do portal do mundo antes do primeiro uso, desenhando um quadro
+ * com as camadas escondidas: sem isso, o primeiro portal trava e depois "pula".
+ */
+export function aquecerPortal(compila: HTMLCanvasElement | null, nevoa: HTMLCanvasElement | null) {
+  const c = obterCompila(compila);
+  c?.desenhar(0.01, null, null);
+  const n = obterNevoa(nevoa);
+  n?.desenhar(0.5, ESCURO.brilho, ESCURO.saturacao, MODO_MUNDO);
 }
 
 /** Limpa tudo que o portal mexeu no hero. */

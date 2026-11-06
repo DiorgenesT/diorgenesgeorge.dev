@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import type { Dicionario } from "@/i18n";
 import type { Idioma } from "@/i18n/config";
 import { gsap, menosMovimento, ScrollTrigger } from "@/lib/gsap";
-import { palco, quadroDoPortal, soltarPalco } from "@/lib/portal";
+import { criarBlocos } from "@/lib/blocos";
+import { aquecido, prontas } from "@/lib/carregar";
+import { aquecerPortal, palco, quadroDoPortal, soltarPalco } from "@/lib/portal";
 import { useLenis } from "./RolagemSuave";
 import Contato from "./Contato";
 import Jogos from "./Jogos";
@@ -53,26 +55,34 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
   const conteudoRef = useRef<HTMLDivElement>(null);
   const vidro = useRef<HTMLDivElement>(null);
   const compila = useRef<HTMLCanvasElement>(null);
+  const blocosCanvas = useRef<HTMLCanvasElement>(null);
+  const rotuloTroca = useRef<HTMLParagraphElement>(null);
+  const trocando = useRef(false);
   const nevoa = useRef<HTMLCanvasElement>(null);
   /** Quanto a tela estava rolada ao fechar: a volta mostra esse mesmo trecho, sem saltar para o topo. */
   const deslocamento = useRef(0);
   const inicial = useRef(false);
   const [aberta, setAberta] = useState<Tela | null>(null);
+  // o que fica montado: a tela aberta, ou a que está fechando (até o portal terminar)
+  const [montada, setMontada] = useState<Tela | null>(null);
   const progresso = useRef({ p: 0 });
   const visual = useRef<"escuro" | "claro">("escuro");
   const animacao = useRef<gsap.core.Tween | null>(null);
   const empurrou = useRef(false);
 
-  // o texto do hero sai antes de o portal abrir e volta quando o fechamento passa de 60%
+  /** Quanto dura a saída do texto do hero (Hero.tsx, palco.textoSai). */
+  const SAIDA_S = 0.6;
+  // o texto do hero sai antes de o portal abrir; volta só depois de ele fechar por completo (com uma pausa)
   const textoFora = useRef(false);
+  const saiuEm = useRef(0);
   const textoDoHero = useCallback((alvo: 0 | 1) => {
-    const p = progresso.current.p;
-    if (alvo === 1 && p < 1 && !textoFora.current) {
+    if (alvo === 1 && !textoFora.current) {
       textoFora.current = true;
+      saiuEm.current = performance.now();
       palco.textoSai?.();
-    } else if (alvo === 0 && p < 0.4 && textoFora.current) {
+    } else if (alvo === 0 && textoFora.current) {
       textoFora.current = false;
-      palco.textoVolta?.();
+      gsap.delayedCall(menosMovimento() ? 0 : 0.25, () => palco.textoVolta?.());
     }
   }, []);
 
@@ -106,33 +116,35 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
       if (menosMovimento()) {
         progresso.current.p = alvo;
         desenhar();
-        textoDoHero(alvo);
+        if (alvo === 1) textoDoHero(1);
         depois?.();
         return;
       }
-      // na ida o texto do hero sai primeiro (a camada do portal cobriria a saída) e o portal vem logo atrás
-      const comeca = alvo === 1 && !textoFora.current && progresso.current.p === 0;
-      textoDoHero(alvo);
+      // na ida o texto do hero sai primeiro (a camada do portal cobriria a saída): o portal começa quando a
+      // saída termina, contando o tempo que já passou esperando as imagens
+      if (alvo === 1) textoDoHero(1);
+      const espera = alvo === 1 && progresso.current.p === 0 ? Math.max(0, SAIDA_S - (performance.now() - saiuEm.current) / 1000) : 0;
       animacao.current = gsap.to(progresso.current, {
         p: alvo,
-        delay: comeca ? 0.35 : 0,
+        delay: espera,
         // no mundo do jogo são dois tempos (escurece, depois a transição); a entrada no monitor é um movimento só
         duration: visual.current === "claro" ? (alvo ? 1.7 : 1.3) : alvo ? 2.6 : 2.1,
         ease: "none",
-        onUpdate: () => {
-          desenhar();
-          textoDoHero(alvo);
-        },
+        onUpdate: desenhar,
         onComplete: depois,
       });
     },
     [desenhar, textoDoHero],
   );
 
-  // hash -> tela (links, menu, voltar do navegador, link direto)
-  useEffect(() => {
+  // hash -> tela (links, menu, voltar do navegador, link direto). Antes da pintura: com #work na URL (link
+  // direto ou troca de idioma) a aba já nasce montada por cima do hero, e o quarto não chega a aparecer.
+  useLayoutEffect(() => {
     const sincronizar = () => setAberta(daHash());
-    inicial.current = daHash() !== null; // link direto: a tela já aparece aberta
+    const h = daHash();
+    inicial.current = h !== null;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- a URL é estado externo e a aba precisa existir antes da 1ª pintura
+    if (h) setMontada(h);
     sincronizar();
     window.addEventListener("popstate", sincronizar);
     window.addEventListener("hashchange", sincronizar);
@@ -184,33 +196,95 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
     return () => window.removeEventListener("keydown", tecla);
   }, [aberta, fechar]);
 
-  // O que fica montado: a tela aberta, ou a que está fechando (até o portal terminar).
-  const [montada, setMontada] = useState<Tela | null>(null);
 
+  // aquece os shaders do portal enquanto o carregador da primeira abertura está na tela
   useEffect(() => {
-    if (aberta) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- a tela precisa existir antes da animação
-      setMontada(aberta);
-      return;
-    }
-    if (!montada) return;
-    // fechar: volta ao topo e o portal se fecha de volta no monitor (ou no cristal)
+    try {
+      aquecerPortal(compila.current, nevoa.current);
+    } catch {}
+    aquecido("compila");
+    aquecido("nevoa");
+  }, []);
+
+  // avisa o menu qual tela está aberta (o pushState não dispara hashchange)
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("tela", { detail: aberta }));
+  }, [aberta]);
+
+  /** Fecha a aba: volta ao topo e o portal se fecha de volta no monitor (ou no mundo). */
+  const fecharPortal = () => {
     deslocamento.current = window.scrollY;
     lenis?.stop();
     lenis?.scrollTo(0, { immediate: true });
     window.scrollTo(0, 0);
     visual.current = visualAtual();
+    palco.pausar?.(false);
     animar(0, () => {
       deslocamento.current = 0;
       setMontada(null);
       soltarPalco();
+      textoDoHero(0);
       lenis?.start();
     });
+  };
+
+  // a aba pedida agora (cliques durante a troca: no fim vale a última)
+  const pedida = useRef<Tela | null>(null);
+  const blocos = useRef<ReturnType<typeof criarBlocos> | null>(null);
+  const trocar = async () => {
+    if (trocando.current || !blocosCanvas.current) return;
+    trocando.current = true;
+    lenis?.stop();
+    const b = (blocos.current ??= criarBlocos(blocosCanvas.current));
+    const destino = pedida.current;
+    const rotulo = rotuloTroca.current;
+    if (rotulo) {
+      rotulo.textContent = `> cd ~/${destino}`;
+      gsap.fromTo(rotulo, { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, duration: 0.35, delay: 0.3, ease: "power2.out" });
+    }
+    if (menosMovimento()) {
+      setMontada(destino);
+    } else {
+      await b.cobrir();
+      setMontada(destino);
+    }
+    // a aba nova já no topo e com as imagens prontas antes de os blocos saírem
+    await new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+    lenis?.scrollTo(0, { immediate: true });
+    window.scrollTo(0, 0);
+    await prontas(tela.current, 2000);
+    ScrollTrigger.refresh();
+    if (rotulo) gsap.to(rotulo, { autoAlpha: 0, duration: 0.25, ease: "power1.in" });
+    if (!menosMovimento()) await b.revelar();
+    trocando.current = false;
+    lenis?.start();
+    // pediram outra aba (ou fecharam) durante a troca
+    if (pedida.current !== destino) {
+      if (pedida.current) trocar();
+      else fecharPortal();
+    }
+  };
+
+  useEffect(() => {
+    pedida.current = aberta;
+    if (aberta) {
+      // de uma aba aberta para outra: os blocos de build cobrem, a nova é montada por baixo e eles se desfazem
+      if (montada && montada !== aberta && progresso.current.p >= 1) {
+        trocar();
+        return;
+      }
+      if (trocando.current) return;
+      setMontada(aberta);
+      return;
+    }
+    if (!montada || trocando.current) return; // durante a troca, quem fecha é o fim dela
+    fecharPortal();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aberta]);
 
-  // tela montada: abre o portal (ou já aparece aberta, se a página carregou com o hash)
-  useEffect(() => {
+  // tela montada: abre o portal (ou já aparece aberta, se a página carregou com o hash). Antes da pintura,
+  // para o link direto já pintar a aba no primeiro quadro.
+  useLayoutEffect(() => {
     if (!montada || !aberta) return;
     lenis?.scrollTo(0, { immediate: true });
     window.scrollTo(0, 0);
@@ -220,12 +294,31 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
       progresso.current.p = 1;
       desenhar();
       textoDoHero(1);
+      palco.pausar?.(true);
+      // link direto: o fundo da aba já cobre o hero; o conteúdo aparece inteiro quando as imagens ficam prontas
+      const c = conteudoRef.current;
+      if (c) {
+        c.style.opacity = "0";
+        prontas(tela.current, 2500).then(() => gsap.to(c, { opacity: 1, duration: 0.5, ease: "power2.out", clearProps: "opacity" }));
+      }
     } else if (progresso.current.p < 1) {
       lenis?.stop();
-      animar(1, () => {
-        lenis?.start();
+      // o texto do hero já sai (resposta imediata ao clique); o portal só abre com as imagens da tela
+      // prontas, então a cena aparece inteira, nunca uma camada depois da outra
+      textoDoHero(1);
+      let cancelado = false;
+      prontas(tela.current, 2500).then(() => {
+        if (cancelado) return;
         ScrollTrigger.refresh();
+        animar(1, () => {
+          palco.pausar?.(true);
+          lenis?.start();
+          ScrollTrigger.refresh();
+        });
       });
+      return () => {
+        cancelado = true;
+      };
     }
     ScrollTrigger.refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -241,6 +334,13 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
   return (
     <>
     {/* compilação do quarto (src/lib/compila.ts): por cima da tela, que já está no lugar */}
+    {/* troca entre abas: os blocos de build e o caminho da aba nova (src/lib/blocos.ts) */}
+    <canvas ref={blocosCanvas} aria-hidden className="pointer-events-none fixed inset-0 z-[45] size-full" style={{ visibility: "hidden" }} />
+    <p
+      ref={rotuloTroca}
+      aria-hidden
+      className="pointer-events-none fixed inset-x-0 top-1/2 z-[46] -translate-y-1/2 text-center font-mono text-[13px] tracking-[0.12em] text-[#7df3ff] opacity-0"
+    />
     <canvas ref={compila} aria-hidden className="pointer-events-none fixed inset-0 z-[31] size-full" style={{ visibility: "hidden" }} hidden={!montada} />
     {/* transição do mundo do jogo (src/lib/nevoa.ts): por cima da tela, que já está no lugar */}
     <canvas ref={nevoa} aria-hidden className="pointer-events-none fixed inset-0 z-[32] size-full" style={{ visibility: "hidden" }} hidden={!montada} />

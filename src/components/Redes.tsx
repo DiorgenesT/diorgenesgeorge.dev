@@ -33,9 +33,9 @@ export const redes = (mensagem: string): [string, string][] => [
 ];
 
 /** Coluna/linha de ícones das redes. Cada ícone tem rótulo acessível e uma dica que aparece no hover. */
-export default function Redes({ mensagem, className = "" }: { mensagem: string; className?: string }) {
+export default function Redes({ mensagem, className = "", estilo }: { mensagem: string; className?: string; estilo?: React.CSSProperties }) {
   return (
-    <ul className={className}>
+    <ul className={className} style={estilo}>
       {redes(mensagem).map(([nome, href]) => (
         <li key={nome}>
           <a

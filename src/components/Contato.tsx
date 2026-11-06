@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { Dicionario } from "@/i18n";
 import { contato, linkWhatsApp } from "@/i18n/config";
 import { gsap, menosMovimento, SplitText, useGSAP } from "@/lib/gsap";
+import { LOGO_PATH, LOGO_VIEWBOX } from "@/lib/logo-path";
 
 /**
  * Contato: o acampamento. O mundo de ruínas à noite em camadas (public/acampamento, recortadas por
@@ -24,14 +25,26 @@ const CAMADAS: Camada[] = [
   // o chão do acampamento: as ruínas e o quadro se apoiam nele, em vez de flutuar sobre o vale
   { id: "chao", src: "", d: 0.38, x: -0.05, y: 0.57, w: 1.1 },
   { id: "acampamento", src: "/acampamento/3-acampamento.webp", d: 0.5, x: 0.36, y: 0.36, w: 0.62 },
-  { id: "quadro", src: "/acampamento/4-quadro.webp", d: 0.8, x: 0.86, y: 0.44, w: 0.22, espelhar: true },
+  // o quadro de missões, de pé atrás da fogueira (os pés afundam na névoa do chão)
+  { id: "quadro", src: "/acampamento/4-quadro.webp", d: 0.62, x: 0.765, y: 0.35, w: 0.235, espelhar: true },
   { id: "frente", src: "/acampamento/5-frente.webp", d: 1.2, x: -0.03, y: 0.78, w: 1.06 },
 ];
 
 /** A fogueira, o notebook e a lanterna (frações do quadro), de onde vêm as luzes. */
 const FOGO = { x: 0.831, y: 0.8 };
 const NOTEBOOK = { x: 0.537, y: 0.727 };
-const LANTERNA = { x: 0.875, y: 0.55 };
+const LANTERNA = { x: 0.772, y: 0.455 };
+
+/** Os pergaminhos do quadro (frações da imagem já espelhada): o grande do meio e os quatro menores. */
+const PERGAMINHOS = {
+  centro: { x: 0.36, y: 0.27, w: 0.25, h: 0.35, r: -0.6 },
+  avisos: [
+    { x: 0.225, y: 0.3, w: 0.1, h: 0.13, r: 2 },
+    { x: 0.225, y: 0.48, w: 0.1, h: 0.14, r: -1.5 },
+    { x: 0.655, y: 0.29, w: 0.12, h: 0.16, r: 1.5 },
+    { x: 0.645, y: 0.5, w: 0.1, h: 0.11, r: -2 },
+  ],
+};
 
 /** Brasas: poucas, pequenas, subindo devagar e se apagando (sem brilho exagerado). */
 function Brasas() {
@@ -73,6 +86,40 @@ function Brasas() {
     return () => cancelAnimationFrame(raf);
   }, []);
   return <canvas ref={cv} className="absolute size-full" />;
+}
+
+/** O que está escrito nos pergaminhos do quadro: tinta escura em "multiply", como se fosse escrita no papel. */
+function Cartazes({ t }: { t: Dicionario }) {
+  const caixa = (p: { x: number; y: number; w: number; h: number; r: number }) => ({
+    left: `${p.x * 100}%`,
+    top: `${p.y * 100}%`,
+    width: `${p.w * 100}%`,
+    height: `${p.h * 100}%`,
+    transform: `rotate(${p.r}deg)`,
+  });
+  const tinta = "absolute flex flex-col items-center justify-center text-center leading-tight text-[#3a2410] mix-blend-multiply [font-family:Georgia,'Times_New_Roman',serif]";
+  const c = PERGAMINHOS.centro;
+  return (
+    <div className="pointer-events-none absolute inset-0 [container-type:inline-size]">
+      <div className={tinta} style={caixa(c)}>
+        <span className="whitespace-nowrap text-[3.4cqw] font-bold tracking-[0.08em]">{t.contato.cartaz.titulo}</span>
+        <span className="mt-[1.5cqw] h-px w-[60%] bg-[#3a2410]/60" />
+        <span className="mt-[1.4cqw] px-[1cqw] text-[2.4cqw] italic">{t.contato.cartaz.texto}</span>
+        {/* o sigilo DG, em tinta */}
+        <svg viewBox={LOGO_VIEWBOX} className="mt-[1.8cqw] w-[34%] text-[#3a2410]" aria-hidden>
+          <path fill="currentColor" fillRule="evenodd" d={LOGO_PATH} />
+        </svg>
+        <span className="mt-[1.8cqw] px-[1cqw] text-[2cqw] font-bold">{t.contato.cartaz.recompensa}</span>
+        <span className="mt-[0.8cqw] self-end pr-[2cqw] text-[2cqw] italic">{t.contato.cartaz.assinatura}</span>
+      </div>
+      {PERGAMINHOS.avisos.map((p, i) => (
+        <div key={i} className={tinta} style={caixa(p)}>
+          <span className="text-[1.7cqw] font-bold opacity-70">#{String(i + 1).padStart(2, "0")}</span>
+          <span className="mt-[0.6cqw] px-[0.6cqw] text-[1.9cqw] italic leading-[1.15]">{t.contato.cartaz.avisos[i]}</span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 /** O placeholder do campo digita os exemplos sozinho, um por vez. */
@@ -160,7 +207,8 @@ export default function Contato({ t }: { t: Dicionario }) {
       const split = SplitText.create(".con-titulo", { type: "words", mask: "words", wordsClass: "sp-palavra" });
       gsap.from(split.words, { yPercent: 110, stagger: 0.06, duration: 1.2, ease: "expo.out", delay: 0.2 });
       gsap.from(".con-entra", { autoAlpha: 0, y: 18, stagger: 0.1, duration: 1, ease: "expo.out", delay: 0.45 });
-      gsap.from(".con-camada", { autoAlpha: 0, scale: 1.04, stagger: 0.08, duration: 1.6, ease: "expo.out" });
+      // todas as camadas juntas (já estão decodificadas quando o portal abre): só um leve recuo de câmera
+      gsap.from(".con-camada", { scale: 1.04, duration: 2.2, ease: "expo.out" });
       return () => split.revert();
     },
     { scope: secao },
@@ -200,6 +248,7 @@ export default function Contato({ t }: { t: Dicionario }) {
                 <div className="con-camada absolute" style={{ left: `${c.x * 100}%`, top: `${c.y * 100}%`, width: `${c.w * 100}%` }}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- export estático, camadas já otimizadas */}
                   <img src={c.src} alt="" draggable={false} decoding="async" className={`block w-full select-none ${c.espelhar ? "-scale-x-100" : ""}`} />
+                  {c.id === "quadro" && <Cartazes t={t} />}
                 </div>
               )}
               {/* as luzes e as brasas andam com o acampamento */}
@@ -212,7 +261,14 @@ export default function Contato({ t }: { t: Dicionario }) {
                   </div>
                 </>
               )}
-              {c.id === "quadro" && <div className="pointer-events-none absolute inset-0 mix-blend-screen" style={luz(LANTERNA, "7% 10%", "rgba(255,170,80,.28)")} />}
+              {c.id === "quadro" && (
+                <>
+                  <div className="pointer-events-none absolute inset-0 mix-blend-screen" style={luz(LANTERNA, "7% 10%", "rgba(255,170,80,.28)")} />
+                  {/* os pés do quadro afundam no chão: sombra de contato e névoa por cima */}
+                  <div className="pointer-events-none absolute rounded-[50%] bg-[radial-gradient(closest-side,rgba(5,8,14,.85),transparent)]" style={{ left: "77%", top: "68%", width: "23%", height: "5%" }} />
+                  <div className="sob-nevoa sob-nevoa-densa pointer-events-none absolute opacity-80" style={{ left: "72%", top: "64%", width: "32%", height: "13%" }} />
+                </>
+              )}
             </div>
           ))}
         </div>
