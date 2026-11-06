@@ -35,6 +35,10 @@ const CAMADAS: Camada[] = [
 const PARALLAX = { x: 80, y: 36 };
 /** Sombra de contato sob as botas (frações do quadro): centro e raios da elipse. */
 const SOMBRA = { x: 0.469, y: 0.858, rx: 0.05, ry: 0.012 };
+const POSTER = "/hero/isekai/mundo.webp";
+
+/** O vídeo que o carregador da abertura já baixou inteiro (URL de blob), ou null se ele falhou. */
+const videoBaixado = () => (window as unknown as { __mundoVideo?: Promise<string | null> }).__mundoVideo ?? Promise.resolve(null);
 
 export default function Mundo({ onPronto }: { onPronto?: (api: MundoApi) => void }) {
   const raiz = useRef<HTMLDivElement>(null);
@@ -85,6 +89,21 @@ export default function Mundo({ onPronto }: { onPronto?: (api: MundoApi) => void
     quadro.width = W;
     quadro.height = H;
     const img = (id: string) => el.querySelector<HTMLImageElement>(`img[data-camada="${id}"]`);
+    // o 1º quadro do vídeo em imagem: cobre o fundo enquanto o vídeo não tem quadro (nunca um buraco azul)
+    const poster = new Image();
+    poster.src = POSTER;
+    poster.decode().catch(() => {});
+
+    // troca a fonte do vídeo pela cópia em memória: tocar e voltar ao início não dependem mais da rede
+    const v0 = video.current;
+    const baixado = videoBaixado().then((url) => {
+      if (!url || !v0) return;
+      const tocando = !v0.paused;
+      v0.src = url;
+      v0.preload = "auto";
+      v0.load();
+      if (tocando) v0.play().catch(() => {});
+    });
 
     const cena = () => {
       const ctx = quadro.getContext("2d")!;
@@ -103,6 +122,14 @@ export default function Mundo({ onPronto }: { onPronto?: (api: MundoApi) => void
         const sw = vw / e;
         const sh = vh / e;
         ctx.drawImage(v, (v.videoWidth - sw) / 2, (v.videoHeight - sh) / 2, sw, sh, (W - vw) / 2 + dx, (H - vh) / 2 + dy, vw, vh);
+      } else if (poster.naturalWidth) {
+        const [dx, dy] = desloc(D_VIDEO);
+        const vw = W * FOLGA;
+        const vh = H * FOLGA;
+        const e = Math.max(vw / poster.naturalWidth, vh / poster.naturalHeight);
+        const sw = vw / e;
+        const sh = vh / e;
+        ctx.drawImage(poster, (poster.naturalWidth - sw) / 2, (poster.naturalHeight - sh) / 2, sw, sh, (W - vw) / 2 + dx, (H - vh) / 2 + dy, vw, vh);
       }
       for (const c of CAMADAS) {
         if (c.id === "ele") {
@@ -126,22 +153,30 @@ export default function Mundo({ onPronto }: { onPronto?: (api: MundoApi) => void
       return quadro;
     };
 
+    // as camadas decodificadas e o vídeo parado no 1º quadro, com dados para tocar sem engasgar. O limite é
+    // folgado (a sucção leva mais de 3 s antes de o mundo aparecer); se estourar, o poster cobre o vídeo.
+    const camadasProntas = () => Promise.all([poster, ...CAMADAS.map((c) => img(c.id))].map((i) => i?.decode().catch(() => {})));
     const preparar = () =>
-      new Promise<void>((ok) => {
-        const v = video.current;
-        if (!v) return ok();
-        v.preload = "auto";
-        v.pause();
-        const pronto = () => {
-          clearTimeout(seguro);
-          ok();
-        };
-        const seguro = setTimeout(pronto, 1500);
-        if (v.currentTime === 0 && v.readyState >= 2) return pronto();
-        v.addEventListener(v.readyState >= 1 ? "seeked" : "loadeddata", pronto, { once: true });
-        if (v.readyState >= 1) v.currentTime = 0;
-        else v.load();
-      });
+      Promise.race([
+        Promise.all([
+          camadasProntas(),
+          baixado.then(
+            () =>
+              new Promise<void>((ok) => {
+                const v = video.current;
+                if (!v) return ok();
+                v.preload = "auto";
+                v.pause();
+                const pronto = () => (v.readyState >= 3 ? ok() : v.addEventListener("canplay", () => ok(), { once: true }));
+                if (v.currentTime === 0 && v.readyState >= 2) return pronto();
+                v.addEventListener(v.readyState >= 1 ? "seeked" : "loadeddata", pronto, { once: true });
+                if (v.readyState >= 1) v.currentTime = 0;
+                else v.load();
+              }),
+          ),
+        ]).then(() => {}),
+        new Promise<void>((ok) => setTimeout(ok, 4000)),
+      ]);
 
     const ligar = (sim: boolean) => {
       ligado.current = sim;
@@ -166,8 +201,8 @@ export default function Mundo({ onPronto }: { onPronto?: (api: MundoApi) => void
           muted
           loop
           playsInline
-          preload="metadata"
-          poster="/hero/isekai/mundo.webp"
+          preload="none"
+          poster={POSTER}
           className="absolute max-w-none object-cover"
           style={{ left: `${((1 - FOLGA) / 2) * 100}%`, top: `${((1 - FOLGA) / 2) * 100}%`, width: `${FOLGA * 100}%`, height: `${FOLGA * 100}%` }}
         >

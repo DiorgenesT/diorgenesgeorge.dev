@@ -1,0 +1,16 @@
+# Cache das mídias (Cloudflare Workers Static Assets). Os nomes não têm hash: 1 dia de cache e, depois,
+# o navegador usa a cópia guardada enquanto revalida em segundo plano (até 30 dias).
+/*.webp
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+/*.jpg
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+/*.png
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+/*.svg
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+/*.mp4
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+/*.webm
+  Cache-Control: public, max-age=86400, stale-while-revalidate=2592000
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable

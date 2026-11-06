@@ -4,7 +4,8 @@
  *
  *  1. aplica o tema salvo e marca o <html> com data-carregando + data-carregador (o hero fica oculto e o
  *     carregador aparece, globals.css);
- *  2. baixa e decodifica o quarto, o mundo e o vídeo do jogo, atualizando o log e a barra;
+ *  2. baixa e decodifica o quarto, o mundo e o vídeo do jogo, atualizando o log e a barra (o vídeo fica
+ *     inteiro na memória, em window.__mundoVideo, e é dele que o mundo toca);
  *  3. espera o site avisar que aqueceu os efeitos (shaders da sucção, da compilação e do portal) por
  *     window.__carregador.passo("shaders"); sem aviso em 12 s, segue assim mesmo;
  *  4. "Build & Run": o carregador sai e o hero entra (data-intro).
@@ -52,7 +53,9 @@ function img(src,k){var i=new Image();i.decoding="async";i.src=src;guardadas.pus
 ${JSON.stringify(QUARTO)}.forEach(function(s){img(s,"quarto")});
 ${JSON.stringify(MUNDO)}.forEach(function(s){img(s,"mundo")});
 var v=document.createElement("video"),src=v.canPlayType&&v.canPlayType("video/webm")?"/hero/isekai/mundo-loop.webm":"/hero/isekai/mundo-loop.mp4";
-fetch(src).then(function(r){return r.blob()}).catch(function(){}).then(function(){soma("mundo")});
+// o vídeo baixado aqui é o mesmo que o mundo toca (URL de blob em window.__mundoVideo): a troca de tema não baixa de novo
+W.__mundoVideo=fetch(src).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(b){return URL.createObjectURL(b)}).catch(function(){return null});
+W.__mundoVideo.then(function(){soma("mundo")});
 
 function fim(){if(terminou)return;terminou=true;
   setTimeout(function(){
