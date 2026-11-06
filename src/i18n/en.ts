@@ -3,7 +3,7 @@ const en = {
     titulo: "Diorgenes George | Full stack developer of systems, games, 3D, videos and AI agents",
     descricao: "Full stack developer. Real-time dashboards, browser games, 3D, videos made with code and AI agents that work alongside me.",
   },
-  nav: { secoes: [["#work", "Work"], ["#games", "Games"], ["#about", "About"], ["#contact", "Contact"]] as [string, string][], contato: "Let's build", idioma: "Language", pular: "Skip to content" },
+  nav: { secoes: [["#work", "Work"], ["#games", "Games"], ["#about", "About"], ["#contact", "Contact"]] as [string, string][], contato: "Let's build", idioma: "Language", pular: "Skip to content", menu: "Open the menu", fecharMenu: "Close the menu" },
   hero: {
     status: "Available for projects",
     papel: "Full stack developer",
@@ -18,7 +18,7 @@ const en = {
   trabalhos: {
     rotulo: "Selected work",
     titulo: "Products already live.",
-    sub: "Real projects, in production. Hover a project to scroll through it.",
+    sub: "Real projects, in production. For each one, what changed and how it was built.",
     abas: { sites: "Sites", sistemas: "Systems", motion: "Motion" },
     feito: "Highlights",
     ver: "Visit live",

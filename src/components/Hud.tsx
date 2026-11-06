@@ -21,7 +21,7 @@ export default function Hud({ t }: { t: Dicionario }) {
   return (
     <>
       {/* conquista: aparece uma vez por visita, quando o visitante entra no jogo */}
-      <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-5 z-50 flex justify-center md:inset-x-auto md:bottom-8 md:right-24">
+      <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-3 top-[84px] z-40 flex justify-center md:inset-x-auto md:bottom-8 md:right-24 md:top-auto">
         {conquista > 0 && (
           <div key={conquista} className="conquista flex items-center gap-3 rounded-2xl border border-white/10 bg-[#0d1b33]/90 p-2.5 pr-5 text-white shadow-[0_18px_50px_-18px_#0d1b33] backdrop-blur-xl">
             <span className="grid size-11 place-items-center rounded-xl bg-[linear-gradient(135deg,#ffd76a,#ff9f3d)] text-[#3a2200]">

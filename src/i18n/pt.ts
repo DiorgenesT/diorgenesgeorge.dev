@@ -5,7 +5,7 @@ const pt: Dicionario = {
     titulo: "Diorgenes George | Desenvolvedor full stack de sistemas, jogos, 3D, vídeos e agentes de IA",
     descricao: "Desenvolvedor full stack. Painéis em tempo real, jogos no navegador, 3D, vídeos feitos em código e agentes de IA que trabalham comigo.",
   },
-  nav: { secoes: [["#work", "Trabalhos"], ["#games", "Jogos"], ["#about", "Sobre"], ["#contact", "Contato"]] as [string, string][], contato: "Vamos construir", idioma: "Idioma", pular: "Pular para o conteúdo" },
+  nav: { secoes: [["#work", "Trabalhos"], ["#games", "Jogos"], ["#about", "Sobre"], ["#contact", "Contato"]] as [string, string][], contato: "Vamos construir", idioma: "Idioma", pular: "Pular para o conteúdo", menu: "Abrir o menu", fecharMenu: "Fechar o menu" },
   hero: {
     status: "Disponível para projetos",
     papel: "Desenvolvedor full stack",
@@ -20,7 +20,7 @@ const pt: Dicionario = {
   trabalhos: {
     rotulo: "Trabalhos",
     titulo: "Produtos que já estão no ar.",
-    sub: "Projetos reais, em produção. Passe o mouse sobre um projeto para navegar por ele.",
+    sub: "Projetos reais, em produção. Em cada um, o que mudou e como foi feito.",
     abas: { sites: "Sites", sistemas: "Sistemas", motion: "Motion" },
     feito: "Destaques",
     ver: "Ver no ar",
