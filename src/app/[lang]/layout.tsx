@@ -46,7 +46,17 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
       ],
       apple: { url: "/apple-icon.png", sizes: "180x180" },
     },
-    openGraph: { title: t.meta.titulo, description: t.meta.descricao, locale: htmlLang[lang], type: "website", siteName: "Diorgenes George" },
+    // imagem do card por idioma (scripts/gerar-og.mjs): o hero escuro com a logo, 1200×630
+    openGraph: {
+      title: t.meta.titulo,
+      description: t.meta.descricao,
+      locale: htmlLang[lang],
+      type: "website",
+      siteName: "Diorgenes George",
+      url: `/${lang}/`,
+      images: [{ url: `/og/og-${lang}.jpg`, width: 1200, height: 630, alt: t.meta.titulo }],
+    },
+    twitter: { card: "summary_large_image", title: t.meta.titulo, description: t.meta.descricao, images: [`/og/og-${lang}.jpg`] },
   };
 }
 
