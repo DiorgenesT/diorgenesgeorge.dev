@@ -5,8 +5,8 @@ export const idiomaPadrao: Idioma = "en";
 export const ehIdioma = (v: string): v is Idioma => (idiomas as readonly string[]).includes(v);
 export const htmlLang: Record<Idioma, string> = { en: "en", pt: "pt-BR", es: "es" };
 
-/** URL pública (trocar pelo domínio próprio via NEXT_PUBLIC_SITE_URL quando aprovado). */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://diorgenes-dev.dgtssk8.workers.dev").replace(/\/$/, "");
+/** URL pública do site (sobrescrevível por NEXT_PUBLIC_SITE_URL, por exemplo num preview). */
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://diorgenesgeorge.dev").replace(/\/$/, "");
 
 export const contato = {
   whatsapp: "5531991519864",
