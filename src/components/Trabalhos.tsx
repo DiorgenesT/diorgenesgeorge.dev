@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Dicionario } from "@/i18n";
 import type { Idioma } from "@/i18n/config";
 import { trabalhos, type Aba } from "@/data/trabalhos";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { gsap, menosMovimento, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import CaseProjeto from "./CaseProjeto";
 import CenaTrabalhos from "./CenaTrabalhos";
 
@@ -22,7 +22,9 @@ export default function Trabalhos({ t, lang }: { t: Dicionario; lang: Idioma }) 
   const abasRef = useRef<HTMLDivElement>(null);
   const [aba, setAba] = useState<Aba>("sites");
   const [ind, setInd] = useState({ x: 0, w: 0 });
-  const lista = trabalhos.filter((p) => p.aba === aba);
+  // a aba que aparece: troca só depois de a anterior sumir (ver trocarAba)
+  const [visivel, setVisivel] = useState<Aba>("sites");
+  const paineis = useRef<HTMLDivElement>(null);
 
   // indicador deslizante das abas
   useEffect(() => {
@@ -37,6 +39,42 @@ export default function Trabalhos({ t, lang }: { t: Dicionario; lang: Idioma }) 
     },
     { scope: secao },
   );
+
+  /**
+   * Troca de aba: os três painéis ficam montados (imagens e vídeos já carregados, nada recomeça do zero, que
+   * era o que piscava). O painel atual some rápido, o novo aparece no lugar e os gatilhos de rolagem são
+   * recalculados com a altura nova.
+   */
+  const trocarAba = (nova: Aba) => {
+    if (nova === aba) return;
+    setAba(nova);
+    const el = paineis.current;
+    if (!el || menosMovimento()) {
+      setVisivel(nova);
+      return;
+    }
+    gsap.killTweensOf(el);
+    gsap.to(el, {
+      autoAlpha: 0,
+      y: 10,
+      duration: 0.18,
+      ease: "power1.in",
+      onComplete: () => setVisivel(nova),
+    });
+  };
+
+  // painel novo na tela: recalcula a rolagem e aparece
+  const primeira = useRef(true);
+  useEffect(() => {
+    const el = paineis.current;
+    if (primeira.current || !el) {
+      primeira.current = false;
+      return;
+    }
+    ScrollTrigger.refresh();
+    if (menosMovimento()) return;
+    gsap.fromTo(el, { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.45, ease: "expo.out", clearProps: "transform,opacity,visibility" });
+  }, [visivel]);
 
   return (
     <section ref={secao} id="work" className="relative scroll-mt-24 bg-[#05070c] pb-32 text-white md:pb-44" aria-labelledby="trab-titulo">
@@ -56,7 +94,7 @@ export default function Trabalhos({ t, lang }: { t: Dicionario; lang: Idioma }) 
                   role="tab"
                   data-aba={a}
                   aria-selected={aba === a}
-                  onClick={() => setAba(a)}
+                  onClick={() => trocarAba(a)}
                   className={`relative z-10 flex h-10 items-center gap-2 rounded-full px-4 text-[14px] transition-colors duration-300 ${aba === a ? "text-black" : "text-white/65 hover:text-white"}`}
                 >
                   {t.trabalhos.abas[a]}
@@ -67,8 +105,10 @@ export default function Trabalhos({ t, lang }: { t: Dicionario; lang: Idioma }) 
           </div>
         </div>
 
-        <div key={aba} className="mt-16 md:mt-24" role="tabpanel">
-          {lista.map((p, i) => {
+        <div ref={paineis} className="mt-16 md:mt-24">
+          {ABAS.map((a) => (
+          <div key={a} role="tabpanel" aria-label={t.trabalhos.abas[a]} hidden={a !== visivel}>
+          {trabalhos.filter((p) => p.aba === a).map((p, i, lista) => {
             const tx = p.texto[lang];
             const dominio = p.url ? new URL(p.url).host.replace(/^www\./, "") : null;
             return (
@@ -108,6 +148,8 @@ export default function Trabalhos({ t, lang }: { t: Dicionario; lang: Idioma }) 
               />
             );
           })}
+          </div>
+          ))}
         </div>
       </div>
     </section>

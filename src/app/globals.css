@@ -99,6 +99,11 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .grao::after { animation: none; }
 }
+/* celular: o granulado em overlay, animado sobre as camadas, faz a cena piscar (e quase não se vê na tela
+   pequena) */
+@media (hover: none) and (pointer: coarse) {
+  .grao::after { display: none; }
+}
 
 /* Máscaras do SplitText com folga para acentos e descendentes não serem cortados */
 .sp-palavra-mask,

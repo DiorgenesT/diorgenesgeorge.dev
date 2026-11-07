@@ -45,6 +45,9 @@ const dois = (n: number) => String(n).padStart(2, "0");
 
 function MidiaCaso({ midia, nome }: { midia: Midia; nome: string }) {
   const vid = useRef<HTMLVideoElement>(null);
+  // o vídeo só aparece quando já tem quadro tocando: até lá fica a capa (img) por baixo. No celular, entre o
+  // poster e o primeiro quadro o <video> pinta preto, e era isso que piscava.
+  const [tocando, setTocando] = useState(false);
   // vídeo: toca só enquanto está na tela
   useEffect(() => {
     const v = vid.current;
@@ -53,10 +56,26 @@ function MidiaCaso({ midia, nome }: { midia: Midia; nome: string }) {
     io.observe(v);
     return () => io.disconnect();
   }, []);
-  const classe = "caso-midia absolute inset-x-0 top-[-8%] h-[116%] w-full object-cover will-change-transform";
-  if (midia.tipo === "video") return <video ref={vid} src={midia.src} poster={midia.poster} muted loop playsInline preload="metadata" className={classe} aria-hidden />;
+  const cobre = "absolute inset-0 size-full object-cover";
   // eslint-disable-next-line @next/next/no-img-element -- export estático, imagem já otimizada
-  return <img src={midia.src} alt={nome} className={classe} />;
+  if (midia.tipo !== "video") return <img src={midia.src} alt={nome} className="caso-midia absolute inset-x-0 top-[-8%] h-[116%] w-full object-cover will-change-transform" />;
+  return (
+    <div className="caso-midia absolute inset-x-0 top-[-8%] h-[116%] w-full will-change-transform" aria-hidden>
+      {/* eslint-disable-next-line @next/next/no-img-element -- export estático, capa já otimizada */}
+      {midia.poster && <img src={midia.poster} alt="" className={cobre} />}
+      <video
+        ref={vid}
+        src={midia.src}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        data-capa={midia.poster ? "" : undefined}
+        onPlaying={() => setTocando(true)}
+        className={`${cobre} transition-opacity duration-300 ${tocando || !midia.poster ? "opacity-100" : "opacity-0"}`}
+      />
+    </div>
+  );
 }
 
 export default function CaseProjeto({ caso, t }: { caso: Caso; t: Dicionario }) {
@@ -72,7 +91,11 @@ export default function CaseProjeto({ caso, t }: { caso: Caso; t: Dicionario }) 
       const r = raiz.current!;
       const entrada = { trigger: r, start: "top 78%" };
       // o quadro abre como uma câmera recuando; a mídia anda devagar dentro dele
-      gsap.from(r.querySelector(".caso-quadro"), { clipPath: "inset(10% 8% 10% 8% round 32px)", duration: 1.5, ease: "expo.out", scrollTrigger: entrada });
+      // no celular, só transform e opacidade: animar clip-path sobre vídeo repinta o quadro inteiro a cada
+      // quadro e pisca no Safari
+      if (window.matchMedia("(max-width: 767px)").matches)
+        gsap.from(r.querySelector(".caso-quadro"), { autoAlpha: 0, y: 40, scale: 0.96, duration: 1.1, ease: "expo.out", scrollTrigger: entrada });
+      else gsap.from(r.querySelector(".caso-quadro"), { clipPath: "inset(10% 8% 10% 8% round 32px)", duration: 1.5, ease: "expo.out", scrollTrigger: entrada });
       gsap.fromTo(r.querySelector(".caso-midia"), { yPercent: -5, scale: 1.08 }, { yPercent: 5, scale: 1, ease: "none", scrollTrigger: { trigger: r, start: "top bottom", end: "bottom top", scrub: true } });
       // o nome sobe palavra por palavra, a frase e a etiqueta logo atrás
       const nome = SplitText.create(r.querySelector(".caso-nome"), { type: "words", mask: "words" });
@@ -116,7 +139,7 @@ export default function CaseProjeto({ caso, t }: { caso: Caso; t: Dicionario }) 
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(5,7,12,.75)_0%,rgba(5,7,12,.3)_40%,transparent_62%)]" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[28%] bg-[linear-gradient(180deg,rgba(5,7,12,.6),transparent)]" />
 
-        <p className="caso-sobre absolute left-5 top-5 flex items-center gap-3 rounded-full border border-white/15 bg-[#05070c]/55 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white/75 backdrop-blur-md md:left-8 md:top-8">
+        <p className="caso-sobre absolute left-5 top-5 flex items-center gap-3 rounded-full border border-white/15 bg-[#05070c]/75 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white/75 md:bg-[#05070c]/55 md:backdrop-blur-md md:left-8 md:top-8">
           <span style={{ color: acento }}>{dois(caso.indice)}</span>
           <span className="text-white/30">/ {dois(caso.total)}</span>
           <span className="text-white/30">·</span>

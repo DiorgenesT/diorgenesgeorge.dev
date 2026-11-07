@@ -5,7 +5,8 @@
 export function prontas(raiz: ParentNode | null, limiteMs = 2500): Promise<void> {
   if (!raiz) return Promise.resolve();
   const imgs = [...raiz.querySelectorAll<HTMLImageElement>("img")].filter((i) => i.loading !== "lazy");
-  const videos = [...raiz.querySelectorAll<HTMLVideoElement>("video")];
+  // vídeo com capa (data-capa) não precisa esperar: a capa é uma <img> e já entra na conta acima
+  const videos = [...raiz.querySelectorAll<HTMLVideoElement>("video:not([data-capa])")];
   const espera = [
     ...imgs.map((i) => (i.complete && i.naturalWidth ? i.decode() : i.decode()).catch(() => {})),
     ...videos.map(

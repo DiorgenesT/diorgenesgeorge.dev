@@ -51,7 +51,11 @@ export default function CenaParallax({ camadas, luzes = [], nevoas = [], aproxim
       alvo.x = e.clientX / window.innerWidth - 0.5;
       alvo.y = e.clientY / window.innerHeight - 0.5;
     };
+    // só anima com a cena na tela: depois que a cortina passa, o loop parado deixa a rolagem dos projetos
+    // sem repintura das camadas por baixo
+    let visivel = true;
     const quadro = (agora: number) => {
+      if (!visivel) return;
       raf = requestAnimationFrame(quadro);
       const t = (agora - t0) / 1000;
       if (!mouse) {
@@ -66,8 +70,18 @@ export default function CenaParallax({ camadas, luzes = [], nevoas = [], aproxim
       });
     };
     raf = requestAnimationFrame(quadro);
+    const io = new IntersectionObserver(([e]) => {
+      const antes = visivel;
+      visivel = e.isIntersecting;
+      if (visivel && !antes) {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(quadro);
+      }
+    });
+    io.observe(el);
     window.addEventListener("pointermove", mover);
     return () => {
+      io.disconnect();
       cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", mover);
     };

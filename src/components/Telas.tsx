@@ -363,7 +363,7 @@ export default function Telas({ t, lang }: { t: Dicionario; lang: Idioma }) {
           type="button"
           onClick={fechar}
           aria-label={t.telas.fechar}
-          className="fixed bottom-5 left-5 z-40 flex h-12 items-center gap-2 rounded-full border border-white/15 bg-[#0a0a0a]/60 pl-3 pr-5 text-[14px] text-white/85 backdrop-blur-xl transition-colors hover:border-white/50 hover:text-white md:bottom-8 md:left-10"
+          className="fixed bottom-5 left-5 z-40 flex h-12 items-center gap-2 rounded-full border border-white/15 bg-[#0a0a0a]/85 pl-3 pr-5 text-[14px] text-white/85 md:bg-[#0a0a0a]/60 md:backdrop-blur-xl transition-colors hover:border-white/50 hover:text-white md:bottom-8 md:left-10"
         >
           <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M19 12H5M11 6l-6 6 6 6" />

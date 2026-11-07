@@ -96,7 +96,7 @@ export default function Cabecalho({ t, lang }: { t: Dicionario; lang: Idioma }) 
     <header ref={header} className="pointer-events-none fixed inset-x-0 top-0 z-50 flex flex-col items-center px-3 pt-4 md:pt-5">
       <nav
         aria-label="Menu"
-        className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/10 bg-[#0a0a0a]/45 p-1.5 shadow-[0_10px_40px_-12px_rgba(0,0,0,.6)] backdrop-blur-xl backdrop-saturate-150"
+        className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/10 bg-[#0a0a0a]/80 p-1.5 shadow-[0_10px_40px_-12px_rgba(0,0,0,.6)] md:bg-[#0a0a0a]/45 md:backdrop-blur-xl md:backdrop-saturate-150"
       >
         <Link
           href={`/${lang}/`}
@@ -174,7 +174,7 @@ export default function Cabecalho({ t, lang }: { t: Dicionario; lang: Idioma }) 
         id="menu-movel"
         data-aberto={menu || undefined}
         inert={!menu}
-        className="menu-movel pointer-events-auto mt-2 w-full max-w-[26rem] overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a]/80 p-2 shadow-[0_24px_60px_-20px_rgba(0,0,0,.8)] backdrop-blur-xl backdrop-saturate-150 md:hidden"
+        className="menu-movel pointer-events-auto mt-2 w-full max-w-[26rem] overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a]/95 p-2 shadow-[0_24px_60px_-20px_rgba(0,0,0,.8)] md:hidden"
       >
         <ul>
           {t.nav.secoes.map(([href, rotulo], i) => (
